@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
 
-    'tool/mediatime:create' => [
+    'mediatimesrc/streamio:create' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -37,7 +37,7 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/blog:create',
     ],
 
-    'tool/mediatime:upload' => [
+    'mediatimesrc/streamio:upload' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,

@@ -39,6 +39,9 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class manager implements renderable, templatable {
+    /** @var $api Streamio API instance */
+    protected ?api $api = null;
+
     /** @var $content Cached Streamio video record */
     protected ?stdClass $content = null;
 
@@ -48,12 +51,6 @@ class manager implements renderable, templatable {
     /** @var $form Editing form */
     protected ?moodleform $form = null;
 
-    /** @var $username Streamio account password */
-    protected ?string $password = null;
-
-    /** @var $username Streamio account username */
-    protected ?string $username = null;
-
     /**
      * Constructor
      *
@@ -62,20 +59,13 @@ class manager implements renderable, templatable {
     public function __construct($record = null) {
         global $DB, $USER;
 
-        if (!$username = get_config('mediatimesrc_streamio', 'username')) {
-            throw new moodle_exception('credentialsnotconfigured');
-        }
-        if (!$password = get_config('mediatimesrc_streamio', 'password')) {
-            throw new moodle_exception('credentialsnotconfigured');
-        }
-        $this->username = $username;
-        $this->password = $password;
+        $this->api = new api();
 
         $this->record = $record;
 
         $upload = optional_param('upload', null, PARAM_INT);
         if (!empty($upload)) {
-            $video = $this->request("/videos", ['tags' => (string)$upload])[0];
+            $video = $this->api->request("/videos", ['tags' => (string)$upload])[0];
             $id = $DB->insert_record('tool_mediatime', [
                 'content' => json_encode($video),
                 'source' => 'streamio',
@@ -83,7 +73,7 @@ class manager implements renderable, templatable {
                 'timecreated' => time(),
                 'timemodified' => time(),
             ]);
-            $this->request("/videos/$video->id", ['tags' => ''], 'PUT');
+            $this->api->request("/videos/$video->id", ['tags' => ''], 'PUT');
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $id]);
             redirect($redirect);
         }
@@ -103,17 +93,17 @@ class manager implements renderable, templatable {
             $data->usermodified = $USER->id;
 
             if (empty($data->edit)) {
-                $video = $this->request("/videos/$data->file");
+                $video = $this->api->request("/videos/$data->file");
                 $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
                 $data->edit = $DB->insert_record('tool_mediatime', $data);
             } else {
                 $data->id = $data->edit;
-                $this->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
+                $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
                     'description' => true,
                     'title' => true,
                 ]), 'PUT');
-                $video = $this->request("/videos/" . $this->content->id);
+                $video = $this->api->request("/videos/" . $this->content->id);
                 $data->content = json_encode($video);
                 $DB->update_record('tool_mediatime', $data);
             }
@@ -133,14 +123,14 @@ class manager implements renderable, templatable {
         global $DB;
 
         if (optional_param('id', null, PARAM_INT)) {
-            $resource = new output\resource($this->record);
+            $resource = new output\media_resource($this->record);
             return [
                 'resource' => $output->render($resource),
             ];
         } else if (($data = $this->form->get_data()) && !empty($data->newfile)) {
             $data->upload = file_get_unused_draft_itemid();
 
-            $data->token = $this->create_token([
+            $data->token = $this->api->create_token([
                 'tags' => "$data->upload",
             ])->token;
 
@@ -151,46 +141,5 @@ class manager implements renderable, templatable {
         return [
             'form' => $this->form->render(),
         ];
-    }
-
-    /**
-     * Submit request to Streamio
-     *
-     * @param string $endpoint
-     * @param ?array $params Options for request
-     * @param string $method HTTP method to use
-     * @return mixed
-     */
-    public function request($endpoint, $params = [], $method = 'GET') {
-        $opts = [
-            'http' => [
-                "header" => "Authorization: Basic " . base64_encode("$this->username:$this->password")
-                . "\nAccept: application/json\n"
-                . "Content-type: application/json\n",
-                'method' => $method,
-                "protocol_version" => 1.1,
-                'content' => json_encode($params),
-            ],
-        ];
-
-        $context = stream_context_create($opts);
-
-        $response = file_get_contents('https://streamio.com/api/v1' . $endpoint, false, $context);
-
-        if ($response === false) {
-            throw new moodle_exception('streamiorequesterror');
-        }
-
-        return json_decode($response);
-    }
-
-    /**
-     * Create upload token for Streamio
-     *
-     * @param ?array $params Fields to set for video
-     * @return string
-     */
-    public function create_token(?array $params = []) {
-        return $this->request('/videos/create_token', $params, 'POST');
     }
 }

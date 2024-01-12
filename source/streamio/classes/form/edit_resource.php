@@ -25,6 +25,7 @@
 namespace mediatimesrc_streamio\form;
 
 use moodleform;
+use mediatimesrc_streamio\api;
 use mediatimesrc_streamio\output\media_resource;
 
 /**
@@ -80,7 +81,7 @@ class edit_resource extends moodleform {
             );
         } else {
             $options = [];
-            $api = new \mediatimesrc_streamio\manager(null);
+            $api = new api();
             $videos = $api->request('/videos');
             foreach ($videos as $video) {
                 $options[$video->id] = $video->title;
