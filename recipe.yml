@@ -1,0 +1,19 @@
+copyright: '2024 bdecent gmbh <https://bdecent.de>'
+component: tool_mediatime
+release: 1.0
+version: 2024010800
+requires: '2022112800'
+dependencies:
+  -
+    plugin: mod_videotime
+    version: ANY_VERSION
+maturity: MATURITY_ALPHA
+name: MediaTime
+features:
+  install: true
+  uninstall: false
+  settings: true
+  readme: true
+  license: true
+  upgrade: true
+  upgradelib: false
