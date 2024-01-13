@@ -2,9 +2,10 @@ var upload;
 
 import * as tus from 'mediatimesrc_streamio/tus';
 import Log from 'core/log';
+import cfg from 'core/config';
 
 const options = {
-    endpoint: 'https://dev.deftly.us/api/v1/videos/tus',
+    endpoint: cfg.wwwroot + '/api/v1/videos/tus',
     metadata: {},
     onError: Log.debug,
     onProgress: function(bytesUploaded, bytesTotal) {
