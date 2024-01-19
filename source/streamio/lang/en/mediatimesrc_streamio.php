@@ -28,6 +28,5 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Streamio';
 $string['password'] = 'Password';
 $string['password_help'] = 'Streamio password for administrative access';
-$string['title'] = 'Title';
 $string['username'] = 'Username';
 $string['username_help'] = 'Streamio user name for administrative access found in Streamio settings';

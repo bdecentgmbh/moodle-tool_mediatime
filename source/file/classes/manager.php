@@ -1,0 +1,189 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Manage Streamio source files
+ *
+ * @package    mediatimesrc_file
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace mediatimesrc_file;
+
+use core_tag_tag;
+use moodle_exception;
+use moodle_url;
+use moodleform;
+use renderable;
+use renderer_base;
+use stdClass;
+use templatable;
+
+/**
+ * Manage Streamio source files
+ *
+ * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class manager implements renderable, templatable {
+    /** @var $content Cached Streamio video record */
+    protected ?stdClass $content = null;
+
+    /** @var $record Media time record for resource */
+    protected ?stdClass $record = null;
+
+    /** @var $form Editing form */
+    protected ?moodleform $form = null;
+
+    /**
+     * Constructor
+     *
+     * @param ?stdClass $record Media time record for resource
+     */
+    public function __construct($record = null) {
+        global $DB, $USER;
+
+        $context = \context_system::instance();
+        $this->record = $record;
+
+        $this->form = new form\edit_resource();
+        if ($record) {
+            $this->content = json_decode($record->content);
+        }
+
+        $maxbytes = get_config('mediatimesrc_file', 'maxbytes');
+        if ($edit = optional_param('edit', null, PARAM_INT)) {
+            $draftitemid = file_get_submitted_draft_itemid('videofile');
+            file_prepare_draft_area(
+                // The $draftitemid is the target location.
+                $draftitemid,
+
+                // The combination of contextid / component / filearea / itemid
+                // form the virtual bucket that files are currently stored in
+                // and will be copied from.
+                $context->id,
+                'mediatimesrc_file',
+                'videofile',
+                $edit,
+                [
+                    'subdirs' => 0,
+                    'maxbytes' => $maxbytes,
+                    'maxfiles' => 1,
+                ]
+            );
+
+            $draftitemid = file_get_submitted_draft_itemid('posterimage');
+            file_prepare_draft_area(
+                // The $draftitemid is the target location.
+                $draftitemid,
+
+                // The combination of contextid / component / filearea / itemid
+                // form the virtual bucket that files are currently stored in
+                // and will be copied from.
+                $context->id,
+                'mediatimesrc_file',
+                'posterimage',
+                $edit,
+                [
+                    'subdirs' => 0,
+                    'maxbytes' => $maxbytes,
+                    'maxfiles' => 1,
+                ]
+            );
+
+            $this->content->tags = core_tag_tag::get_item_tags_array('tool_mediatime', 'media_resources', $edit);
+
+            $this->form->set_data([
+                'edit' => $edit,
+            ] + (array)$this->content);
+        }
+        if ($this->form->is_cancelled()) {
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php');
+            redirect($redirect);
+        } else if ($data = $this->form->get_data()) {
+            $data->timemodified = time();
+            $data->usermodified = $USER->id;
+
+            if (empty($data->edit)) {
+                $data->timecreated = $data->timemodified;
+                $data->content = json_encode($data);
+                $data->edit = $DB->insert_record('tool_mediatime', $data);
+            } else {
+                $data->id = $data->edit;
+                $data->content = json_encode($data);
+                $DB->update_record('tool_mediatime', $data);
+            }
+
+            file_save_draft_area_files(
+                $data->videofile,
+                $context->id,
+                'mediatimesrc_file',
+                'videofile',
+                $data->edit,
+                [
+                    'subdirs' => 0,
+                    'maxbytes' => $maxbytes,
+                    'maxfiles' => 1,
+                ]
+            );
+
+            file_save_draft_area_files(
+                $data->posterimage,
+                $context->id,
+                'mediatimesrc_file',
+                'posterimage',
+                $data->edit,
+                [
+                    'subdirs' => 0,
+                    'maxbytes' => $maxbytes,
+                    'maxfiles' => 1,
+                ]
+            );
+
+            core_tag_tag::set_item_tags(
+                'tool_mediatime',
+                'media_resources',
+                $data->edit,
+                $context,
+                $data->tags
+            );
+
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $data->edit]);
+            redirect($redirect);
+        }
+    }
+
+    /**
+     * Export this data so it can be used as the context for a mustache template.
+     *
+     * @param \renderer_base $output
+     * @return array
+     */
+    public function export_for_template(renderer_base $output) {
+        global $DB;
+
+        if (optional_param('id', null, PARAM_INT)) {
+            $resource = new output\media_resource($this->record);
+            return [
+                'resource' => $output->render($resource),
+            ];
+        }
+        return [
+            'form' => $this->form->render(),
+        ];
+    }
+}

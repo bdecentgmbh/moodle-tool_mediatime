@@ -15,22 +15,24 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin strings are defined here.
+ * Plugin administration pages are defined here.
  *
- * @package     tool_mediatime
- * @category    string
+ * @package     mediatimesrc_file
+ * @category    admin
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Media Time';
-$string['addnewcontent'] = 'Add new content';
-$string['library'] = 'Library';
-$string['resourcename'] = 'Resource name';
-$string['resourcename_help'] = 'The name for a resource is used internally in the library to identify the resource, but not displayed when it is used.';
-$string['managemediatimesrcplugins'] = 'Manage source plugins';
-$string['subplugin_mediatimesrc_plural'] = 'Media sources';
-$string['title'] = 'Title';
-$string['title_help'] = 'The title may be displayed by the video player when used';
+if ($hassiteconfig) {
+    $settings = new admin_settingpage('mediatimesrc_file_settings', new lang_string('pluginname', 'mediatimesrc_file'));
+
+
+    if (isset($CFG->maxbytes)) {
+        $maxbytes = get_config('mediatimesrc_file', 'maxbytes');
+        $options = get_max_upload_sizes($CFG->maxbytes, 0, 0, $maxbytes);
+        $settings->add(new admin_setting_configselect('mediatimesrc_file/maxbytes', get_string('maxbytes', 'mediatimesrc_file'),
+                            get_string('configmaxbytes', 'mediatimesrc_file'), 0, $options));
+    }
+}

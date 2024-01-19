@@ -26,3 +26,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'File resource';
+$string['posterimage'] = 'Poster image';
+$string['posterimage_help'] = 'Select an image to displayed before the video is played or as a thumbnail image.';
+$string['maxbytes'] = 'Maximum size of file uploads';
+$string['videofile'] = 'Video file';
+$string['videofile_help'] = 'Video file to be displayed';
+$string['configmaxbytes'] = 'Default maximum file size for all files uploaded';

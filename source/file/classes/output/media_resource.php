@@ -17,12 +17,12 @@
 /**
  * Display a resource in the media library
  *
- * @package    mediatimesrc_streamio
+ * @package    mediatimesrc_file
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_streamio\output;
+namespace mediatimesrc_file\output;
 
 use moodle_url;
 use stdClass;
@@ -47,6 +47,7 @@ class media_resource implements renderable, templatable {
      */
     public function __construct(stdClass $record) {
         $this->record = $record;
+        $this->context = \context_system::instance();
     }
 
     /**
@@ -57,33 +58,47 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
-        $content = json_decode($this->record->content);
-        $api = new \mediatimesrc_streamio\api();
-        $context = \context_system::instance();
+
+        $content = [
+            'poster' => $this->image_url($output),
+            'videourl' => $this->video_url($output),
+        ];
 
         return [
-            'canedit' => has_capability('moodle/tag:edit', $context) || $USER->id == $this->record->usermodified,
+            'canedit' => has_capability('moodle/tag:edit', $this->context) || $USER->id == $this->record->usermodified,
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
-            'resource' => $content,
-            'url' => 'https://exampel.com',
+            'resource' => json_decode($this->record->content),
             'video' => format_text(
-                $output->render_from_template('mediatimesrc_streamio/video', $content),
+                $output->render_from_template('mediatimesrc_file/video', $content),
                 FORMAT_HTML,
-                ['context' => \context_system::instance()]
+                ['context' => $this->context]
             ),
         ];
     }
 
-    public function image_url(renderer_base $output) {
-        return 'https://' . $this->record->content->screenshot->normal;
+    public function image_url($output) {
+
+        $fs = get_file_storage();
+        $this->poster = $output->image_url('f/video', 'core');
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_file', 'posterimage', $this->record->id) as $file) {
+            if (!$file->is_directory()) {
+                $this->poster = moodle_url::make_pluginfile_url(
+                    $this->context->id,
+                    'mediatimesrc_file',
+                    'posterimage',
+                    $this->record->id,
+                    $file->get_filepath(),
+                    $file->get_filename()
+                )->out(false);
+            }
+        }
+
+        return $this->poster;
     }
 
     public function video_url($output) {
         $this->videourl = '';
-
-        $id = $this->record->content->id;
-        return "https://streamio.com/api/v1/videos/$id/public_show.m3u8";
 
         $fs = get_file_storage();
         foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_file', 'videofile', $this->record->id) as $file) {
@@ -103,6 +118,15 @@ class media_resource implements renderable, templatable {
     }
 
     public function video_file_content($output) {
-        return file_get_contents($this->video_url($output));
+        $this->videourl = '';
+
+        $fs = get_file_storage();
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_file', 'videofile', $this->record->id) as $file) {
+            if (!$file->is_directory()) {
+                return $file->get_content();
+            }
+        }
+
+        return $this->videourl;
     }
 }

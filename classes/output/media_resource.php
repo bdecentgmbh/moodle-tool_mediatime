@@ -24,6 +24,7 @@
 
 namespace tool_mediatime\output;
 
+use core_tag_tag;
 use moodle_url;
 use stdClass;
 use renderable;
@@ -40,6 +41,9 @@ class media_resource implements renderable, templatable {
     /** @var ?stdClass $record Media Time resource record */
     protected $record;
 
+    /** @var $record Source specifific resource renderable */
+    protected $resource;
+
     /**
      * Constructor
      *
@@ -47,6 +51,8 @@ class media_resource implements renderable, templatable {
      */
     public function __construct(stdClass $record) {
         $this->record = $record;
+        $resourceclass = "\\mediatimesrc_$record->source\\output\\media_resource";
+        $this->resource = new $resourceclass($record);
     }
 
     /**
@@ -57,15 +63,38 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
-        $content = json_decode($this->record->content);
-        $resource = new \mediatimesrc_streamio\output\media_resource($this->record);
         $context = \context_system::instance();
 
         return [
             'canedit' => has_capability('moodle/tag:edit', $context) || $USER->id == $this->record->usermodified,
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
-            'resource' => format_text($output->render($resource), FORMAT_HTML, ['context' => $context]),
+            'resource' => $output->render($this->resource),
+            'tags' => $this->tags($output),
         ];
+    }
+
+    public function tags($output) {
+        return $output->tag_list(
+            core_tag_tag::get_item_tags(
+                'tool_mediatime',
+                'media_resources',
+                $this->record->id
+            ),
+            null,
+            'mediatime-tags'
+        );
+    }
+
+    public function video_url($output) {
+        return $this->resource->video_url($output);
+    }
+
+    public function image_url($output) {
+        return $this->resource->image_url($output);
+    }
+
+    public function video_file_content($output) {
+        return $this->resource->video_file_content($output);
     }
 }

@@ -24,9 +24,12 @@
 
 namespace tool_mediatime;
 
+use moodle_exception;
 use moodle_url;
 use renderable;
 use renderer_base;
+use single_button;
+use single_select;
 use templatable;
 use stdClass;
 
@@ -62,16 +65,23 @@ class media_manager implements renderable, templatable {
             $source = $record->source;
         }
 
+        $plugins = plugininfo\mediatimesrc::get_enabled_plugins();
+        if (!empty($source) && !in_array($source, $plugins)) {
+            throw new moodle_exception('invalidsource');
+        }
+
+        $this->media = [];
         if ($source) {
             $classname = "\\mediatimesrc_$source\\manager";
             if (class_exists($classname)) {
                 $this->source = new $classname($this->record);
             }
         } else {
-            $this->media = $DB->get_records('tool_mediatime');
-            foreach ($this->media as $media) {
-                $media->content = json_decode($media->content);
-                $media->url = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $media->id]);
+            foreach ($DB->get_records('tool_mediatime', [], 'timecreated DESC') as $media) {
+                if (in_array($media->source, $plugins)) {
+                    $media->content = json_decode($media->content);
+                    $this->media[] = $media;
+                }
             }
         }
     }
@@ -86,19 +96,58 @@ class media_manager implements renderable, templatable {
         global $DB;
 
         if (!empty($this->source)) {
-            return [
+            $context = [
                 'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php'))->out(),
                 'resource' => $output->render($this->source),
             ];
+            if (!empty($this->record)) {
+                $resource = new output\media_resource($this->record);
+                $context['tags'] = $resource->tags($output);
+            }
+
+            return $context;
         }
 
+        $media = [];
+        foreach ($this->media as $record) {
+            $resource = new output\media_resource($record);
+            $url = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $record->id]);
+            $media[] = [
+                'imageurl' => $resource->image_url($output),
+                'tags' => $resource->tags($output),
+                'url' => $url->out(),
+                'content' => $record->content,
+            ];
+        }
+
+        $plugins = \core_plugin_manager::instance()->get_installed_plugins('mediatimesrc');
+        $sources = [];
+        foreach (array_keys($plugins) as $plugin) {
+            $sources[] = [
+                'name' => $plugin,
+                'title' => get_string('pluginname', "mediatimesrc_$plugin"),
+            ];
+        }
+
+        $options = [];
+        foreach (plugininfo\mediatimesrc::get_enabled_plugins() as $plugin) {
+            $options[$plugin] = get_string("pluginname", "mediatimesrc_$plugin");
+        }
+        if (count($options) == 1) {
+            $button = new single_button(new moodle_url('/admin/tool/mediatime/index.php', [
+                'source' => array_keys($options)[0],
+            ]), get_string('addnewcontent', 'tool_mediatime'));
+            $action = $output->render($button);
+        } else if (count($options)) {
+            $select = new single_select(new moodle_url('/admin/tool/mediatime/index.php'), 'source', $options);
+            $action = get_string('addnewcontent', 'tool_mediatime') . ' ' . $output->render($select);
+        } else {
+            $action = '';
+        }
         return [
-            'media' => array_values($this->media),
-            'sources' => [
-                [
-                    'title' => 'Add file',
-                ],
-            ],
+            'media' => array_values($media),
+            'sources' => $sources,
+            'action' => $action,
         ];
     }
 }

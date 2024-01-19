@@ -17,16 +17,15 @@
 /**
  * Media Time media edit form
  *
- * @package    mediatimesrc_streamio
+ * @package    mediatimesrc_file
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_streamio\form;
+namespace mediatimesrc_file\form;
 
 use moodleform;
-use mediatimesrc_streamio\api;
-use mediatimesrc_streamio\output\media_resource;
+use mediatimesrc_file\output\media_resource;
 
 /**
  * Media Time media edit form
@@ -44,7 +43,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
-        $mform->setDefault('source', 'streamio');
+        $mform->setDefault('source', 'file');
 
         $mform->addElement('text', 'name', get_string('resourcename', 'tool_mediatime'));
         $mform->setType('name', PARAM_TEXT);
@@ -60,6 +59,38 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->addElement('textarea', 'description', get_string('description'));
         $mform->setType('description', PARAM_TEXT);
 
+        $maxbytes = 200000000;
+        $mform->addElement(
+            'filemanager',
+            'videofile',
+            get_string('videofile', 'mediatimesrc_file'),
+            null,
+            [
+                'subdirs' => 0,
+                'maxbytes' => $maxbytes,
+                'areamaxbytes' => $maxbytes,
+                'maxfiles' => 1,
+                'accepted_types' => ['video'],
+                'return_types' => FILE_INTERNAL,
+            ]
+        );
+        $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_file');
+
+        $mform->addElement(
+            'filemanager',
+            'posterimage',
+            get_string('posterimage', 'mediatimesrc_file'),
+            null,
+            [
+                'subdirs' => 0,
+                'maxbytes' => $maxbytes,
+                'areamaxbytes' => $maxbytes,
+                'maxfiles' => 1,
+                'accepted_types' => ['image', 'jpg', 'jpeg'],
+                'return_types' => FILE_INTERNAL,
+            ]
+        );
+        $mform->addHelpButton('posterimage', 'posterimage', 'mediatimesrc_file');
         $this->tag_elements();
 
         $this->add_action_buttons();
@@ -77,28 +108,16 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
         if ($record) {
             $resource = new media_resource($record);
+            $content = [
+                'poster' => $resource->image_url($OUTPUT),
+                'videourl' => $resource->video_url($OUTPUT),
+            ];
             $mform->insertElementBefore(
                 $mform->createElement('html', format_text(
-                    $OUTPUT->render_from_template('mediatimesrc_streamio/video', json_decode($record->content)),
+                    $OUTPUT->render_from_template('mediatimesrc_file/video', $content),
                     FORMAT_HTML,
                     ['context' => \context_system::instance()]
                 )),
-                'name'
-            );
-        } else {
-            $options = [];
-            $api = new api();
-            $videos = $api->request('/videos');
-            foreach ($videos as $video) {
-                $options[$video->id] = $video->title;
-            }
-
-            $mform->insertElementBefore(
-                $mform->createElement('autocomplete', 'file', get_string('file'), $options),
-                'name'
-            );
-            $mform->insertElementBefore(
-                $mform->createElement('advcheckbox', 'newfile', get_string('file')),
                 'name'
             );
         }

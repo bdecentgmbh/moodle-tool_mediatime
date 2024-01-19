@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mediatimesrc_streamio/media_resource
+    @template mediatimesrc_streamio/video
 
     This template will render a resource to embed in library
 
@@ -28,19 +28,10 @@
     }
 
 }}
-<div class="library-resource">
-<form action="." method="post">
-   {{# canedit }}
-       <input type="hidden" name="source" value="streamio"/>
-       <button type="submit" name="edit" value="{{ id }}">{{# str }} edit {{/ str }}</button>
-   {{/ canedit }}
-   {{# libraryhome }}
-   <a href="{{ libraryhome }}">{{# str }}library, tool_mediatime {{/ str }}</a>
-   {{/ libraryhome }}
-</form>
-<div class="container-fluid">
-    <h3>{{ resource.name }}</h3>
-    <h4>{{ resource.title }}</h4>
-        {{{ video }}}
-    <p>{{ resource.description }}</p>
-</div>
+<p>
+    <video 
+        controls
+        src="{{ videourl }}"
+        poster="{{ poster }}"
+    >
+</p>

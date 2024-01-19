@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,20 +12,24 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Tag areas in component mod_wiki
  *
  * @package     tool_mediatime
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_mediatime';
-$plugin->release = '1.0';
-$plugin->version = 2024010800;
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_ALPHA;
+
+$tagareas = [
+    [
+        'itemtype' => 'media_resources',
+        'component' => 'tool_mediatime',
+        'callback' => 'tool_mediatime_get_tagged_resources',
+        'callbackfile' => '/admin/tool/mediatime/lib.php',
+    ],
+];

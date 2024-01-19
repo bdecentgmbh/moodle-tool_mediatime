@@ -24,6 +24,8 @@
 
 namespace mediatimesrc_streamio;
 
+use context_system;
+use core_tag_tag;
 use moodle_exception;
 use moodle_url;
 use moodleform;
@@ -64,8 +66,13 @@ class manager implements renderable, templatable {
         $this->record = $record;
 
         $upload = optional_param('upload', null, PARAM_INT);
-        if (!empty($upload)) {
+        if (!empty($upload) && !optional_param('cancel', false, PARAM_BOOL)) {
             $video = $this->api->request("/videos", ['tags' => (string)$upload])[0];
+            $this->api->request("/videos/$video->id", [
+                'tags' => implode(array_diff($video->tags, ["$upload", "mediatimeupload"])),
+            ], 'PUT');
+            $video = $this->api->request("/videos/$video->id");
+            $video->name = optional_param('name', '', PARAM_ALPHANUM);
             $id = $DB->insert_record('tool_mediatime', [
                 'content' => json_encode($video),
                 'source' => 'streamio',
@@ -73,7 +80,16 @@ class manager implements renderable, templatable {
                 'timecreated' => time(),
                 'timemodified' => time(),
             ]);
-            $this->api->request("/videos/$video->id", ['tags' => ''], 'PUT');
+            if ($tags = optional_param('tags', '', PARAM_TEXT)) {
+                $context = context_system::instance();
+                core_tag_tag::set_item_tags(
+                    'tool_mediatime',
+                    'media_resources',
+                    $id,
+                    $context,
+                    json_decode($tags)
+                );
+            }
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $id]);
             redirect($redirect);
         }
@@ -84,11 +100,16 @@ class manager implements renderable, templatable {
         }
 
         if ($edit = optional_param('edit', null, PARAM_INT)) {
+            $this->content->tags = core_tag_tag::get_item_tags_array('tool_mediatime', 'media_resources', $edit);
+
             $this->form->set_data([
                 'edit' => $edit,
             ] + (array)$this->content);
         }
-        if (($data = $this->form->get_data()) && empty($data->newfile)) {
+        if ($this->form->is_cancelled()) {
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php');
+            redirect($redirect);
+        } else if (($data = $this->form->get_data()) && empty($data->newfile)) {
             $data->timemodified = time();
             $data->usermodified = $USER->id;
 
@@ -104,9 +125,21 @@ class manager implements renderable, templatable {
                     'title' => true,
                 ]), 'PUT');
                 $video = $this->api->request("/videos/" . $this->content->id);
+                $video->name = $data->name;
                 $data->content = json_encode($video);
                 $DB->update_record('tool_mediatime', $data);
             }
+
+            $this->save_file($data->edit, $video);
+
+            $context = context_system::instance();
+            core_tag_tag::set_item_tags(
+                'tool_mediatime',
+                'media_resources',
+                $data->edit,
+                $context,
+                $data->tags
+            );
 
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $data->edit]);
             redirect($redirect);
@@ -131,8 +164,12 @@ class manager implements renderable, templatable {
             $data->upload = file_get_unused_draft_itemid();
 
             $data->token = $this->api->create_token([
-                'tags' => "$data->upload",
-            ])->token;
+                'tags' => "mediatimeupload,$data->upload",
+            ] + array_intersect_key((array)$data, [
+                'description' => true,
+                'title' => true,
+            ]))->token;
+            $data->tags = json_encode($data->tags);
 
             return [
                 'form' => $output->render_from_template('mediatimesrc_streamio/file_upload', $data),
@@ -141,5 +178,36 @@ class manager implements renderable, templatable {
         return [
             'form' => $this->form->render(),
         ];
+    }
+
+    protected function save_file($id, $video) {
+        // First delete stored files for content.
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(
+            SYSCONTEXTID,
+            'tool_mediatime',
+            'm3u8',
+            $id,
+            'id DESC', false
+        );
+        foreach ($files as $file) {
+            $file->delete();
+        }
+        if ($video->transcodings) {
+
+            $fileinfo = [
+                'contextid' => SYSCONTEXTID,
+                'component' => 'tool_mediatime',
+                'itemid' => $id,
+                'filearea' => 'm3u8',
+                'filename' => 'video.m3u8',
+                'filepath' => '/',
+            ];
+
+            $fs->create_file_from_string(
+                $fileinfo,
+                file_get_contents("https://streamio.com/api/v1/videos/$video->id/public_show.m3u8")
+            );
+        }
     }
 }

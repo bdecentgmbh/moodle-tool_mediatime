@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Media Time media edit form
+ * Media Time media source selector
  *
  * @package    tool_mediatime
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
@@ -25,14 +25,15 @@
 namespace tool_mediatime\form;
 
 use moodleform;
+use tool_mediatime\plugininfo\mediatimesrc;
 
 /**
- * Media Time media edit form
+ * Media Time media source selector
  *
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class edit_resource extends moodleform {
+class select_source extends moodleform {
 
     /**
      * Definition
@@ -40,27 +41,11 @@ class edit_resource extends moodleform {
     public function definition() {
         $mform = $this->_form;
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
-
-        $mform->addElement('hidden', 'source');
-        $mform->setType('source', PARAM_TEXT);
-
-        $mform->addElement('text', 'name', get_string('name'));
-        $mform->setType('name', PARAM_TEXT);
-    }
-
-    protected function tag_elements() {
-        $mform = $this->_form;
-
-        $mform->addElement(
-            'tags',
-            'tags',
-            get_string('tags'),
-            [
-                'itemtype' => 'media_resources',
-                'component' => 'tool_mediatime',
-            ]
-        );
+        $options = [];
+        foreach (mediatimesrc::get_enabled_plugins() as $plugin) {
+            $options[$plugin] = get_string("pluginname", "mediatimesrc_$plugin");
+        }
+        $mform->addElement('select', 'source', get_string('source', 'tool_mediatime'), $options);
+        $this->add_action_buttons(false);
     }
 }

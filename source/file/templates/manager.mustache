@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template tool_mediatime/media_manager
+    @template tool_mediatime/manager
 
     This template will render the Media manager for media time
 
@@ -28,27 +28,7 @@
     }
 
 }}
-{{{action}}}
-<div class="cards container-fluid">
-    <div class="row">
-        {{# media }}
-            <div class="col-sm-6 col-md-4 col-lg-3 m-0 p-2">
-                <div class="card">
-                    <a href="{{ url }}">
-                        <img class="card-img-top" src="{{ imageurl }}">
-                    </a>
-                    <div class="card-header">
-                        {{ content.name }}
-                    </div>
-                    <div class="card-body">
-                        <div class="card-title"><a href="{{ url }}"> {{ content.title }} </a></div>
-                        <p class="card-text" style="max-height: 100px; overflow: hidden"> {{ content.description }} </p>
-                        {{{ tags }}}
-                    </div>
-                </div>
-            </div>
-        {{/ media }}
-    </div>
+<div>
+{{{ form }}}
 {{{ resource }}}
-{{{ tags }}}
 </div>
