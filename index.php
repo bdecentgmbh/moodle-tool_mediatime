@@ -27,7 +27,7 @@ require_once($CFG->libdir . '/adminlib.php');
 
 use tool_mediatime\media_manager;
 
-require_admin();
+require_login();
 
 $source = optional_param('source', '', PARAM_ALPHANUMEXT);
 $id = optional_param('id', null, PARAM_INT);
@@ -35,6 +35,7 @@ $edit = optional_param('edit', null, PARAM_INT);
 
 admin_externalpage_setup('mediatimelibrary');
 
+$PAGE->set_heading(get_string('pluginname', 'tool_mediatime'));
 if ($id) {
     $record = $DB->get_record('tool_mediatime', ['id' => $id]);
 } else if ($edit) {

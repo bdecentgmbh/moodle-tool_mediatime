@@ -76,7 +76,7 @@ class manager implements renderable, templatable {
             $id = $DB->insert_record('tool_mediatime', [
                 'content' => json_encode($video),
                 'source' => 'streamio',
-                'usercreated' => $USER->id,
+                'usermodified' => $USER->id,
                 'timecreated' => time(),
                 'timemodified' => time(),
             ]);
@@ -171,6 +171,7 @@ class manager implements renderable, templatable {
             ]))->token;
             $data->tags = json_encode($data->tags);
 
+            require_capability('mediatimesrc/streamio:upload', context_system::instance());
             return [
                 'form' => $output->render_from_template('mediatimesrc_streamio/file_upload', $data),
             ];
@@ -180,6 +181,12 @@ class manager implements renderable, templatable {
         ];
     }
 
+    /**
+     * Cache m3u8 file as moodle file
+     *
+     * @param int $id
+     * @param stdClass $video
+     */
     protected function save_file($id, $video) {
         // First delete stored files for content.
         $fs = get_file_storage();

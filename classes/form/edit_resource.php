@@ -24,6 +24,7 @@
 
 namespace tool_mediatime\form;
 
+use context_system;
 use moodleform;
 
 /**
@@ -39,6 +40,7 @@ class edit_resource extends moodleform {
      */
     public function definition() {
         $mform = $this->_form;
+        require_capability('tool/mediatime:manage', context_system::instance());
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
@@ -50,6 +52,9 @@ class edit_resource extends moodleform {
         $mform->setType('name', PARAM_TEXT);
     }
 
+    /**
+     * Add tag elements
+     */
     protected function tag_elements() {
         $mform = $this->_form;
 

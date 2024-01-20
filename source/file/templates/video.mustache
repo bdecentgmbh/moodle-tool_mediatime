@@ -25,13 +25,17 @@
 
     Example context (json):
     {
+        videourl: "https://example.com/video.mp4",
+        poster: ""https://example.com/image.jpg",
     }
 
 }}
 <p>
     <video 
         controls
+        class="vjs-fluid"
         src="{{ videourl }}"
         poster="{{ poster }}"
     >
+    </video>
 </p>

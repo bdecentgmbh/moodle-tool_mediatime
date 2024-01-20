@@ -64,6 +64,16 @@ function tool_mediatime_pluginfile($course, $cm, $context, $filearea, $args, $fo
 }
 
 /**
+ * Return tagged resources
+ *
+ * @return array List of file areas
+ */
+function tool_mediatime_get_tagged_resources() {
+    return [
+    ];
+}
+
+/**
  * Return file areas for backup
  *
  * @return array List of file areas

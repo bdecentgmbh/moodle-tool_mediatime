@@ -27,19 +27,19 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
 
-    'mediatimesrc/streamio:create' => [
+    'mediatimesrc/streamio:upload' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,
         ],
-        'clonepermissionsfrom' => 'moodle/blog:create',
+        'clonepermissionsfrom' => 'moodle/blog:manageentries',
     ],
 
-    'mediatimesrc/streamio:upload' => [
+    'mediatimesrc/streamio:viewall' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
-        'captype' => 'write',
+        'captype' => 'view',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,

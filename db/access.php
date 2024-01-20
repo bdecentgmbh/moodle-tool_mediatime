@@ -37,9 +37,18 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/blog:create',
     ],
 
-    'tool/mediatime:upload' => [
-        'riskbitmask' => RISK_SPAM | RISK_XSS,
+    'tool/mediatime:manage' => [
+        'riskbitmask' => RISK_SPAM | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'coursecreator' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/blog:manageentries',
+    ],
+
+    'tool/mediatime:view' => [
+        'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,

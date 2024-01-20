@@ -24,6 +24,7 @@
 
 namespace mediatimesrc_streamio\form;
 
+use context_system;
 use moodleform;
 use mediatimesrc_streamio\api;
 use mediatimesrc_streamio\output\media_resource;
@@ -57,6 +58,14 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->addElement('hidden', 'edit');
         $mform->setType('edit', PARAM_INT);
 
+        $filesource = [
+            $mform->createElement('radio', 'newfile', '', get_string('uploadnewfile', 'mediatimesrc_streamio'), 1, []),
+            $mform->createElement('radio', 'newfile', '', get_string('selectexistingfile', 'mediatimesrc_streamio'), 0, []),
+        ];
+        $mform->addGroup($filesource, 'filesource', get_string('videofile', 'mediatimesrc_streamio'), [' '], false);
+        $mform->setType('newfile', PARAM_INT);
+        $mform->addHelpButton('filesource', 'videofile', 'mediatimesrc_streamio');
+
         $mform->addElement('textarea', 'description', get_string('description'));
         $mform->setType('description', PARAM_TEXT);
 
@@ -75,32 +84,40 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $id = $mform->getElementValue('edit');
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
+        $context = context_system::instance();
         if ($record) {
             $resource = new media_resource($record);
             $mform->insertElementBefore(
                 $mform->createElement('html', format_text(
                     $OUTPUT->render_from_template('mediatimesrc_streamio/video', json_decode($record->content)),
                     FORMAT_HTML,
-                    ['context' => \context_system::instance()]
+                    ['context' => $context]
                 )),
                 'name'
             );
+            $mform->removeElement('filesource');
         } else {
-            $options = [];
-            $api = new api();
-            $videos = $api->request('/videos');
-            foreach ($videos as $video) {
-                $options[$video->id] = $video->title;
-            }
+            if (has_capability('mediatimesrc/streamio:viewall', $context)) {
+                $options = [];
+                $api = new api();
+                $videos = $api->request('/videos');
+                foreach ($videos as $video) {
+                    $options[$video->id] = $video->title;
+                }
 
-            $mform->insertElementBefore(
-                $mform->createElement('autocomplete', 'file', get_string('file'), $options),
-                'name'
-            );
-            $mform->insertElementBefore(
-                $mform->createElement('advcheckbox', 'newfile', get_string('file')),
-                'name'
-            );
+                $mform->insertElementBefore(
+                    $mform->createElement('select', 'file', '', $options),
+                    'description'
+                );
+                $mform->disabledIf('file', 'newfile', 'eq', 1);
+                $mform->setDefault('newfile', 1);
+            } else if (has_capability('mediatimesrc/streamio:upload', context_system::instance())) {
+                $mform->removeElement('filesource');
+                $mform->insertElementBefore(
+                    $mform->createElement('hidden', 'newfile', 1),
+                    'description'
+                );
+            }
         }
     }
 }

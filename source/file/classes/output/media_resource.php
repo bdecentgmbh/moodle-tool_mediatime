@@ -77,6 +77,12 @@ class media_resource implements renderable, templatable {
         ];
     }
 
+    /**
+     * Return url for video content
+     *
+     * @param \renderer_base $output
+     * @return string url
+     */
     public function image_url($output) {
 
         $fs = get_file_storage();
@@ -97,6 +103,12 @@ class media_resource implements renderable, templatable {
         return $this->poster;
     }
 
+    /**
+     * Return url for poster image
+     *
+     * @param \renderer_base $output
+     * @return string url
+     */
     public function video_url($output) {
         $this->videourl = '';
 
@@ -117,6 +129,12 @@ class media_resource implements renderable, templatable {
         return $this->videourl;
     }
 
+    /**
+     * Return video file content
+     *
+     * @param \renderer_base $output
+     * @return string url
+     */
     public function video_file_content($output) {
         $this->videourl = '';
 

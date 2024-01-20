@@ -66,7 +66,7 @@ class media_resource implements renderable, templatable {
         $context = \context_system::instance();
 
         return [
-            'canedit' => has_capability('moodle/tag:edit', $context) || $USER->id == $this->record->usermodified,
+            'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
             'resource' => $output->render($this->resource),
@@ -74,6 +74,12 @@ class media_resource implements renderable, templatable {
         ];
     }
 
+    /**
+     * Return rendered tag elements for template
+     *
+     * @param \renderer_base $output
+     * @return string
+     */
     public function tags($output) {
         return $output->tag_list(
             core_tag_tag::get_item_tags(
@@ -86,14 +92,32 @@ class media_resource implements renderable, templatable {
         );
     }
 
+    /**
+     * Return url for video content
+     *
+     * @param \renderer_base $output
+     * @return string url
+     */
     public function video_url($output) {
         return $this->resource->video_url($output);
     }
 
+    /**
+     * Return url for poster image
+     *
+     * @param \renderer_base $output
+     * @return string url
+     */
     public function image_url($output) {
         return $this->resource->image_url($output);
     }
 
+    /**
+     * Return video file content
+     *
+     * @param \renderer_base $output
+     * @return string url
+     */
     public function video_file_content($output) {
         return $this->resource->video_file_content($output);
     }

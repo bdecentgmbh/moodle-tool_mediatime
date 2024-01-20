@@ -49,9 +49,12 @@ if ($hassiteconfig) {
     foreach ($pluginmanager->get_plugins_of_type('mediatimesrc') as $plugin) {
         $plugin->load_settings($ADMIN, 'mediatimesrcplugins', $hassiteconfig);
     }
-
-    $ADMIN->add('toolmediatime', new admin_externalpage('mediatimelibrary', get_string('library', 'tool_mediatime'),
-            $CFG->wwwroot . "/admin/tool/mediatime/index.php", 'report/log:view'));
-
     $settings = null;
 }
+
+$ADMIN->add('reports', new admin_externalpage(
+    'mediatimelibrary',
+    get_string('pluginname', 'tool_mediatime'),
+    $CFG->wwwroot . "/admin/tool/mediatime/index.php",
+    'tool/mediatime:view'
+));

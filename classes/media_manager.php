@@ -24,6 +24,7 @@
 
 namespace tool_mediatime;
 
+use context_system;
 use moodle_exception;
 use moodle_url;
 use renderable;
@@ -53,7 +54,7 @@ class media_manager implements renderable, templatable {
      * Constructor
      *
      * @param string $source Source plugin type to add
-     * @param ?stdClass $record Media Time resource record
+     * @param stdClass|null $record Media Time resource record
      * @param int $page Paging offset
      */
     public function __construct(string $source, ?stdClass $record = null, int $page = 0) {
@@ -61,6 +62,8 @@ class media_manager implements renderable, templatable {
         $this->page = $page;
 
         $this->record = $record;
+
+        require_capability('tool/mediatime:view', context_system::instance());
         if ($record) {
             $source = $record->source;
         }
@@ -100,7 +103,7 @@ class media_manager implements renderable, templatable {
                 'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php'))->out(),
                 'resource' => $output->render($this->source),
             ];
-            if (!empty($this->record)) {
+            if (!empty($this->record) && empty(optional_param('edit', null, PARAM_INT))) {
                 $resource = new output\media_resource($this->record);
                 $context['tags'] = $resource->tags($output);
             }
@@ -121,19 +124,14 @@ class media_manager implements renderable, templatable {
         }
 
         $plugins = \core_plugin_manager::instance()->get_installed_plugins('mediatimesrc');
-        $sources = [];
-        foreach (array_keys($plugins) as $plugin) {
-            $sources[] = [
-                'name' => $plugin,
-                'title' => get_string('pluginname', "mediatimesrc_$plugin"),
-            ];
-        }
 
         $options = [];
         foreach (plugininfo\mediatimesrc::get_enabled_plugins() as $plugin) {
             $options[$plugin] = get_string("pluginname", "mediatimesrc_$plugin");
         }
-        if (count($options) == 1) {
+        if (!has_capability('tool/mediatime:manage', context_system::instance())) {
+            $action = '';
+        } else if (count($options) == 1) {
             $button = new single_button(new moodle_url('/admin/tool/mediatime/index.php', [
                 'source' => array_keys($options)[0],
             ]), get_string('addnewcontent', 'tool_mediatime'));
@@ -146,7 +144,6 @@ class media_manager implements renderable, templatable {
         }
         return [
             'media' => array_values($media),
-            'sources' => $sources,
             'action' => $action,
         ];
     }
