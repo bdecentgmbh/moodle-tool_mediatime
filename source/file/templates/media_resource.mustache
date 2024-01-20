@@ -25,13 +25,20 @@
 
     Example context (json):
     {
+       "canedit": true,
+       "id": 2,
+       "resource": {
+           "title": "title",
+           "name": "name",
+           "description": "big and blue"
+       }
     }
 
 }}
 <div class="library-resource">
 <form action="." method="post">
    {{# canedit }}
-       <input type="hidden" name="source" value="streamio"/>
+       <input type="hidden" name="source" value="streamio">
        <button type="submit" name="edit" value="{{ id }}">{{# str }} edit {{/ str }}</button>
    {{/ canedit }}
    {{# libraryhome }}

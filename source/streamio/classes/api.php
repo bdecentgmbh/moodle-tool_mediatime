@@ -90,7 +90,7 @@ class api {
     /**
      * Create upload token for Streamio
      *
-     * @param ?array $params Fields to set for video
+     * @param null|array $params Fields to set for video
      * @return string
      */
     public function create_token(?array $params = []) {
