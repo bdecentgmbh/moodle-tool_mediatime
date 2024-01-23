@@ -106,10 +106,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 }
 
                 $mform->insertElementBefore(
-                    $mform->createElement('select', 'file', '', $options),
+                    $mform->createElement('autocomplete', 'file', '', $options),
                     'description'
                 );
-                $mform->disabledIf('file', 'newfile', 'eq', 1);
+                $mform->hideIf('file', 'newfile', 'eq', 1);
                 $mform->setDefault('newfile', 1);
             } else if (has_capability('mediatimesrc/streamio:upload', context_system::instance())) {
                 $mform->removeElement('filesource');
