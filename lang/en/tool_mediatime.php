@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Media Time';
 $string['addnewcontent'] = 'Add new content';
 $string['library'] = 'Library';
+$string['keyword'] = 'Keyword';
 $string['mediatime:create'] = 'Create media in library';
 $string['mediatime:manage'] = 'Manage media in library';
 $string['mediatime:view'] = 'View media in library';

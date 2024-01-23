@@ -28,11 +28,20 @@
     }
 
 }}
-{{{action}}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-12 col-lg-3">
+            {{{ action }}}
+        </div>
+        <div class="col col-12{{# action }} col-lg-9{{/ action }}">
+            {{{ search }}}
+        </div>
+    </div>
+</div>
 <div class="cards container-fluid">
     <div class="row">
         {{# media }}
-            <div class="col-sm-6 col-md-4 col-lg-3 m-0 p-2">
+            <div class="col col-12 col-md-6 col-lg-4 col-xl-3 m-0 p-2">
                 <div class="card">
                     <div class="card-header">
                         {{# content.name }}

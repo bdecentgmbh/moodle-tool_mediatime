@@ -33,6 +33,7 @@ use single_button;
 use single_select;
 use templatable;
 use stdClass;
+use recordset;
 
 /**
  * Manage Media Time source files
@@ -47,6 +48,9 @@ class media_manager implements renderable, templatable {
     /** @var int $page Paging offset */
     protected int $page = 0;
 
+    /** @var $page Search form */
+    protected $search = null;
+
     /** @var ?stdClass $record Media Time resource record */
     protected $record;
 
@@ -58,7 +62,6 @@ class media_manager implements renderable, templatable {
      * @param int $page Paging offset
      */
     public function __construct(string $source, ?stdClass $record = null, int $page = 0) {
-        global $DB;
         $this->page = $page;
 
         $this->record = $record;
@@ -80,12 +83,19 @@ class media_manager implements renderable, templatable {
                 $this->source = new $classname($this->record);
             }
         } else {
-            foreach ($DB->get_records('tool_mediatime', [], 'timecreated DESC') as $media) {
+            $this->search = new form\search(null, null, 'get', '', [
+                'class' => 'form-inline',
+            ]);
+
+            $rs = self::search((array)$this->search->get_data());
+            foreach ($rs as $media) {
                 if (in_array($media->source, $plugins)) {
                     $media->content = json_decode($media->content);
                     $this->media[] = $media;
                 }
             }
+
+            $rs->close();
         }
     }
 
@@ -96,8 +106,6 @@ class media_manager implements renderable, templatable {
      * @return array
      */
     public function export_for_template(renderer_base $output): array {
-        global $DB;
-
         if (!empty($this->source)) {
             $context = [
                 'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php'))->out(),
@@ -143,8 +151,44 @@ class media_manager implements renderable, templatable {
             $action = '';
         }
         return [
-            'media' => array_values($media),
             'action' => $action,
+            'media' => array_values($media),
+            'search' => $this->search->render(),
         ];
+    }
+
+    /**
+     * Return search query
+     *
+     * @param array $filters Parameters for search
+     * @return recordset
+     */
+    public static function search($filters = []) {
+        global $DB;
+
+        $params = [];
+
+        if (!$sources = plugininfo\mediatimesrc::get_enabled_plugins()) {
+            return $result;
+        }
+        list($sql, $params) = $DB->get_in_or_equal($sources, SQL_PARAMS_NAMED);
+
+        $sql = "source $sql";
+        $order = 'timecreated DESC';
+
+        if ($query = $filters['query'] ?? '') {
+            $sql .= ' AND ' . $DB->sql_like('content', ':query', false);
+            $params['query'] = "%$query%";
+
+            $params['name'] = "%$query%";
+            $order = 'CASE WHEN ' . $DB->sql_like('name', ':name', false) . ' THEN 1 ELSE 0 END DESC, timecreated DESC';
+        }
+
+        return $DB->get_recordset_select(
+            'tool_mediatime',
+            $sql,
+            $params,
+            $order
+        );
     }
 }
