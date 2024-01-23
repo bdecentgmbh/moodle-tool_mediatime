@@ -32,3 +32,4 @@ $string['maxbytes'] = 'Maximum size of file uploads';
 $string['videofile'] = 'Video file';
 $string['videofile_help'] = 'Video file to be displayed';
 $string['configmaxbytes'] = 'Default maximum file size for all files uploaded';
+$string['privacy:metadata'] = 'The Video Time resource does not store or transmit any personal data.';

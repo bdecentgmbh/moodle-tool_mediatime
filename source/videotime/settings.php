@@ -29,7 +29,12 @@ if ($hassiteconfig) {
     if (isset($CFG->maxbytes)) {
         $maxbytes = get_config('mediatimesrc_videotime', 'maxbytes');
         $options = get_max_upload_sizes($CFG->maxbytes, 0, 0, $maxbytes);
-        $settings->add(new admin_setting_configselect('mediatimesrc_videotime/maxbytes', get_string('maxbytes', 'mediatimesrc_videotime'),
-                            get_string('configmaxbytes', 'mediatimesrc_videotime'), 0, $options));
+        $settings->add(new admin_setting_configselect(
+            'mediatimesrc_videotime/maxbytes',
+            get_string('maxbytes', 'mediatimesrc_videotime'),
+            get_string('configmaxbytes', 'mediatimesrc_videotime'),
+            0,
+            $options
+        ));
     }
 }
