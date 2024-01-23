@@ -98,7 +98,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $mform->removeElement('filesource');
         } else {
             if (has_capability('mediatimesrc/streamio:viewall', $context)) {
-                $options = [];
+                $options = [null => ''];
                 $api = new api();
                 $videos = $api->request('/videos');
                 foreach ($videos as $video) {
@@ -106,11 +106,13 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 }
 
                 $mform->insertElementBefore(
-                    $mform->createElement('autocomplete', 'file', '', $options),
+                    $mform->createElement('autocomplete', 'file', '', $options, [
+                    ]),
                     'description'
                 );
                 $mform->hideIf('file', 'newfile', 'eq', 1);
                 $mform->setDefault('newfile', 1);
+                $mform->setDefault('file', []);
             } else if (has_capability('mediatimesrc/streamio:upload', context_system::instance())) {
                 $mform->removeElement('filesource');
                 $mform->insertElementBefore(
