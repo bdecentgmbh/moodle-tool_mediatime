@@ -15,17 +15,21 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Plugin administration pages are defined here.
  *
- * @package     mediatimesrc_file
+ * @package     mediatimesrc_videotime
+ * @category    admin
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mediatimesrc_file';
-$plugin->release = '1.0';
-$plugin->version = 2024010800;
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_ALPHA;
+if ($hassiteconfig) {
+    if (isset($CFG->maxbytes)) {
+        $maxbytes = get_config('mediatimesrc_videotime', 'maxbytes');
+        $options = get_max_upload_sizes($CFG->maxbytes, 0, 0, $maxbytes);
+        $settings->add(new admin_setting_configselect('mediatimesrc_videotime/maxbytes', get_string('maxbytes', 'mediatimesrc_videotime'),
+                            get_string('configmaxbytes', 'mediatimesrc_videotime'), 0, $options));
+    }
+}

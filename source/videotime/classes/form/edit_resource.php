@@ -17,15 +17,15 @@
 /**
  * Media Time media edit form
  *
- * @package    mediatimesrc_file
+ * @package    mediatimesrc_videotime
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_file\form;
+namespace mediatimesrc_videotime\form;
 
 use moodleform;
-use mediatimesrc_file\output\media_resource;
+use mediatimesrc_videotime\output\media_resource;
 
 /**
  * Media Time media edit form
@@ -43,7 +43,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
-        $mform->setDefault('source', 'file');
+        $mform->setDefault('source', 'videotime');
 
         $mform->addElement('text', 'name', get_string('resourcename', 'tool_mediatime'));
         $mform->setType('name', PARAM_TEXT);
@@ -63,7 +63,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->addElement(
             'filemanager',
             'videofile',
-            get_string('videofile', 'mediatimesrc_file'),
+            get_string('videofile', 'mediatimesrc_videotime'),
             null,
             [
                 'subdirs' => 0,
@@ -74,12 +74,12 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 'return_types' => FILE_INTERNAL,
             ]
         );
-        $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_file');
+        $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_videotime');
 
         $mform->addElement(
             'filemanager',
             'posterimage',
-            get_string('posterimage', 'mediatimesrc_file'),
+            get_string('posterimage', 'mediatimesrc_videotime'),
             null,
             [
                 'subdirs' => 0,
@@ -90,7 +90,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 'return_types' => FILE_INTERNAL,
             ]
         );
-        $mform->addHelpButton('posterimage', 'posterimage', 'mediatimesrc_file');
+        $mform->addHelpButton('posterimage', 'posterimage', 'mediatimesrc_videotime');
         $this->tag_elements();
 
         $this->add_action_buttons();
@@ -114,7 +114,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             ];
             $mform->insertElementBefore(
                 $mform->createElement('html', format_text(
-                    $OUTPUT->render_from_template('mediatimesrc_file/video', $content),
+                    $OUTPUT->render_from_template('mediatimesrc_videotime/video', $content),
                     FORMAT_HTML,
                     ['context' => \context_system::instance()]
                 )),

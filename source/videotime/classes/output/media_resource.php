@@ -17,12 +17,12 @@
 /**
  * Display a resource in the media library
  *
- * @package    mediatimesrc_file
+ * @package    mediatimesrc_videotime
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_file\output;
+namespace mediatimesrc_videotime\output;
 
 use moodle_url;
 use stdClass;
@@ -70,7 +70,7 @@ class media_resource implements renderable, templatable {
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
             'resource' => json_decode($this->record->content),
             'video' => format_text(
-                $output->render_from_template('mediatimesrc_file/video', $content),
+                $output->render_from_template('mediatimesrc_videotime/video', $content),
                 FORMAT_HTML,
                 ['context' => $this->context]
             ),
@@ -87,11 +87,11 @@ class media_resource implements renderable, templatable {
 
         $fs = get_file_storage();
         $this->poster = $output->image_url('f/video', 'core');
-        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_file', 'posterimage', $this->record->id) as $file) {
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'posterimage', $this->record->id) as $file) {
             if (!$file->is_directory()) {
                 $this->poster = moodle_url::make_pluginfile_url(
                     $this->context->id,
-                    'mediatimesrc_file',
+                    'mediatimesrc_videotime',
                     'posterimage',
                     $this->record->id,
                     $file->get_filepath(),
@@ -113,11 +113,11 @@ class media_resource implements renderable, templatable {
         $this->videourl = '';
 
         $fs = get_file_storage();
-        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_file', 'videofile', $this->record->id) as $file) {
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'videofile', $this->record->id) as $file) {
             if (!$file->is_directory()) {
                 $this->videourl = moodle_url::make_pluginfile_url(
                     $this->context->id,
-                    'mediatimesrc_file',
+                    'mediatimesrc_videotime',
                     'videofile',
                     $this->record->id,
                     $file->get_filepath(),
@@ -139,7 +139,7 @@ class media_resource implements renderable, templatable {
         $this->videourl = '';
 
         $fs = get_file_storage();
-        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_file', 'videofile', $this->record->id) as $file) {
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'videofile', $this->record->id) as $file) {
             if (!$file->is_directory()) {
                 return $file->get_content();
             }

@@ -15,29 +15,17 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin upgrade steps are defined here.
+ * Plugin version and other meta-data are defined here.
  *
- * @package     mediatimesrc_file
- * @category    upgrade
+ * @package     mediatimesrc_videotime
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
- * Execute mediatimesrc_file upgrade from the given old version.
- *
- * @param int $oldversion
- * @return bool
- */
-function xmldb_mediatimesrc_file_upgrade($oldversion) {
-    global $DB;
+defined('MOODLE_INTERNAL') || die();
 
-    $dbman = $DB->get_manager();
-
-    // For further information please read {@link https://docs.moodle.org/dev/Upgrade_API}.
-    //
-    // You will also have to create the db/install.xml file by using the XMLDB Editor.
-    // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
-
-    return true;
-}
+$plugin->component = 'mediatimesrc_videotime';
+$plugin->release = '1.0';
+$plugin->version = 2024010800;
+$plugin->requires = 2022112800;
+$plugin->maturity = MATURITY_ALPHA;

@@ -17,12 +17,12 @@
 /**
  * Manage Streamio source files
  *
- * @package    mediatimesrc_file
+ * @package    mediatimesrc_videotime
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_file;
+namespace mediatimesrc_videotime;
 
 use core_tag_tag;
 use moodle_exception;
@@ -65,7 +65,7 @@ class manager implements renderable, templatable {
             $this->content = json_decode($record->content);
         }
 
-        $maxbytes = get_config('mediatimesrc_file', 'maxbytes');
+        $maxbytes = get_config('mediatimesrc_videotime', 'maxbytes');
         if ($edit = optional_param('edit', null, PARAM_INT)) {
             $draftitemid = file_get_submitted_draft_itemid('videofile');
             file_prepare_draft_area(
@@ -76,7 +76,7 @@ class manager implements renderable, templatable {
                 // form the virtual bucket that files are currently stored in
                 // and will be copied from.
                 $context->id,
-                'mediatimesrc_file',
+                'mediatimesrc_videotime',
                 'videofile',
                 $edit,
                 [
@@ -95,7 +95,7 @@ class manager implements renderable, templatable {
                 // form the virtual bucket that files are currently stored in
                 // and will be copied from.
                 $context->id,
-                'mediatimesrc_file',
+                'mediatimesrc_videotime',
                 'posterimage',
                 $edit,
                 [
@@ -131,7 +131,7 @@ class manager implements renderable, templatable {
             file_save_draft_area_files(
                 $data->videofile,
                 $context->id,
-                'mediatimesrc_file',
+                'mediatimesrc_videotime',
                 'videofile',
                 $data->edit,
                 [
@@ -144,7 +144,7 @@ class manager implements renderable, templatable {
             file_save_draft_area_files(
                 $data->posterimage,
                 $context->id,
-                'mediatimesrc_file',
+                'mediatimesrc_videotime',
                 'posterimage',
                 $data->edit,
                 [

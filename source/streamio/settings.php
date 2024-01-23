@@ -26,11 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $settings = new admin_settingpage('mediatimesrc_streamio_settings', new lang_string('pluginname', 'mediatimesrc_streamio'));
-
-    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
     if ($ADMIN->fulltree) {
-        // TODO: Define actual plugin settings page and add it to the tree - {@link https://docs.moodle.org/dev/Admin_settings}.
         $settings->add(new admin_setting_configtext(
             'mediatimesrc_streamio/username',
             new lang_string('username', 'mediatimesrc_streamio'),

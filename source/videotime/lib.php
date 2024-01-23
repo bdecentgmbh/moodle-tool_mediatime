@@ -17,7 +17,7 @@
 /**
  * Library of interface functions and constants.
  *
- * @package     mediatimesrc_file
+ * @package     mediatimesrc_videotime
  * @copyright   2022 bdecent gmbh <https://bdecent.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,7 +38,7 @@ require_once("$CFG->libdir/resourcelib.php");
  * @param array $options additional options affecting the file serving
  * @return bool false if the file was not found, just send the file otherwise and do not return anything
  */
-function mediatimesrc_file_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=[]) {
+function mediatimesrc_videotime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=[]) {
     if ($context->contextlevel != CONTEXT_SYSTEM) {
         return false;
     }
@@ -53,7 +53,7 @@ function mediatimesrc_file_pluginfile($course, $cm, $context, $filearea, $args, 
 
         $relativepath = implode('/', $args);
 
-        $fullpath = "/$context->id/mediatimesrc_file/$filearea/$itemid/$relativepath";
+        $fullpath = "/$context->id/mediatimesrc_videotime/$filearea/$itemid/$relativepath";
 
         $fs = get_file_storage();
         if ((!$file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory()) {
@@ -69,7 +69,7 @@ function mediatimesrc_file_pluginfile($course, $cm, $context, $filearea, $args, 
  *
  * @return array List of file areas
  */
-function mediatimesrc_file_config_file_areas() {
+function mediatimesrc_videotime_config_file_areas() {
     return [
         'posterimage',
         'videotile',

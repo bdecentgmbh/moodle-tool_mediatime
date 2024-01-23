@@ -15,24 +15,29 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin administration pages are defined here.
+ * Plugin upgrade steps are defined here.
  *
- * @package     mediatimesrc_file
- * @category    admin
+ * @package     mediatimesrc_videotime
+ * @category    upgrade
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Execute mediatimesrc_videotime upgrade from the given old version.
+ *
+ * @param int $oldversion
+ * @return bool
+ */
+function xmldb_mediatimesrc_videotime_upgrade($oldversion) {
+    global $DB;
 
-if ($hassiteconfig) {
-    $settings = new admin_settingpage('mediatimesrc_file_settings', new lang_string('pluginname', 'mediatimesrc_file'));
+    $dbman = $DB->get_manager();
 
+    // For further information please read {@link https://docs.moodle.org/dev/Upgrade_API}.
+    //
+    // You will also have to create the db/install.xml file by using the XMLDB Editor.
+    // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
 
-    if (isset($CFG->maxbytes)) {
-        $maxbytes = get_config('mediatimesrc_file', 'maxbytes');
-        $options = get_max_upload_sizes($CFG->maxbytes, 0, 0, $maxbytes);
-        $settings->add(new admin_setting_configselect('mediatimesrc_file/maxbytes', get_string('maxbytes', 'mediatimesrc_file'),
-                            get_string('configmaxbytes', 'mediatimesrc_file'), 0, $options));
-    }
+    return true;
 }

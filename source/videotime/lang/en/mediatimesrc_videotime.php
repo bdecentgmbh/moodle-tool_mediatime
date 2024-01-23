@@ -15,18 +15,20 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Code to be executed after the plugin's database scheme has been installed is defined here.
+ * Plugin strings are defined here.
  *
- * @package     mediatimesrc_file
- * @category    upgrade
+ * @package     mediatimesrc_videotime
+ * @category    string
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
- * Custom code to be run on installing the plugin.
- */
-function xmldb_mediatimesrc_file_install() {
+defined('MOODLE_INTERNAL') || die();
 
-    return true;
-}
+$string['pluginname'] = 'Video Time resource';
+$string['posterimage'] = 'Poster image';
+$string['posterimage_help'] = 'Select an image to displayed before the video is played or as a thumbnail image.';
+$string['maxbytes'] = 'Maximum size of file uploads';
+$string['videofile'] = 'Video file';
+$string['videofile_help'] = 'Video file to be displayed';
+$string['configmaxbytes'] = 'Default maximum file size for all files uploaded';
