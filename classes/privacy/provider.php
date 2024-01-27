@@ -77,9 +77,10 @@ class provider implements
      * @return contextlist $contextlist The contextlist containing the list of contexts used in this plugin.
      */
     public static function get_contexts_for_userid(int $userid) : contextlist {
-        $sql = "SELECT :contextid
-                  FROM {tool_mediatime}
-                 WHERE usermodified = :usermodified";
+        $sql = "SELECT c.id
+                  FROM {tool_mediatime} m
+                  JOIN {context} c ON c.contextlevel = :contextlevel
+                 WHERE m.usermodified = :usermodified";
 
         $params = [
             'contextid' => SYSCONTEXTID,
