@@ -79,9 +79,8 @@ class provider implements
     public static function get_contexts_for_userid(int $userid) : contextlist {
         $sql = "SELECT c.id
                   FROM {tool_mediatime} m
-                  JOIN {context} c
-                 WHERE m.usermodified = :usermodified
-                       AND c.contextlevel = :contextlevel";
+                  JOIN {context} c ON c.contextlevel = :contextlevel
+                 WHERE m.usermodified = :usermodified";
 
         $params = [
             'contextlevel' => CONTEXT_SYSTEM,
