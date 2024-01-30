@@ -69,12 +69,7 @@ class manager implements renderable, templatable {
         if ($edit = optional_param('edit', null, PARAM_INT)) {
             $draftitemid = file_get_submitted_draft_itemid('videofile');
             file_prepare_draft_area(
-                // The $draftitemid is the target location.
                 $draftitemid,
-
-                // The combination of contextid / component / filearea / itemid
-                // form the virtual bucket that files are currently stored in
-                // and will be copied from.
                 $context->id,
                 'mediatimesrc_videotime',
                 'videofile',
@@ -88,12 +83,7 @@ class manager implements renderable, templatable {
 
             $draftitemid = file_get_submitted_draft_itemid('posterimage');
             file_prepare_draft_area(
-                // The $draftitemid is the target location.
                 $draftitemid,
-
-                // The combination of contextid / component / filearea / itemid
-                // form the virtual bucket that files are currently stored in
-                // and will be copied from.
                 $context->id,
                 'mediatimesrc_videotime',
                 'posterimage',
@@ -115,6 +105,7 @@ class manager implements renderable, templatable {
             $redirect = new moodle_url('/admin/tool/mediatime/index.php');
             redirect($redirect);
         } else if ($data = $this->form->get_data()) {
+            require_sesskey();
             $data->timemodified = time();
             $data->usermodified = $USER->id;
 

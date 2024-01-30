@@ -50,10 +50,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->addElement('text', 'name', get_string('resourcename', 'tool_mediatime'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addHelpButton('name', 'resourcename', 'tool_mediatime');
-
-        $mform->addElement('text', 'title', get_string('title', 'tool_mediatime'));
-        $mform->setType('title', PARAM_TEXT);
-        $mform->addHelpButton('title', 'title', 'tool_mediatime');
+        $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
         $mform->addElement('hidden', 'edit');
         $mform->setType('edit', PARAM_INT);
@@ -66,8 +63,14 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->setType('newfile', PARAM_INT);
         $mform->addHelpButton('filesource', 'videofile', 'mediatimesrc_streamio');
 
+        $mform->addElement('text', 'title', get_string('title', 'tool_mediatime'));
+        $mform->setType('title', PARAM_TEXT);
+        $mform->addHelpButton('title', 'title', 'tool_mediatime');
+
         $mform->addElement('textarea', 'description', get_string('description'));
         $mform->setType('description', PARAM_TEXT);
+        $mform->disabledIf('description', 'newfile', 0);
+        $mform->disabledIf('title', 'newfile', 0);
 
         $this->tag_elements();
 
@@ -108,7 +111,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 $mform->insertElementBefore(
                     $mform->createElement('autocomplete', 'file', '', $options, [
                     ]),
-                    'description'
+                    'title'
                 );
                 $mform->hideIf('file', 'newfile', 'eq', 1);
                 $mform->setDefault('newfile', 1);
@@ -120,6 +123,26 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     'description'
                 );
             }
+            if (!has_capability('mediatimesrc/streamio:upload', context_system::instance())) {
+                $mform->addRule('file', get_string('required'), 'required', null, 'client');
+            }
         }
+    }
+    /**
+     * Validate data
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
+    public function validation($data, $files) {
+        $errors = [];
+
+        if (empty($data['newfile']) && empty($data['file'])) {
+            $errors['file'] = get_string('required');
+        }
+
+        return $errors;
     }
 }

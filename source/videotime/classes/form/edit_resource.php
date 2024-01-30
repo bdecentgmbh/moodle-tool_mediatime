@@ -50,6 +50,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->setDefault('source', 'videotime');
 
         $mform->addElement('text', 'name', get_string('resourcename', 'tool_mediatime'));
+        $mform->addRule('name', get_string('required'), 'required', null, 'client');
         $mform->setType('name', PARAM_TEXT);
         $mform->addHelpButton('name', 'resourcename', 'tool_mediatime');
 
@@ -79,6 +80,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             ]
         );
         $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_videotime');
+        $mform->addRule('videofile', get_string('required'), 'required', null, 'client');
 
         $mform->addElement(
             'filemanager',

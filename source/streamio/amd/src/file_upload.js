@@ -2,10 +2,9 @@ var upload;
 
 import * as tus from 'mediatimesrc_streamio/tus';
 import Log from 'core/log';
-import cfg from 'core/config';
 
 const options = {
-    endpoint: cfg.wwwroot + '/api/v1/videos/tus',
+    endpoint: 'https://streamio.com/api/v1/videos/tus',
     metadata: {},
     onError: Log.debug,
     onProgress: function(bytesUploaded, bytesTotal) {

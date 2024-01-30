@@ -67,6 +67,8 @@ class manager implements renderable, templatable {
 
         $upload = optional_param('upload', null, PARAM_INT);
         if (!empty($upload) && !optional_param('cancel', false, PARAM_BOOL)) {
+            require_sesskey();
+            require_capability('mediatimesrc/streamio:upload', context_system::instance());
             $video = $this->api->request("/videos", ['tags' => (string)$upload])[0];
             $this->api->request("/videos/$video->id", [
                 'tags' => implode(array_diff($video->tags, ["$upload", "mediatimeupload"])),
@@ -110,20 +112,24 @@ class manager implements renderable, templatable {
             $redirect = new moodle_url('/admin/tool/mediatime/index.php');
             redirect($redirect);
         } else if (($data = $this->form->get_data()) && empty($data->newfile)) {
+            require_sesskey();
             $data->timemodified = time();
             $data->usermodified = $USER->id;
 
             if (empty($data->edit)) {
                 $video = $this->api->request("/videos/$data->file");
+                $video->name = $data->name;
                 $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
                 $data->edit = $DB->insert_record('tool_mediatime', $data);
             } else {
                 $data->id = $data->edit;
-                $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
-                    'description' => true,
-                    'title' => true,
-                ]), 'PUT');
+                if (has_capability('mediatimesrc/streamio:upload', context_system::instance())) {
+                    $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
+                        'description' => true,
+                        'title' => true,
+                    ]), 'PUT');
+                }
                 $video = $this->api->request("/videos/" . $this->content->id);
                 $video->name = $data->name;
                 $data->content = json_encode($video);
@@ -161,7 +167,11 @@ class manager implements renderable, templatable {
                 'resource' => $output->render($resource),
             ];
         } else if (($data = $this->form->get_data()) && !empty($data->newfile)) {
+            require_sesskey();
+            require_capability('mediatimesrc/streamio:upload', context_system::instance());
+
             $data->upload = file_get_unused_draft_itemid();
+            $data->sesskey = sesskey();
 
             $data->token = $this->api->create_token([
                 'tags' => "mediatimeupload,$data->upload",
@@ -171,7 +181,6 @@ class manager implements renderable, templatable {
             ]))->token;
             $data->tags = json_encode($data->tags);
 
-            require_capability('mediatimesrc/streamio:upload', context_system::instance());
             return [
                 'form' => $output->render_from_template('mediatimesrc_streamio/file_upload', $data),
             ];
