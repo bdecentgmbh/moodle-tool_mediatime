@@ -25,6 +25,8 @@
 namespace tool_mediatime;
 
 use context_system;
+use core_tag_tag;
+use core_tag_area;
 use moodle_exception;
 use moodle_url;
 use renderable;
@@ -86,6 +88,11 @@ class media_manager implements renderable, templatable {
             $this->search = new form\search(null, null, 'get', '', [
                 'class' => 'form-inline',
             ]);
+
+            if ($this->search->is_cancelled()) {
+                $url = new moodle_url('/admin/tool/mediatime/index.php');
+                redirect($url);
+            }
 
             $rs = self::search((array)$this->search->get_data());
             foreach ($rs as $media) {
@@ -168,6 +175,7 @@ class media_manager implements renderable, templatable {
 
         $params = [];
 
+        // Require enabled source plugins.
         if (!$sources = plugininfo\mediatimesrc::get_enabled_plugins()) {
             return $result;
         }
@@ -176,12 +184,25 @@ class media_manager implements renderable, templatable {
         $sql = "source $sql";
         $order = 'timecreated DESC';
 
+        // Filter for text query.
         if ($query = $filters['query'] ?? '') {
             $sql .= ' AND ' . $DB->sql_like('content', ':query', false);
             $params['query'] = "%$query%";
 
             $params['name'] = "%$query%";
             $order = 'CASE WHEN ' . $DB->sql_like('name', ':name', false) . ' THEN 1 ELSE 0 END DESC, timecreated DESC';
+        }
+
+        // Filter by tags.
+        if ($tags = $filters['tags'] ?? '') {
+            $tagcollid = core_tag_area::get_collection('tool_mediatime', 'tool_mediatime');
+            $tags = core_tag_tag::get_by_name_bulk($tagcollid, $tags);
+            $tags = array_column($tags, 'id');
+            if (!empty($tags)) {
+                list($tagsql, $tagparams) = $DB->get_in_or_equal($tags, SQL_PARAMS_NAMED, 'tagparams');
+                $sql .= " AND id IN (SELECT itemid FROM {tag_instance} WHERE tagid $tagsql)";
+                $params += $tagparams;
+            }
         }
 
         return $DB->get_recordset_select(

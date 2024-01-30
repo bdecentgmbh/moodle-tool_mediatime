@@ -51,7 +51,11 @@ class search extends moodleform {
         $mform->addElement('text', 'query', get_string('keyword', 'tool_mediatime'));
         $mform->setType('query', PARAM_TEXT);
 
+        $this->tag_elements();
+
         $this->add_action_buttons(false, get_string('search'));
+        $mform->addElement('cancel', 'reset', get_string('reset'));
+        $mform->disabledIf('reset', 'query', 'eq', '');
     }
 
     /**
@@ -65,7 +69,7 @@ class search extends moodleform {
             'tags',
             get_string('tags'),
             [
-                'itemtype' => 'media_resources',
+                'itemtype' => 'tool_mediatime',
                 'component' => 'tool_mediatime',
             ]
         );

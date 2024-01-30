@@ -42,5 +42,6 @@ $string['resourcename'] = 'Resource name';
 $string['resourcename_help'] = 'The name for a resource is used internally in the library to identify the resource, but not displayed when it is used.';
 $string['managemediatimesrcplugins'] = 'Manage source plugins';
 $string['subplugin_mediatimesrc_plural'] = 'Media sources';
+$string['tagarea_tool_mediatime'] = 'Media resources';
 $string['title'] = 'Title';
 $string['title_help'] = 'The title may be displayed by the video player when used';

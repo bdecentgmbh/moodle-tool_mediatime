@@ -84,7 +84,7 @@ class manager implements renderable, templatable {
                 $context = context_system::instance();
                 core_tag_tag::set_item_tags(
                     'tool_mediatime',
-                    'media_resources',
+                    'tool_meidatime',
                     $id,
                     $context,
                     json_decode($tags)
@@ -100,7 +100,7 @@ class manager implements renderable, templatable {
         }
 
         if ($edit = optional_param('edit', null, PARAM_INT)) {
-            $this->content->tags = core_tag_tag::get_item_tags_array('tool_mediatime', 'media_resources', $edit);
+            $this->content->tags = core_tag_tag::get_item_tags_array('tool_mediatime', 'tool_mediatime', $edit);
 
             $this->form->set_data([
                 'edit' => $edit,
@@ -135,7 +135,7 @@ class manager implements renderable, templatable {
             $context = context_system::instance();
             core_tag_tag::set_item_tags(
                 'tool_mediatime',
-                'media_resources',
+                'tool_mediatime',
                 $data->edit,
                 $context,
                 $data->tags

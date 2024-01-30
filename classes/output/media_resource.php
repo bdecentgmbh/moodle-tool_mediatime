@@ -84,7 +84,7 @@ class media_resource implements renderable, templatable {
         return $output->tag_list(
             core_tag_tag::get_item_tags(
                 'tool_mediatime',
-                'media_resources',
+                'tool_mediatime',
                 $this->record->id
             ),
             null,

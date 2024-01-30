@@ -63,7 +63,7 @@ class edit_resource extends moodleform {
             'tags',
             get_string('tags'),
             [
-                'itemtype' => 'media_resources',
+                'itemtype' => 'tool_mediatime',
                 'component' => 'tool_mediatime',
             ]
         );

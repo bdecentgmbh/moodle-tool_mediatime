@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $tagareas = [
     [
-        'itemtype' => 'media_resources',
+        'itemtype' => 'tool_mediatime',
         'component' => 'tool_mediatime',
         'callback' => 'tool_mediatime_get_tagged_resources',
         'callbackfile' => '/admin/tool/mediatime/lib.php',

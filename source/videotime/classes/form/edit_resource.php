@@ -41,6 +41,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
     public function definition() {
         $mform = $this->_form;
 
+        $mform->addElement('hidden', 'create');
+        $mform->setType('create', PARAM_TEXT);
+        $mform->setDefault('create', '');
+
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
         $mform->setDefault('source', 'videotime');
