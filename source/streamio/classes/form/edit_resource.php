@@ -139,7 +139,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
     public function validation($data, $files) {
         $errors = [];
 
-        if (empty($data['newfile']) && empty($data['file'])) {
+        if (empty($data['edit']) && empty($data['newfile']) && empty($data['file'])) {
             $errors['file'] = get_string('required');
         }
 
