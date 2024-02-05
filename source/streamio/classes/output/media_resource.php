@@ -95,23 +95,8 @@ class media_resource implements renderable, templatable {
         $this->videourl = '';
 
         $id = $this->record->content->id;
+
         return "https://streamio.com/api/v1/videos/$id/public_show.m3u8";
-
-        $fs = get_file_storage();
-        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_file', 'videofile', $this->record->id) as $file) {
-            if (!$file->is_directory()) {
-                $this->videourl = moodle_url::make_pluginfile_url(
-                    $this->context->id,
-                    'mediatimesrc_file',
-                    'videofile',
-                    $this->record->id,
-                    $file->get_filepath(),
-                    $file->get_filename()
-                )->out(false);
-            }
-        }
-
-        return $this->videourl;
     }
 
     /**
@@ -121,6 +106,12 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function video_file_content($output) {
-        return file_get_contents($this->video_url($output));
+        $ch = curl_init($this->video_url($output));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+
+        curl_close($ch);
+
+        return $response;
     }
 }

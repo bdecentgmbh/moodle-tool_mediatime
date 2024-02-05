@@ -65,20 +65,21 @@ class api {
      * @return mixed
      */
     public function request($endpoint, $params = [], $method = 'GET') {
-        $opts = [
-            'http' => [
-                "header" => "Authorization: Basic " . base64_encode("$this->username:$this->password")
-                . "\nAccept: application/json\n"
-                . "Content-type: application/json\n",
-                'method' => $method,
-                "protocol_version" => 1.1,
-                'content' => json_encode($params),
-            ],
-        ];
+        $ch = curl_init('https://streamio.com/api/v1' . $endpoint);
 
-        $context = stream_context_create($opts);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Basic " . base64_encode("$this->username:$this->password"),
+            "Accept: application/json",
+            "Content-type: application/json",
+        ]);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        $response = file_get_contents('https://streamio.com/api/v1' . $endpoint, false, $context);
+        $response = curl_exec($ch);
+
+        curl_close($ch);
 
         if ($response === false) {
             throw new moodle_exception('streamiorequesterror');

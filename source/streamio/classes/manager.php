@@ -220,10 +220,15 @@ class manager implements renderable, templatable {
                 'filepath' => '/',
             ];
 
+            $ch = curl_init("https://streamio.com/api/v1/videos/$video->id/public_show.m3u8");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
             $fs->create_file_from_string(
                 $fileinfo,
-                file_get_contents("https://streamio.com/api/v1/videos/$video->id/public_show.m3u8")
+                curl_exec($ch)
             );
+
+            curl_close($ch);
         }
     }
 }
