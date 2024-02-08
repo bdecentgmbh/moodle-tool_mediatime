@@ -24,6 +24,10 @@
 
 namespace mediatimesrc_streamio\form;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once("$CFG->libdir/resourcelib.php");
+
 use context_system;
 use moodleform;
 use mediatimesrc_streamio\api;
@@ -89,13 +93,29 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
         $context = context_system::instance();
         if ($record) {
+            $record->content = json_decode($record->content);
             $resource = new media_resource($record);
+
+            $videourl = $resource->video_url($OUTPUT);
+            $content = [
+                'poster' => $resource->image_url($OUTPUT),
+                'elementid' => 'video-' . uniqid(),
+                'instance' => json_encode([
+                    'vimeo_url' => $videourl,
+                    'controls' => true,
+                    'responsive' => true,
+                    'playsinline' => false,
+                    'autoplay' => false,
+                    'option_loop' => false,
+                    'muted' => true,
+                    'type' => resourcelib_guess_url_mimetype($videourl),
+                ]),
+            ];
             $mform->insertElementBefore(
-                $mform->createElement('html', format_text(
-                    $OUTPUT->render_from_template('mediatimesrc_streamio/video', json_decode($record->content)),
-                    FORMAT_HTML,
-                    ['context' => $context]
-                )),
+                $mform->createElement(
+                    'html',
+                    $OUTPUT->render_from_template('mediatimesrc_streamio/video', $content)
+                ),
                 'name'
             );
             $mform->removeElement('filesource');

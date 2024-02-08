@@ -62,7 +62,7 @@ class manager implements renderable, templatable {
 
         $this->form = new form\edit_resource();
         if ($record) {
-            $this->content = json_decode($record->content);
+            $this->content = $record->content;
         }
 
         $maxbytes = get_config('mediatimesrc_videotime', 'maxbytes');
@@ -80,6 +80,7 @@ class manager implements renderable, templatable {
                     'maxfiles' => 1,
                 ]
             );
+            $this->content->videofile = $draftitemid;
 
             $draftitemid = file_get_submitted_draft_itemid('posterimage');
             file_prepare_draft_area(
@@ -94,6 +95,7 @@ class manager implements renderable, templatable {
                     'maxfiles' => 1,
                 ]
             );
+            $this->content->posterimage = $draftitemid;
 
             $this->content->tags = core_tag_tag::get_item_tags_array('tool_mediatime', 'tool_mediatime', $edit);
 
