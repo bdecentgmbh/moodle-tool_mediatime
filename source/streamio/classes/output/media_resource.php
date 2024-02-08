@@ -24,6 +24,10 @@
 
 namespace mediatimesrc_streamio\output;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once("$CFG->libdir/resourcelib.php");
+
 use moodle_url;
 use stdClass;
 use renderable;
@@ -57,21 +61,31 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
-        $content = json_decode($this->record->content);
-        $api = new \mediatimesrc_streamio\api();
+        $content = (array)$this->record->content;
         $context = \context_system::instance();
+        $videourl = $this->video_url($output);
+
+        $content += [
+            'elementid' => 'video-' . uniqid(),
+            'instance' => json_encode([
+                'vimeo_url' => $videourl,
+                'controls' => true,
+                'responsive' => true,
+                'playsinline' => false,
+                'autoplay' => false,
+                'option_loop' => false,
+                'muted' => true,
+                'type' => resourcelib_guess_url_mimetype($videourl),
+            ]),
+            'poster' => $this->image_url($output),
+        ];
 
         return [
             'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
             'resource' => $content,
-            'url' => 'https://exampel.com',
-            'video' => format_text(
-                $output->render_from_template('mediatimesrc_streamio/video', $content),
-                FORMAT_HTML,
-                ['context' => \context_system::instance()]
-            ),
+            'video' => $output->render_from_template('mediatimesrc_streamio/video', $content),
         ];
     }
 
