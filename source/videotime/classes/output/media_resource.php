@@ -24,6 +24,10 @@
 
 namespace mediatimesrc_videotime\output;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once("$CFG->libdir/resourcelib.php");
+
 use moodle_url;
 use stdClass;
 use renderable;
@@ -58,22 +62,29 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
+        $videourl = $this->video_url($output);
 
         $content = [
+            'elementid' => 'video-' . uniqid(),
+            'instance' => json_encode([
+                'autoplay' => false,
+                'controls' => true,
+                'playsinline' => false,
+                'muted' => true,
+                'option_loop' => false,
+                'responsive' => true,
+                'type' => resourcelib_guess_url_mimetype($videourl),
+                'vimeo_url' => $videourl,
+            ]),
             'poster' => $this->image_url($output),
-            'videourl' => $this->video_url($output),
         ];
 
         return [
             'canedit' => has_capability('moodle/tag:edit', $this->context) || $USER->id == $this->record->usermodified,
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
-            'resource' => json_decode($this->record->content),
-            'video' => format_text(
-                $output->render_from_template('mediatimesrc_videotime/video', $content),
-                FORMAT_HTML,
-                ['context' => $this->context]
-            ),
+            'resource' => $this->record->content,
+            'video' => $output->render_from_template('mediatimesrc_videotime/video', $content),
         ];
     }
 

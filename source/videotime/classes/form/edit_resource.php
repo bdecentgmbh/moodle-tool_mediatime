@@ -24,6 +24,10 @@
 
 namespace mediatimesrc_videotime\form;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once("$CFG->libdir/resourcelib.php");
+
 use moodleform;
 use mediatimesrc_videotime\output\media_resource;
 
@@ -71,11 +75,30 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             get_string('videofile', 'mediatimesrc_videotime'),
             null,
             [
+                'accepted_types' => [
+                    '.flac',
+                    '.mp3',
+                    '.mp4',
+                    '.mov',
+                    '.movie',
+                    '.m3u',
+                    '.m3u8',
+                    '.m4a',
+                    '.m4v',
+                    '.mp4',
+                    '.mpeg',
+                    '.ogg',
+                    '.oga',
+                    '.ogv',
+                    '.wav',
+                    '.webm',
+                    '.wma',
+                    '.wmv',
+                ],
                 'subdirs' => 0,
                 'maxbytes' => $maxbytes,
                 'areamaxbytes' => $maxbytes,
                 'maxfiles' => 1,
-                'accepted_types' => ['video'],
                 'return_types' => FILE_INTERNAL,
             ]
         );
@@ -114,16 +137,26 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
         if ($record) {
             $resource = new media_resource($record);
+
             $content = [
                 'poster' => $resource->image_url($OUTPUT),
-                'videourl' => $resource->video_url($OUTPUT),
+                'elementid' => 'video-' . uniqid(),
+                'instance' => json_encode([
+                    'vimeo_url' => $resource->video_url($OUTPUT),
+                    'controls' => true,
+                    'responsive' => true,
+                    'playsinline' => false,
+                    'autoplay' => false,
+                    'option_loop' => false,
+                    'muted' => true,
+                    'type' => resourcelib_guess_url_mimetype($videourl),
+                ]),
             ];
             $mform->insertElementBefore(
-                $mform->createElement('html', format_text(
-                    $OUTPUT->render_from_template('mediatimesrc_videotime/video', $content),
-                    FORMAT_HTML,
-                    ['context' => \context_system::instance()]
-                )),
+                $mform->createElement(
+                    'html',
+                    $OUTPUT->render_from_template('mediatimesrc_videotime/video', $content)
+                ),
                 'name'
             );
         }

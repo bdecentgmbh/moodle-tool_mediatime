@@ -71,6 +71,7 @@ class media_manager implements renderable, templatable {
         require_capability('tool/mediatime:view', context_system::instance());
         if ($record) {
             $source = $record->source;
+            $record->content = json_decode($record->content);
         }
 
         $plugins = plugininfo\mediatimesrc::get_enabled_plugins();

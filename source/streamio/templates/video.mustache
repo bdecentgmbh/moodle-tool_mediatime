@@ -25,19 +25,29 @@
 
     Example context (json):
     {
-       "id": "324lk32sK",
-       "screenshot": {
-           "normal": "example.com/image.jpg"
-       }
+        "elementid": "324lk32sK",
+        "instance": "[{'vimeo_url': 'https://example.com/video.m3u8'}]",
+        "screenshot": {
+            "normal": "example.com/image.jpg"
+        }
     }
 
 }}
 <p>
     <video 
-        class="vjs-fluid"
+        id="{{ elementid }}"
         controls
-        src="https://streamio.com/api/v1/videos/{{ id }}/public_show.m3u8"
+        class="video-js"
         poster="https://{{ screenshot.normal }}"
     >
     </video>
 </p>
+{{#js}}
+    require(['videotimeplugin_videojs/videotime'], function(VideoTime) {
+        VideoTime.prototype.view = function() {
+            return true;
+        };
+        var v = new VideoTime('{{ elementid }}', 0, 0, 0, {{{instance}}});
+        v.initialize();
+    });
+{{/js}}
