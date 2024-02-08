@@ -24,7 +24,17 @@ namespace tool_mediatime\event;
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class resource_created extends core_event\base {
+class resource_created extends \core\event\base {
 
     // For more information about the Events API please visit {@link https://docs.moodle.org/dev/Events_API}.
+
+    /**
+     * Init method.
+     *
+     * @return void
+     */
+    protected function init() {
+        $this->data['crud'] = 'c';
+        $this->data['edulevel'] = self::LEVEL_OTHER;
+    }
 }

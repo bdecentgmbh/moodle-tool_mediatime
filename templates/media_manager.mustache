@@ -38,23 +38,23 @@
         </div>
     </div>
 </div>
-<div class="cards container-fluid">
+<div class="panel-group container-fluid">
     <div class="row">
         {{# media }}
             <div class="col col-12 col-md-6 col-lg-4 col-xl-3 m-0 p-2">
-                <div class="card">
-                    <div class="card-header">
+                <div class="panel panel-default">
+                    <div class="panel-header">
                         {{# content.name }}
                             {{ content.name }}
                         {{/ content.name }}
                         {{^ content.name }}
                             {{ content.title }}
                         {{/ content.name }}
-                    </div>
                     <a href="{{ url }}">
-                        <img class="card-img rounded-0 ratio ratio-16x9" src="{{ imageurl }}">
+                        <img class="img-responsive rounded-0 ratio ratio-16x9" src="{{ imageurl }}">
                     </a>
-                    <div class="card-body">
+                    </div>
+                    <div class="panel-body">
                         <div class="card-title"><a href="{{ url }}"> {{ content.title }} </a></div>
                         <p class="card-text" style="max-height: 100px; overflow: hidden"> {{ content.description }} </p>
                         {{{ tags }}}

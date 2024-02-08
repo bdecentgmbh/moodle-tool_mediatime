@@ -33,7 +33,8 @@ $syscontext = context_system::instance();
 $PAGE->set_url('/admin/tool/mediatime/subplugins.php');
 $PAGE->set_context($syscontext);
 
-require_admin();
+require_login(null, false);
+require_capability('moodle/site:config', context_system::instance());
 require_sesskey();
 
 if ($type == 'mediatimesrc') {
