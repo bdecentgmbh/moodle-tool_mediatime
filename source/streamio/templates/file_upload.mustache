@@ -47,8 +47,8 @@
         </div>
     </div>
 </form>
-{{# js }}
-    require(['mediatimesrc_streamio/file_upload'], function(FileUpload) {
+{{#js}}
+    require(['mediatimesrc_streamio/file_upload', 'mediatimesrc_streamio/tus'], function(FileUpload) {
         FileUpload.init('{{ token }}');
     });
-{{/ js }}
+{{/js}}

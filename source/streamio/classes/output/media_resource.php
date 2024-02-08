@@ -75,7 +75,7 @@ class media_resource implements renderable, templatable {
                 'autoplay' => false,
                 'option_loop' => false,
                 'muted' => true,
-                'type' => resourcelib_guess_url_mimetype($videourl),
+                'type' => 'application/x-mpegURL',
             ]),
             'poster' => $this->image_url($output),
         ];

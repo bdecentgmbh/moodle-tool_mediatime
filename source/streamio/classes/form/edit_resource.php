@@ -108,7 +108,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     'autoplay' => false,
                     'option_loop' => false,
                     'muted' => true,
-                    'type' => resourcelib_guess_url_mimetype($videourl),
+                    'type' => 'application/x-mpegURL',
                 ]),
             ];
             $mform->insertElementBefore(

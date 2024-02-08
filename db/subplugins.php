@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,29 +12,16 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-
-namespace tool_mediatime\event;
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The resource_created event class.
+ * Subplugin definitions for the Video Time module.
  *
  * @package     tool_mediatime
- * @category    event
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class resource_created extends \core\event\base {
 
-    // For more information about the Events API please visit {@link https://docs.moodle.org/dev/Events_API}.
+defined('MOODLE_INTERNAL') || die();
 
-    /**
-     * Init method.
-     *
-     * @return void
-     */
-    protected function init() {
-        $this->data['crud'] = 'c';
-        $this->data['edulevel'] = self::LEVEL_OTHER;
-    }
-}
+$subplugins = (array) json_decode(file_get_contents(__DIR__ . "/subplugins.json"))->plugintypes;
