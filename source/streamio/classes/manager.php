@@ -92,6 +92,11 @@ class manager implements renderable, templatable {
                     json_decode($tags)
                 );
             }
+            $event = \mediatimesrc_streamio\event\resource_created::create([
+                'contextid' => SYSCONTEXTID,
+                'objectid' => $id,
+            ]);
+            $event->trigger();
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $id]);
             redirect($redirect);
         }
@@ -122,6 +127,11 @@ class manager implements renderable, templatable {
                 $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
                 $data->edit = $DB->insert_record('tool_mediatime', $data);
+                $event = \mediatimesrc_streamio\event\resource_created::create([
+                    'contextid' => SYSCONTEXTID,
+                    'objectid' => $data->edit,
+                ]);
+                $event->trigger();
             } else {
                 $data->id = $data->edit;
                 if (has_capability('mediatimesrc/streamio:upload', context_system::instance())) {

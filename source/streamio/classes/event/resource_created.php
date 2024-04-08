@@ -16,6 +16,8 @@
 
 namespace mediatimesrc_streamio\event;
 
+use core\event\base;
+
 /**
  * The resource_created event class.
  *
@@ -24,17 +26,13 @@ namespace mediatimesrc_streamio\event;
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class resource_created extends \core\event\base {
-
-    // For more information about the Events API please visit {@link https://docs.moodle.org/dev/Events_API}.
-
+class resource_created extends \tool_mediatime\event\resource_created {
     /**
-     * Init method.
+     * Returns event name.
      *
-     * @return void
+     * @return string
      */
-    protected function init() {
-        $this->data['crud'] = 'c';
-        $this->data['edulevel'] = self::LEVEL_OTHER;
+    public static function get_name() {
+        return get_string('event_resource_created', 'mediatimesrc_streamio');
     }
 }

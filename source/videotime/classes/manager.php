@@ -113,6 +113,11 @@ class manager implements renderable, templatable {
                 $data->timecreated = $data->timemodified;
                 $data->content = json_encode($data);
                 $data->edit = $DB->insert_record('tool_mediatime', $data);
+                $event = \mediatimesrc_videotime\event\resource_created::create([
+                    'contextid' => SYSCONTEXTID,
+                    'objectid' => $data->edit,
+                ]);
+                $event->trigger();
             } else {
                 $data->id = $data->edit;
                 $data->content = json_encode($data);
