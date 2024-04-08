@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Streamio';
+$string['event_resource_created'] = 'Streamio resource created';
 $string['password'] = 'Password';
 $string['password_help'] = 'Streamio password for administrative access';
 $string['selectexistingfile'] = 'Select existing file';

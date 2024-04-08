@@ -16,6 +16,8 @@
 
 namespace tool_mediatime\event;
 
+use core\event\base;
+
 /**
  * The resource_created event class.
  *
@@ -24,7 +26,63 @@ namespace tool_mediatime\event;
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class resource_created extends core_event\base {
+class resource_created extends base {
 
     // For more information about the Events API please visit {@link https://docs.moodle.org/dev/Events_API}.
+
+    /**
+     * Initialise the event.
+     */
+    protected function init() {
+        $this->data['objecttable'] = 'tool_mediatime';
+        $this->data['edulevel'] = self::LEVEL_OTHER;
+        $this->data['crud'] = 'c';
+    }
+
+    /**
+     * Returns event name.
+     *
+     * @return string
+     */
+    public static function get_name() {
+        return get_string('event_resource_created', 'tool_mediatime');
+    }
+
+    /**
+     * Get the event description.
+     *
+     * @return string
+     */
+    public function get_description() {
+        return "The user with id '{$this->userid}' created a mediatime resource with id '{$this->objectid}'.";
+    }
+
+    /**
+     * Get URL related to the action.
+     *
+     * @return \moodle_url
+     */
+    public function get_url() {
+        return new \moodle_url('/admin/tool/mediatime/index.php', [
+            'id' => $this->objectid,
+        ]);
+    }
+
+    /**
+     * Get the object ID mapping.
+     *
+     * @return array
+     */
+    public static function get_objectid_mapping() {
+        return array('db' => 'tool_mediatime', 'restore' => \core\event\base::NOT_MAPPED);
+    }
+
+    /**
+     * No mapping required for this event because this event is not backed up.
+     *
+     * @return bool
+     */
+    public static function get_other_mapping() {
+        return false;
+    }
 }

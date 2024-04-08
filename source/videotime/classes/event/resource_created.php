@@ -14,23 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+namespace mediatimesrc_videotime\event;
+
+use core\event\base;
+
 /**
- * Plugin strings are defined here.
+ * The resource_created event class.
  *
  * @package     mediatimesrc_videotime
- * @category    string
+ * @category    event
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$string['pluginname'] = 'Video Time resource';
-$string['event_resource_created'] = 'Video Time resource created';
-$string['posterimage'] = 'Poster image';
-$string['posterimage_help'] = 'Select an image to displayed before the video is played or as a thumbnail image.';
-$string['maxbytes'] = 'Maximum size of file uploads';
-$string['videofile'] = 'Video file';
-$string['videofile_help'] = 'Video file to be displayed';
-$string['configmaxbytes'] = 'Default maximum file size for all files uploaded';
-$string['privacy:metadata'] = 'The Video Time resource does not store or transmit any personal data.';
+class resource_created extends \tool_mediatime\event\resource_created {
+    /**
+     * Returns event name.
+     *
+     * @return string
+     */
+    public static function get_name() {
+        return get_string('event_resource_created', 'mediatimesrc_videotime');
+    }
+}
