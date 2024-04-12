@@ -31,6 +31,7 @@
 <form action='.' method="post">
    {{# canedit }}
        <button type="submit" name="edit" value="{{ id }}">{{# str }} edit {{/ str }}</button>
+       <button type="submit" name="delete" value="{{ id }}">{{# str }} delete {{/ str }}</button>
    {{/ canedit }}
    <a href="{{ libraryhome }}">{{# str }}library, tool_mediatime {{/ str }}</a>
 </form>

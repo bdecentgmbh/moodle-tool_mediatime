@@ -101,7 +101,13 @@ class manager implements renderable, templatable {
             redirect($redirect);
         }
 
-        $this->form = new form\edit_resource();
+        if ($delete = optional_param('delete', null, PARAM_INT)) {
+            $this->form = new form\delete_resource(null, (array)$this->record);
+            $this->form->set_data(['delete' => $delete]);
+        } else {
+            $this->form = new form\edit_resource();
+        }
+
         if ($record) {
             $this->content = json_decode($record->content);
         }
@@ -114,6 +120,14 @@ class manager implements renderable, templatable {
             ] + (array)$this->content);
         }
         if ($this->form->is_cancelled()) {
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php');
+            redirect($redirect);
+        } else if (
+            optional_param('delete', null, PARAM_INT)
+            && ($data = $this->form->get_data())
+        ) {
+            $this->delete_resource($data->action == 2);
+
             $redirect = new moodle_url('/admin/tool/mediatime/index.php');
             redirect($redirect);
         } else if (($data = $this->form->get_data()) && empty($data->newfile)) {
@@ -144,6 +158,12 @@ class manager implements renderable, templatable {
                 $video->name = $data->name;
                 $data->content = json_encode($video);
                 $DB->update_record('tool_mediatime', $data);
+
+                $event = \mediatimesrc_streamio\event\resource_updated::create([
+                    'contextid' => SYSCONTEXTID,
+                    'objectid' => $this->record->id,
+                ]);
+                $event->trigger();
             }
 
             $this->save_file($data->edit, $video);
@@ -240,5 +260,29 @@ class manager implements renderable, templatable {
 
             curl_close($ch);
         }
+    }
+
+    /**
+     * Delete resource
+     *
+     * @param bool $removestreamiofile Whether to delete server resource at Streamio
+     */
+    public function delete_resource(bool $removestreamiofile = false) {
+        global $DB;
+
+        if ($removestreamiofile) {
+            $id = $this->content->id;
+            $this->api->request("/videos/$id", [], 'DELETE');
+        }
+
+        $DB->delete_records('tool_mediatime', [
+            'id' => $this->record->id,
+        ]);
+
+        $event = \mediatimesrc_streamio\event\resource_deleted::create([
+            'contextid' => SYSCONTEXTID,
+            'objectid' => $this->record->id,
+        ]);
+        $event->trigger();
     }
 }

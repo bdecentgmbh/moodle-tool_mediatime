@@ -19,14 +19,14 @@ namespace tool_mediatime\event;
 use core\event\base;
 
 /**
- * The resource_created event class.
+ * The resource_updated event class.
  *
  * @package     tool_mediatime
  * @category    event
  * @copyright   2024 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class resource_created extends base {
+class resource_updated extends base {
 
     // For more information about the Events API please visit {@link https://docs.moodle.org/dev/Events_API}.
 
@@ -36,7 +36,7 @@ class resource_created extends base {
     protected function init() {
         $this->data['objecttable'] = 'tool_mediatime';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['crud'] = 'c';
+        $this->data['crud'] = 'u';
     }
 
     /**
@@ -45,7 +45,7 @@ class resource_created extends base {
      * @return string
      */
     public static function get_name() {
-        return get_string('event_resource_created', 'tool_mediatime');
+        return get_string('event_resource_updated', 'tool_mediatime');
     }
 
     /**
@@ -54,7 +54,7 @@ class resource_created extends base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '{$this->userid}' created a mediatime resource with id '{$this->objectid}'.";
+        return "The user with id '{$this->userid}' deleted a mediatime resource with id '{$this->objectid}'.";
     }
 
     /**
