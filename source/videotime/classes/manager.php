@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Manage Streamio source files
+ * Manage Video Time resource files
  *
  * @package    mediatimesrc_videotime
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
@@ -34,13 +34,13 @@ use stdClass;
 use templatable;
 
 /**
- * Manage Streamio source files
+ * Manage Video Time resource files
  *
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class manager implements renderable, templatable {
-    /** @var $content Cached Streamio video record */
+    /** @var $content Cached content object */
     protected ?stdClass $content = null;
 
     /** @var $record Media time record for resource */
@@ -60,7 +60,13 @@ class manager implements renderable, templatable {
         $context = \context_system::instance();
         $this->record = $record;
 
-        $this->form = new form\edit_resource();
+        if ($delete = optional_param('delete', null, PARAM_INT)) {
+            $this->form = new form\delete_resource(null, (array)$this->record);
+            $this->form->set_data(['delete' => $delete]);
+        } else {
+            $this->form = new form\edit_resource();
+        }
+
         if ($record) {
             $this->content = json_decode($record->content);
         }
@@ -104,6 +110,14 @@ class manager implements renderable, templatable {
         if ($this->form->is_cancelled()) {
             $redirect = new moodle_url('/admin/tool/mediatime/index.php');
             redirect($redirect);
+        } else if (
+            optional_param('delete', null, PARAM_INT)
+            && ($data = $this->form->get_data())
+        ) {
+            $this->delete_resource();
+
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php');
+            redirect($redirect);
         } else if ($data = $this->form->get_data()) {
             require_sesskey();
             $data->timemodified = time();
@@ -122,6 +136,12 @@ class manager implements renderable, templatable {
                 $data->id = $data->edit;
                 $data->content = json_encode($data);
                 $DB->update_record('tool_mediatime', $data);
+
+                $event = event\resource_updated::create([
+                    'contextid' => SYSCONTEXTID,
+                    'objectid' => $this->record->id,
+                ]);
+                $event->trigger();
             }
 
             file_save_draft_area_files(
@@ -181,5 +201,22 @@ class manager implements renderable, templatable {
         return [
             'form' => $this->form->render(),
         ];
+    }
+
+    /**
+     * Delete resource
+     */
+    public function delete_resource() {
+        global $DB;
+
+        $DB->delete_records('tool_mediatime', [
+            'id' => $this->record->id,
+        ]);
+
+        $event = \mediatimesrc_videotime\event\resource_deleted::create([
+            'contextid' => SYSCONTEXTID,
+            'objectid' => $this->record->id,
+        ]);
+        $event->trigger();
     }
 }

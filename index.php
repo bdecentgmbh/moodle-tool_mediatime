@@ -31,6 +31,7 @@ require_login();
 
 $source = optional_param('source', '', PARAM_ALPHANUMEXT);
 $id = optional_param('id', null, PARAM_INT);
+$delete = optional_param('delete', null, PARAM_INT);
 $edit = optional_param('edit', null, PARAM_INT);
 
 admin_externalpage_setup('mediatimelibrary');
@@ -38,6 +39,8 @@ admin_externalpage_setup('mediatimelibrary');
 $PAGE->set_heading(get_string('pluginname', 'tool_mediatime'));
 if ($id) {
     $record = $DB->get_record('tool_mediatime', ['id' => $id]);
+} else if ($delete) {
+    $record = $DB->get_record('tool_mediatime', ['id' => $delete]);
 } else if ($edit) {
     $record = $DB->get_record('tool_mediatime', ['id' => $edit]);
 } else {

@@ -130,11 +130,13 @@ class media_manager implements renderable, templatable {
         foreach ($this->media as $record) {
             $resource = new output\media_resource($record);
             $url = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $record->id]);
+            $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $record->id]);
             $media[] = [
                 'imageurl' => $resource->image_url($output),
                 'tags' => $resource->tags($output),
                 'url' => $url->out(),
                 'content' => $record->content,
+                'removeurl' => $removeurl->out(),
             ];
         }
 
