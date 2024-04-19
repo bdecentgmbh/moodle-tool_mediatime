@@ -25,6 +25,9 @@
 
     Example context (json):
     {
+        "name": "'Donald'",
+        "title": "'DucK'",
+        "description": "'Quack, quack, quack'"
     }
 
 }}
@@ -51,6 +54,6 @@
 </form>
 {{# js }}
     require(['mediatimesrc_vimeo/file_upload'], function(FileUpload) {
-        FileUpload.init('{{ filesize }}');
+        FileUpload.init();
     });
 {{/ js }}

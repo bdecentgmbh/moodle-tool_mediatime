@@ -25,17 +25,18 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Media Time';
 $string['addnewcontent'] = 'Add new content';
 $string['event_resource_created'] = 'Resource created';
 $string['event_resource_deleted'] = 'Resource deleted';
 $string['event_resource_updated'] = 'Resource updated';
 $string['filelinks'] = 'File links';
-$string['library'] = 'Library';
 $string['keyword'] = 'Keyword';
+$string['library'] = 'Library';
+$string['managemediatimesrcplugins'] = 'Manage source plugins';
 $string['mediatime:create'] = 'Create media in library';
 $string['mediatime:manage'] = 'Manage media in library';
 $string['mediatime:view'] = 'View media in library';
+$string['pluginname'] = 'Media Time';
 $string['privacy:metadata:tool_mediatime'] = 'The Media Time plugin stores and transmits data that is not normally private, but does record the last user to modify it.';
 $string['privacy:metadata:tool_mediatime:content'] = 'Media content';
 $string['privacy:metadata:tool_mediatime:name'] = 'Media name';
@@ -44,10 +45,8 @@ $string['privacy:metadata:tool_mediatime:timemodified'] = 'Time modified';
 $string['privacy:metadata:tool_mediatime:usermodified'] = 'User modified';
 $string['resourcename'] = 'Resource name';
 $string['resourcename_help'] = 'The name for a resource is used internally in the library to identify the resource, but not displayed when it is used.';
-$string['managemediatimesrcplugins'] = 'Manage source plugins';
 $string['subplugin_mediatimesrc_plural'] = 'Media sources';
+$string['subplugintype_mediatimesrc_plural'] = 'Media Time sources';
 $string['tagarea_tool_mediatime'] = 'Media resources';
 $string['title'] = 'Title';
 $string['title_help'] = 'The title may be displayed by the video player when used';
-$string['subplugintype_mediatimesrc_plural'] = 'Media Time sources'; 
-$string['filelinks'] = 'File links'; 

@@ -38,16 +38,18 @@ require_once("$CFG->libdir/resourcelib.php");
  * @param array $options additional options affecting the file serving
  * @return bool false if the file was not found, just send the file otherwise and do not return anything
  */
-function tool_mediatime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=[]) {
+function tool_mediatime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     if ($context->contextlevel != CONTEXT_SYSTEM) {
         return false;
     }
 
     require_login();
 
-    if (in_array($filearea, [
+    if (
+        in_array($filearea, [
         'm3u8',
-    ])) {
+        ])
+    ) {
         $itemid = array_shift($args);
 
         $relativepath = implode('/', $args);

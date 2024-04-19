@@ -36,13 +36,13 @@
     <input type="hidden" name="tags" value="{{ tags }}" >
     <div class="container-fluid">
         <fieldset class="w-100 m-0 p-0 border-0">
-            <input type="file" name="streamiofile">
+            <input type="file" name="streamiofile" accept="video/*">
         </fieldset>
         <div class="col bg-secondary p-0 m-3">
             <div class="progress bg-primary" style="width: 0%; height: 1em;"></div>
         </div>
         <div class="p-3">
-            <button name="upload" type="button" class="btn btn-primary" accept="video/*">{{# str }} upload {{/ str }}</button>
+            <button name="upload" type="button" class="btn btn-primary">{{# str }} upload {{/ str }}</button>
             <button name="cancel" value="true" class="btn btn-secondary">{{# str }} cancel {{/ str }}</button>
         </div>
     </div>

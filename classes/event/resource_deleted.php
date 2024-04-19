@@ -27,7 +27,6 @@ use core\event\base;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class resource_deleted extends base {
-
     // For more information about the Events API please visit {@link https://docs.moodle.org/dev/Events_API}.
 
     /**

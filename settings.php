@@ -28,13 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 if ($hassiteconfig) {
     $settings = new admin_settingpage('tool_mediatime_settings', new lang_string('pluginname', 'tool_mediatime'));
 
-    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
-    if ($ADMIN->fulltree) {
-        // TODO: Define actual plugin settings page and add it to the tree - {@link https://docs.moodle.org/dev/Admin_settings}.
-    }
-
-    $ADMIN->add('tools', new admin_category('toolmediatime',
-        new lang_string('pluginname', 'tool_mediatime'), false));
+    $ADMIN->add('tools', new admin_category(
+        'toolmediatime',
+        new lang_string('pluginname', 'tool_mediatime'),
+        false
+    ));
 
     $pluginmanager = core_plugin_manager::instance();
     $ADMIN->add('toolmediatime', new admin_category(

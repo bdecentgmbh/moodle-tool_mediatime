@@ -35,7 +35,6 @@ use moodle_url;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mediatimesrc extends base {
-
     /**
      * Allow uninstall
      *
@@ -67,8 +66,12 @@ class mediatimesrc extends base {
             return;
         }
         $section  = $this->get_settings_section_name();
-        $settings = new \admin_settingpage($section, $this->displayname,
-            'moodle/site:config', $this->is_enabled() === false);
+        $settings = new \admin_settingpage(
+            $section,
+            $this->displayname,
+            'moodle/site:config',
+            $this->is_enabled() === false
+        );
 
         include($this->full_path('settings.php')); // This may also set $settings to null.
 
