@@ -40,7 +40,6 @@ use mediatimesrc_streamio\output\media_resource;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class edit_resource extends \tool_mediatime\form\edit_resource {
-
     /**
      * Definition
      */
@@ -93,7 +92,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
         $context = context_system::instance();
         if ($record) {
-            $record->content = json_decode($record->content);
+            $content = json_decode($record->content);
             $resource = new media_resource($record);
 
             $videourl = $resource->video_url($OUTPUT);

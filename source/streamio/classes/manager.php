@@ -234,13 +234,13 @@ class manager implements renderable, templatable {
             'tool_mediatime',
             'm3u8',
             $id,
-            'id DESC', false
+            'id DESC',
+            false
         );
         foreach ($files as $file) {
             $file->delete();
         }
         if ($video->transcodings) {
-
             $fileinfo = [
                 'contextid' => SYSCONTEXTID,
                 'component' => 'tool_mediatime',

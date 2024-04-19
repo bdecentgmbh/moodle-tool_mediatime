@@ -49,3 +49,5 @@ $string['subplugin_mediatimesrc_plural'] = 'Media sources';
 $string['tagarea_tool_mediatime'] = 'Media resources';
 $string['title'] = 'Title';
 $string['title_help'] = 'The title may be displayed by the video player when used';
+$string['subplugintype_mediatimesrc_plural'] = 'Media Time sources'; 
+$string['filelinks'] = 'File links'; 

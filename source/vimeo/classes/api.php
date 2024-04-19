@@ -15,29 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for mediatimesrc_videotime.
+ * Manage Vimeo source files
  *
- * @package    mediatimesrc_videotime
+ * @package    mediatimesrc_vimeo
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_videotime\privacy;
+namespace mediatimesrc_vimeo;
+
+use moodle_exception;
+use stdClass;
 
 /**
- * Privacy Subsystem for mediatimesrc_videotime implementing null_provider.
+ * Manage Vimeo source files
  *
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class api extends \videotimeplugin_repository\api {
     /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
+     * Create place holder for upload
      *
-     * @return  string
+     * @param array $params Upload params
+     * @return array
      */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
+    public function create_token($params = []) {
+        return $this->request('/me/videos', $params, 'POST')['body'];
     }
 }

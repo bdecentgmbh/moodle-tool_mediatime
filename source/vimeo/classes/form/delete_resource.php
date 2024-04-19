@@ -15,22 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Media Time delete resource form
+ * Media Time media edit form
  *
- * @package    mediatimesrc_videotime
+ * @package    mediatimesrc_vimeo
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_videotime\form;
+namespace mediatimesrc_vimeo\form;
 
 use context_system;
 use moodleform;
-use mediatimesrc_videotime\api;
-use mediatimesrc_videotime\output\media_resource;
+use mediatimesrc_vimeo\api;
+use mediatimesrc_vimeo\output\media_resource;
 
 /**
- * Media Time delete resource form
+ * Media Time media edit form
  *
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -44,13 +44,22 @@ class delete_resource extends \tool_mediatime\form\delete_resource {
 
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
-        $mform->setDefault('source', 'videotime');
+        $mform->setDefault('source', 'vimeo');
 
         $mform->addElement('static', 'name', get_string('resourcename', 'tool_mediatime'), $this->_customdata['name']);
         $mform->setType('name', PARAM_TEXT);
 
         $mform->addElement('hidden', 'delete');
         $mform->setType('delete', PARAM_INT);
+
+        $action = [
+            $mform->createElement('radio', 'action', '', get_string('keepvimeofiles', 'mediatimesrc_vimeo'), 1, []),
+            $mform->createElement('radio', 'action', '', get_string('removevimeofiles', 'mediatimesrc_vimeo'), 2, []),
+        ];
+        $mform->addGroup($action, 'vimeofileaction', get_string('vimeofileaction', 'mediatimesrc_vimeo'), [' '], false);
+        $mform->setType('action', PARAM_INT);
+        $mform->setDefault('action', 2);
+        $mform->addHelpButton('vimeofileaction', 'vimeofileaction', 'mediatimesrc_vimeo');
 
         $this->add_action_buttons(true, get_string('delete'));
     }

@@ -17,14 +17,13 @@
 /**
  * Display a resource in the media library
  *
- * @package    tool_mediatime
+ * @package    mediatimesrc_vimeo
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_mediatime\output;
+namespace mediatimesrc_vimeo\output;
 
-use core_tag_tag;
 use moodle_url;
 use stdClass;
 use renderable;
@@ -38,11 +37,11 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class media_resource implements renderable, templatable {
+    /** @var $context System context */
+    protected $context = null;
+
     /** @var ?stdClass $record Media Time resource record */
     protected $record;
-
-    /** @var $record Source specifific resource renderable */
-    protected $resource;
 
     /**
      * Constructor
@@ -51,8 +50,6 @@ class media_resource implements renderable, templatable {
      */
     public function __construct(stdClass $record) {
         $this->record = $record;
-        $resourceclass = "\\mediatimesrc_$record->source\\output\\media_resource";
-        $this->resource = new $resourceclass($record);
     }
 
     /**
@@ -63,33 +60,41 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
+        $content = json_decode($this->record->content);
+        $api = new \mediatimesrc_vimeo\api();
         $context = \context_system::instance();
 
+        $video = new video($content);
         return [
             'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
-            'resource' => $output->render($this->resource),
-            'tags' => $this->tags($output),
+            'name' => $this->record->name,
+            'resource' => $content,
+            'video' => $output->render($video),
         ];
     }
 
     /**
-     * Return rendered tag elements for template
+     * Return url for poster image
      *
      * @param \renderer_base $output
+     * @return string url
+     */
+    public function image_url(renderer_base $output) {
+        if (empty(json_decode($this->record->content)->pictures)) {
+            return '';
+        }
+        return json_decode($this->record->content)->pictures->sizes[2]->link;
+    }
+
+    /**
+     * Return resource title
+     *
      * @return string
      */
-    public function tags($output) {
-        return $output->tag_list(
-            core_tag_tag::get_item_tags(
-                'tool_mediatime',
-                'tool_mediatime',
-                $this->record->id
-            ),
-            null,
-            'mediatime-tags'
-        );
+    public function get_title() {
+        return json_decode($this->record->content)->name ?? '';
     }
 
     /**
@@ -99,17 +104,7 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function video_url($output) {
-        return $this->resource->video_url($output);
-    }
-
-    /**
-     * Return url for poster image
-     *
-     * @param \renderer_base $output
-     * @return string url
-     */
-    public function image_url($output) {
-        return $this->resource->image_url($output);
+        return json_decode($this->record->content)->link;
     }
 
     /**
@@ -119,18 +114,6 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function video_file_content($output) {
-        return $this->resource->video_file_content($output);
-    }
-
-    /**
-     * Return resource title
-     *
-     * @return string
-     */
-    public function get_title() {
-        if (method_exists($this->resource, 'get_title')) {
-            return $this->resource->get_title();
-        }
-        return json_decode($this->record->content)->title ?? '';
+        return file_get_contents($this->video_url($output));
     }
 }

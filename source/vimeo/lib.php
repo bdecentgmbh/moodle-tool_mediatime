@@ -17,7 +17,7 @@
 /**
  * Library of interface functions and constants.
  *
- * @package     mediatimesrc_videotime
+ * @package     mediatimesrc_vimeo
  * @copyright   2022 bdecent gmbh <https://bdecent.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,13 +38,14 @@ require_once("$CFG->libdir/resourcelib.php");
  * @param array $options additional options affecting the file serving
  * @return bool false if the file was not found, just send the file otherwise and do not return anything
  */
-function mediatimesrc_videotime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+function mediatimesrc_vimeo_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     if ($context->contextlevel != CONTEXT_SYSTEM) {
         return false;
     }
 
     if (
         in_array($filearea, [
+        'posterimage',
         'videofile',
         ])
     ) {
@@ -53,13 +54,13 @@ function mediatimesrc_videotime_pluginfile($course, $cm, $context, $filearea, $a
 
         $relativepath = implode('/', $args);
 
-        $fullpath = "/$context->id/mediatimesrc_videotime/$filearea/$itemid/$relativepath";
+        $fullpath = "/$context->id/mediatimesrc_vimeo/$filearea/$itemid/$relativepath";
 
         $fs = get_file_storage();
         if (
             (!$file = $fs->get_file_by_hash(sha1($fullpath)))
             || $file->is_directory()
-            || $file->get_contenthash() != $contenthash
+            || ($contenthash != $file->get_contenthash())
         ) {
             return false;
         }
@@ -73,9 +74,8 @@ function mediatimesrc_videotime_pluginfile($course, $cm, $context, $filearea, $a
  *
  * @return array List of file areas
  */
-function mediatimesrc_videotime_config_file_areas() {
+function mediatimesrc_vimeo_config_file_areas() {
     return [
-        'posterimage',
         'videofile',
     ];
 }

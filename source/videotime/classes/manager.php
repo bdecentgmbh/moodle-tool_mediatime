@@ -68,7 +68,7 @@ class manager implements renderable, templatable {
         }
 
         if ($record) {
-            $this->content = $record->content;
+            $this->content = json_decode($record->content);
         }
 
         $maxbytes = get_config('mediatimesrc_videotime', 'maxbytes');
