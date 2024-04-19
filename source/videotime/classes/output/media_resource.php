@@ -41,8 +41,17 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class media_resource implements renderable, templatable {
+    /** @var $context System context */
+    protected $context = null;
+
+    /** @var $context Poster image url */
+    protected $poster = null;
+
     /** @var ?stdClass $record Media Time resource record */
     protected $record;
+
+    /** @var $context Video url */
+    protected $videourl = null;
 
     /**
      * Constructor
@@ -83,7 +92,7 @@ class media_resource implements renderable, templatable {
             'canedit' => has_capability('moodle/tag:edit', $this->context) || $USER->id == $this->record->usermodified,
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
-            'resource' => $this->record->content,
+            'resource' => json_decode($this->record->content),
             'video' => $output->render_from_template('mediatimesrc_videotime/video', $content),
         ];
     }

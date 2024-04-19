@@ -61,7 +61,6 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
-        $content = (array)$this->record->content;
         $context = \context_system::instance();
         $videourl = $this->video_url($output);
 
@@ -96,7 +95,7 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function image_url(renderer_base $output) {
-        return 'https://' . $this->record->content->screenshot->normal;
+        return 'https://' . json_decode($this->record->content)->screenshot->normal;
     }
 
     /**
@@ -108,7 +107,7 @@ class media_resource implements renderable, templatable {
     public function video_url($output) {
         $this->videourl = '';
 
-        $id = $this->record->content->id;
+        $id = json_decod($this->record->content)->id;
 
         return "https://streamio.com/api/v1/videos/$id/public_show.m3u8";
     }

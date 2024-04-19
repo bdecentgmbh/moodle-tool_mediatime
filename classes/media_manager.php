@@ -45,10 +45,13 @@ use recordset;
  */
 class media_manager implements renderable, templatable {
     /** @var array $media List of media resources to display */
-    protected $media;
+    protected $media = null;
 
     /** @var int $page Paging offset */
     protected int $page = 0;
+
+    /** @var $source Source manager */
+    protected $source = null;
 
     /** @var $page Search form */
     protected $search = null;
@@ -71,7 +74,6 @@ class media_manager implements renderable, templatable {
         require_capability('tool/mediatime:view', context_system::instance());
         if ($record) {
             $source = $record->source;
-            $record->content = json_decode($record->content);
         }
 
         $plugins = plugininfo\mediatimesrc::get_enabled_plugins();
@@ -98,7 +100,7 @@ class media_manager implements renderable, templatable {
             $rs = self::search((array)$this->search->get_data());
             foreach ($rs as $media) {
                 if (in_array($media->source, $plugins)) {
-                    $media->content = json_decode($media->content);
+                    $media->content = $media->content ?? '{}';
                     $this->media[] = $media;
                 }
             }
@@ -136,7 +138,8 @@ class media_manager implements renderable, templatable {
                 'imageurl' => $resource->image_url($output),
                 'tags' => $resource->tags($output),
                 'url' => $url->out(),
-                'content' => $record->content,
+                'name' => $record->name,
+                'title' => $resource->get_title(),
                 'removeurl' => $removeurl->out(),
             ];
         }

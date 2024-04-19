@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for mediatimesrc_videotime.
+ * Privacy Subsystem implementation for mediatimesrc_vimeo.
  *
- * @package    mediatimesrc_videotime
+ * @package    mediatimesrc_vimeo
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mediatimesrc_videotime\privacy;
+namespace mediatimesrc_vimeo\privacy;
 
 /**
- * Privacy Subsystem for mediatimesrc_videotime implementing null_provider.
+ * Privacy Subsystem for mediatimesrc_vimeo implementing null_provider.
  *
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

@@ -28,9 +28,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php: '8.1'
+          - php: '8.3'
             moodle-branch: 'master'
             database: 'pgsql'
+          - php: '8.2'
+            moodle-branch: 'master'
+            database: 'mariadb'
+          - php: '8.1'
+            moodle-branch: 'MOODLE_404_STABLE'
+            database: 'mariadb'
           - php: '8.1'
             moodle-branch: 'MOODLE_403_STABLE'
             database: 'pgsql'
@@ -39,7 +45,7 @@ jobs:
             database: 'mariadb'
           - php: '8.0'
             moodle-branch: 'MOODLE_401_STABLE'
-            database: 'mariadb'
+            database: 'pgsql'
 
     steps:
       - name: Check out repository code

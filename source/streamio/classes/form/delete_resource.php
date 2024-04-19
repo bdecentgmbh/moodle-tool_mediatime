@@ -36,7 +36,6 @@ use mediatimesrc_streamio\output\media_resource;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class delete_resource extends \tool_mediatime\form\delete_resource {
-
     /**
      * Definition
      */
