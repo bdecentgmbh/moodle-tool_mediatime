@@ -41,21 +41,16 @@ use core_privacy\local\request\writer;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-        // The Plenary meeting module stores user provided data.
-        \core_privacy\local\metadata\provider,
-
-        // This plugin is a core_user_data_provider.
-        \core_privacy\local\request\plugin\provider,
-
-        \core_privacy\local\request\core_userlist_provider {
-
+    \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\plugin\provider {
     /**
      * Returns meta data about this system.
      *
      * @param collection $collection
      * @return collection
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
 
         return $collection->add_database_table(
             'tool_mediatime',
@@ -76,7 +71,7 @@ class provider implements
      * @param int $userid The user to search.
      * @return contextlist $contextlist The contextlist containing the list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid) : contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
         $sql = "SELECT c.id
                   FROM {tool_mediatime} m
                   JOIN {context} c ON c.contextlevel = :contextlevel
@@ -121,7 +116,7 @@ class provider implements
         global $DB;
 
         // Remove contexts different from CONTEXT_SYSTEM.
-        $contexts = array_reduce($contextlist->get_contexts(), function($carry, $context) {
+        $contexts = array_reduce($contextlist->get_contexts(), function ($carry, $context) {
             if ($context->contextlevel == CONTEXT_SYSTEM) {
                 $carry[] = $context->id;
             }
@@ -135,7 +130,7 @@ class provider implements
         $user = $contextlist->get_user();
         $userid = $user->id;
         // Get motion data.
-        list($insql, $inparams) = $DB->get_in_or_equal($contexts, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($contexts, SQL_PARAMS_NAMED);
         $sql = "SELECT m.id,
                        m.name,
                        m.content,
@@ -194,7 +189,6 @@ class provider implements
         if (!$context instanceof \context_system) {
             return;
         }
-
     }
 
     /**
@@ -206,6 +200,5 @@ class provider implements
         global $DB;
 
         return;
-
     }
 }

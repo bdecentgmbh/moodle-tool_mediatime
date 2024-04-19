@@ -185,7 +185,7 @@ class media_manager implements renderable, templatable {
         if (!$sources = plugininfo\mediatimesrc::get_enabled_plugins()) {
             return $result;
         }
-        list($sql, $params) = $DB->get_in_or_equal($sources, SQL_PARAMS_NAMED);
+        [$sql, $params] = $DB->get_in_or_equal($sources, SQL_PARAMS_NAMED);
 
         $sql = "source $sql";
         $order = 'timecreated DESC';
@@ -205,7 +205,7 @@ class media_manager implements renderable, templatable {
             $tags = core_tag_tag::get_by_name_bulk($tagcollid, $tags);
             $tags = array_column($tags, 'id');
             if (!empty($tags)) {
-                list($tagsql, $tagparams) = $DB->get_in_or_equal($tags, SQL_PARAMS_NAMED, 'tagparams');
+                [$tagsql, $tagparams] = $DB->get_in_or_equal($tags, SQL_PARAMS_NAMED, 'tagparams');
                 $sql .= " AND id IN (SELECT itemid FROM {tag_instance} WHERE tagid $tagsql)";
                 $params += $tagparams;
             }

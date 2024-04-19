@@ -31,14 +31,17 @@ namespace tool_mediatime\admin;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class manage_mediatimesrc_plugins_page extends \admin_setting {
-
     /**
      * Class manage_mediatimesrc_plugins_page constructor.
      */
     public function __construct() {
         $this->nosave = true;
-        parent::__construct('managemediatimesrc',
-                new \lang_string('managemediatimesrcplugins', 'tool_mediatime'), '', '');
+        parent::__construct(
+            'managemediatimesrc',
+            new \lang_string('managemediatimesrcplugins', 'tool_mediatime'),
+            '',
+            ''
+        );
     }
 
     /**
@@ -82,8 +85,10 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
         }
         $types = \core_plugin_manager::instance()->get_plugins_of_type('mediatimesrc');
         foreach ($types as $type) {
-            if (strpos($type->component, $query) !== false ||
-                    strpos(\core_text::strtolower($type->displayname), $query) !== false) {
+            if (
+                strpos($type->component, $query) !== false ||
+                    strpos(\core_text::strtolower($type->displayname), $query) !== false
+            ) {
                 return true;
             }
         }
@@ -131,20 +136,26 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
             ]);
 
             $class = '';
-            if ($pluginmanager->get_plugin_info('mediatimesrc_'.$type->name)->get_status() ===
-                    \core_plugin_manager::PLUGIN_STATUS_MISSING) {
-                $strtypename = $type->displayname.' ('.get_string('missingfromdisk').')';
+            if (
+                $pluginmanager->get_plugin_info('mediatimesrc_' . $type->name)->get_status() ===
+                    \core_plugin_manager::PLUGIN_STATUS_MISSING
+            ) {
+                $strtypename = $type->displayname . ' (' . get_string('missingfromdisk') . ')';
             } else {
                 $strtypename = $type->displayname;
             }
 
             if ($type->is_enabled()) {
-                $hideshow = \html_writer::link($url->out(false, ['action' => 'disable']),
-                        $OUTPUT->pix_icon('t/hide', $txt->disable, 'moodle', ['class' => 'iconsmall']));
+                $hideshow = \html_writer::link(
+                    $url->out(false, ['action' => 'disable']),
+                    $OUTPUT->pix_icon('t/hide', $txt->disable, 'moodle', ['class' => 'iconsmall'])
+                );
             } else {
                 $class = 'dimmed_text';
-                $hideshow = \html_writer::link($url->out(false, ['action' => 'enable']),
-                        $OUTPUT->pix_icon('t/show', $txt->enable, 'moodle', ['class' => 'iconsmall']));
+                $hideshow = \html_writer::link(
+                    $url->out(false, ['action' => 'enable']),
+                    $OUTPUT->pix_icon('t/show', $txt->enable, 'moodle', ['class' => 'iconsmall'])
+                );
             }
 
             $settings = '';
@@ -153,8 +164,12 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
             }
 
             $uninstall = '';
-            if ($uninstallurl = \core_plugin_manager::instance()->get_uninstall_url(
-                    'mediatimesrc_'.$type->name, 'manage')) {
+            if (
+                $uninstallurl = \core_plugin_manager::instance()->get_uninstall_url(
+                    'mediatimesrc_' . $type->name,
+                    'manage'
+                )
+            ) {
                 $uninstall = \html_writer::link($uninstallurl, $txt->uninstall);
             }
 
@@ -167,7 +182,7 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
         }
 
         // Sort table data.
-        usort($table->data, function($a, $b) {
+        usort($table->data, function ($a, $b) {
             $aid = $a->cells[0]->text;
             $bid = $b->cells[0]->text;
 
