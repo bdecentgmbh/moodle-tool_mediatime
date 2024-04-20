@@ -53,6 +53,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->addElement('text', 'name', get_string('resourcename', 'tool_mediatime'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addHelpButton('name', 'resourcename', 'tool_mediatime');
+        $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
         $mform->addElement('text', 'title', get_string('title', 'tool_mediatime'));
         $mform->setType('title', PARAM_TEXT);

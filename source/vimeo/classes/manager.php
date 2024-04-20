@@ -99,7 +99,17 @@ class manager implements renderable, templatable {
 
             $this->content->tags = core_tag_tag::get_item_tags_array('tool_mediatime', 'tool_mediatime', $edit);
 
-            $data += ['name' => $this->record->name, 'title' => $this->content->name] + (array)$this->content;
+            // Check for updated values at Vimeo.
+            if (!$this->form->is_submitted()) {
+                $video = $this->api->request($this->content->uri)['body'];
+                $data = [
+                    'description' => $video['description'],
+                    'title' => $video['name'],
+                    'name' => $this->record->name,
+                ] + $data;
+            } else {
+                $data += ['name' => $this->record->name, 'title' => $this->content->name] + (array)$this->content;
+            }
         }
         $this->form->set_data($data);
         if ($this->form->is_cancelled()) {
@@ -123,6 +133,9 @@ class manager implements renderable, templatable {
             foreach ($fs->get_area_files(context_user::instance($USER->id)->id, 'user', 'draft', $data->videofile) as $file) {
                 if (!$file->is_directory()) {
                     $data->edit = $DB->insert_record('tool_mediatime', $data);
+                    if (empty($data->title)) {
+                        $data->title = $data->name;
+                    }
 
                     file_save_draft_area_files(
                         $data->videofile,

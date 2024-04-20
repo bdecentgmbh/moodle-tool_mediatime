@@ -58,7 +58,7 @@ class delete_resource extends \tool_mediatime\form\delete_resource {
         ];
         $mform->addGroup($action, 'vimeofileaction', get_string('vimeofileaction', 'mediatimesrc_vimeo'), [' '], false);
         $mform->setType('action', PARAM_INT);
-        $mform->setDefault('action', 2);
+        $mform->setDefault('action', 1);
         $mform->addHelpButton('vimeofileaction', 'vimeofileaction', 'mediatimesrc_vimeo');
 
         $this->add_action_buttons(true, get_string('delete'));

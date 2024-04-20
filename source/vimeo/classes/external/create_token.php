@@ -88,14 +88,14 @@ class create_token extends external_api {
                 'size' => $params['filesize'],
             ],
         ]);
-        $video = $api->request($video['uri'], [
-            'name' => $params['title'],
+        $updatedvideo = $api->request($video['uri'], [
+            'name' => $params['title'] ?: $params['name'],
             'description' => $params['description'],
         ], 'PATCH')['body'];
         $id = $DB->insert_record('tool_mediatime', [
             'name' => $params['name'],
             'source' => 'vimeo',
-            'content' => json_encode($video),
+            'content' => json_encode($updatedvideo),
             'timecreated' => time(),
             'timemodified' => time(),
             'usermodified' => $USER->id,
