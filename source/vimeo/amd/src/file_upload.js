@@ -3,17 +3,21 @@ import Config from 'core/config';
 import Log from 'core/log';
 import Notification from 'core/notification';
 
-const upload = async(resource) => {
+/**
+ * Handle uploading
+ *
+ * @param Vimeo token request response
+ */
+const upload = async (resource) => {
     const file = document.querySelector('input[name="videofile"]').files[0];
     const url = new URL(Config.wwwroot + '/admin/tool/mediatime/index.php');
     let offset = 0;
-    let response;
 
     url.searchParams.set('id', resource.id);
 
     do {
         const request = new Request(resource.uploadurl, {
-            body: file,
+            body: file.slice(Number(offset), Number(offset) + 128*2**20),
             headers: {
                 'Tus-Resumable': '1.0.0',
                 'Upload-Offset': String(offset),
@@ -21,19 +25,32 @@ const upload = async(resource) => {
             },
             method: 'PATCH'
         });
-        response = await fetch(request);
-        document.querySelector('.progress').style.width = (response.headers.get('Upload-Offset') / file.size * 100) + '%';
-        Log.debug(response.headers.get('Upload-Offset'));
-    } while (response.headers.get('Upload-Offset') < file.size);
+        const response = await fetch(request).catch(e => {
+            Log.debug(e);
+            return new Promise(resolve => setTimeout(resolve, 1000));
+        });
+        if (response && response.ok) {
+            offset = response.headers.get('Upload-Offset');
+        }
+        document.querySelector('.progress').style.width = ( offset / file.size * 100) + '%';
+    } while (offset < file.size);
     window.location.href = url;
 };
 
 export default {
+    /**
+     * Init event listeners
+     */
     init: function() {
         document.body.removeEventListener('click', this.handleClick);
         document.body.addEventListener('click', this.handleClick);
     },
 
+    /**
+     * Handle button click
+     *
+     * Event e
+     */
     handleClick: function(e) {
         const button = e.target.closest('button[name="upload"]');
         if (button) {
@@ -52,7 +69,6 @@ export default {
                 fail: Notification.exception,
                 methodname: 'mediatimesrc_vimeo_create_token'
             }]);
-            Log.debug(file.size);
         }
     }
 };
