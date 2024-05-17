@@ -109,7 +109,7 @@ class manager implements renderable, templatable {
         }
 
         if ($record) {
-            $this->content = $record->content;
+            $this->content = json_decode($record->content);
         }
 
         if ($edit = optional_param('edit', null, PARAM_INT)) {

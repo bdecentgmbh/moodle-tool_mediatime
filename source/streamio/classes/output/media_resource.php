@@ -64,7 +64,7 @@ class media_resource implements renderable, templatable {
         $context = \context_system::instance();
         $videourl = $this->video_url($output);
 
-        $content += [
+        $content = [
             'elementid' => 'video-' . uniqid(),
             'instance' => json_encode([
                 'vimeo_url' => $videourl,

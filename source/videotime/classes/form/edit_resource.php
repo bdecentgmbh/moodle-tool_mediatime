@@ -137,11 +137,13 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         if ($record) {
             $resource = new media_resource($record);
 
+            $videourl = $resource->video_url($OUTPUT);
+
             $content = [
                 'poster' => $resource->image_url($OUTPUT),
                 'elementid' => 'video-' . uniqid(),
                 'instance' => json_encode([
-                    'vimeo_url' => $resource->video_url($OUTPUT),
+                    'vimeo_url' => $videourl,
                     'controls' => true,
                     'responsive' => true,
                     'playsinline' => false,

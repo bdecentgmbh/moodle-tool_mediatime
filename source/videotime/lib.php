@@ -45,11 +45,11 @@ function mediatimesrc_videotime_pluginfile($course, $cm, $context, $filearea, $a
 
     if (
         in_array($filearea, [
+        'posterimage',
         'videofile',
         ])
     ) {
         $itemid = array_shift($args);
-        $contenthash = array_shift($args);
 
         $relativepath = implode('/', $args);
 
@@ -59,7 +59,6 @@ function mediatimesrc_videotime_pluginfile($course, $cm, $context, $filearea, $a
         if (
             (!$file = $fs->get_file_by_hash(sha1($fullpath)))
             || $file->is_directory()
-            || $file->get_contenthash() != $contenthash
         ) {
             return false;
         }
