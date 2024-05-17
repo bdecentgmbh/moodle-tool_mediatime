@@ -107,7 +107,7 @@ class media_resource implements renderable, templatable {
     public function video_url($output) {
         $this->videourl = '';
 
-        $id = json_decod($this->record->content)->id;
+        $id = json_decode($this->record->content)->id;
 
         return "https://streamio.com/api/v1/videos/$id/public_show.m3u8";
     }
