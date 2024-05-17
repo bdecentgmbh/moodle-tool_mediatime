@@ -57,7 +57,6 @@ class video implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
-        $api = new \mediatimesrc_vimeo\api();
         $context = \context_system::instance();
 
         return [
