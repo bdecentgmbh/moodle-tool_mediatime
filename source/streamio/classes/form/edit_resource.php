@@ -96,6 +96,11 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $resource = new media_resource($record);
 
             $videourl = $resource->video_url($OUTPUT);
+            if (substr($videourl, -5) == '.m3u8') {
+                $type = 'video/x-mpegURL';
+	    } else {
+                $type = resourcelib_guess_url_mimetype($videourl);
+            }
             $content = [
                 'poster' => $resource->image_url($OUTPUT),
                 'elementid' => 'video-' . uniqid(),
@@ -107,7 +112,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     'autoplay' => false,
                     'option_loop' => false,
                     'muted' => true,
-                    'type' => resourcelib_guess_url_mimetype($videourl),
+                    'type' => $type,
                 ]),
             ];
             $mform->insertElementBefore(

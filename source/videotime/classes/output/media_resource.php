@@ -72,6 +72,11 @@ class media_resource implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
         $videourl = $this->video_url($output);
+        if (substr($videourl, -5) == '.m3u8') {
+            $type = 'video/x-mpegURL';
+	} else {
+            $type = resourcelib_guess_url_mimetype($videourl);
+	}
 
         $content = [
             'elementid' => 'video-' . uniqid(),
@@ -82,7 +87,7 @@ class media_resource implements renderable, templatable {
                 'muted' => true,
                 'option_loop' => false,
                 'responsive' => true,
-                'type' => resourcelib_guess_url_mimetype($videourl),
+                'type' => $type,
                 'vimeo_url' => $videourl,
             ]),
             'poster' => $this->image_url($output),

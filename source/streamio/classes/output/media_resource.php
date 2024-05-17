@@ -63,6 +63,11 @@ class media_resource implements renderable, templatable {
         global $DB, $USER;
         $context = \context_system::instance();
         $videourl = $this->video_url($output);
+        if (substr($videourl, -5) == '.m3u8') {
+            $type = 'video/x-mpegURL';
+	} else {
+            $type = resourcelib_guess_url_mimetype($videourl);
+        }
 
         $content = [
             'elementid' => 'video-' . uniqid(),
@@ -74,7 +79,7 @@ class media_resource implements renderable, templatable {
                 'autoplay' => false,
                 'option_loop' => false,
                 'muted' => true,
-                'type' => resourcelib_guess_url_mimetype($videourl),
+                'type' => $type,
             ]),
             'poster' => $this->image_url($output),
         ];

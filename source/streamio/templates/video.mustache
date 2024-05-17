@@ -38,7 +38,7 @@
         id="{{ elementid }}"
         controls
         class="video-js"
-        poster="https://{{ screenshot.normal }}"
+        poster="{{ poster }}"
     >
     </video>
 </p>
@@ -48,6 +48,7 @@
             return true;
         };
         var v = new VideoTime('{{ elementid }}', 0, 0, 0, {{{instance}}});
+        console.log(['{{ elementid }}', 0, 0, 0, {{{instance}}}]);
         v.initialize();
     });
 {{/js}}
