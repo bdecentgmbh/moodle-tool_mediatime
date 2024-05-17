@@ -37,6 +37,7 @@ $edit = optional_param('edit', null, PARAM_INT);
 admin_externalpage_setup('mediatimelibrary');
 
 $PAGE->set_heading(get_string('pluginname', 'tool_mediatime'));
+
 if ($id) {
     $record = $DB->get_record('tool_mediatime', ['id' => $id]);
 } else if ($delete) {
@@ -50,6 +51,7 @@ if ($id) {
 $manager = new media_manager($source, $record);
 
 echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('pluginname', 'tool_mediatime'));
 
 echo $OUTPUT->render($manager);
 
