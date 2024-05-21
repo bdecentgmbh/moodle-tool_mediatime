@@ -89,7 +89,9 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
      * Display resource or add file fields
      */
     public function definition_after_data() {
-        global $DB, $OUTPUT;
+        global $DB, $PAGE;
+
+	$output = $PAGE->get_renderer('tool_mediatime');
 
         $mform =& $this->_form;
 
@@ -101,7 +103,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $content = json_decode($record->content);
             $video = new video($content);
             $mform->insertElementBefore(
-                $mform->createElement('html', $OUTPUT->render($video)),
+                $mform->createElement('html', $output->render($video)),
                 'name'
             );
             $mform->removeElement('vimeo_url');

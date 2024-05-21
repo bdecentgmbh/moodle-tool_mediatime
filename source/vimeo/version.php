@@ -27,5 +27,5 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'mediatimesrc_vimeo';
 $plugin->release = '1.0';
 $plugin->version = 2024010802;
-$plugin->requires = 2022112800;
+$plugin->requires = 2022110800;
 $plugin->maturity = MATURITY_ALPHA;
