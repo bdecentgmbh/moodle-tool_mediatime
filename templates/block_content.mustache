@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mediatimesrc_streamio/video
+    @template tool_mediatime/media_manager
 
-    This template will render a resource to embed in library
+    This template will render the Media manager for media time
 
     Variables required for this template:
 
@@ -25,29 +25,16 @@
 
     Example context (json):
     {
-        "elementid": "324lk32sK",
-        "instance": "[{'vimeo_url': 'https://example.com/video.m3u8'}]",
-        "screenshot": {
-            "normal": "example.com/image.jpg"
-        }
     }
 
 }}
-<p class="col col-12 col-md-9 col-lg-8 col-xl-6 text-center">
-    <video 
-        id="{{ elementid }}"
-        controls
-        class="video-js"
-        poster="https://{{ screenshot.normal }}"
-    >
-    </video>
-</p>
-{{#js}}
-    require(['videotimeplugin_videojs/videotime'], function(VideoTime) {
-        VideoTime.prototype.view = function() {
-            return true;
-        };
-        var v = new VideoTime('{{ elementid }}', 0, 0, 0, {{{instance}}});
-        v.initialize();
-    });
-{{/js}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col col-12 col-lg-3">
+            {{{ action }}}
+        </div>
+        <div class="col col-12{{# action }} col-lg-9{{/ action }}">
+            {{{ search }}}
+        </div>
+    </div>
+</div>

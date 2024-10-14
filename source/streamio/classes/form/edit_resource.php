@@ -93,6 +93,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $context = context_system::instance();
         if ($record) {
             $content = json_decode($record->content);
+            $streamioid = $content->id;
             $resource = new media_resource($record);
 
             $videourl = $resource->video_url($OUTPUT);
@@ -116,6 +117,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     $OUTPUT->render_from_template('mediatimesrc_streamio/video', $content)
                 ),
                 'name'
+            );
+            $mform->insertElementBefore(
+                $mform->createElement('static', 'vimeo_url', get_string('streamioid', 'mediatimesrc_streamio'), $streamioid),
+                'filesource'
             );
             $mform->removeElement('filesource');
         } else {

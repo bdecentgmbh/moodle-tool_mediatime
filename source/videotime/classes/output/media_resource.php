@@ -41,6 +41,9 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class media_resource implements renderable, templatable {
+    /** @var ?stdClass $content Media Time content object */
+    protected $content;
+
     /** @var $context System context */
     protected $context = null;
 
@@ -61,6 +64,8 @@ class media_resource implements renderable, templatable {
     public function __construct(stdClass $record) {
         $this->record = $record;
         $this->context = \context_system::instance();
+        $this->content = json_decode($record->content);
+        $this->content->description = shorten_text($this->content->description, 300);
     }
 
     /**

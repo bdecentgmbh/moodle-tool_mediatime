@@ -35,6 +35,7 @@ $string['pluginname'] = 'Streamio';
 $string['privacy:metadata'] = 'The Streamio plugin for Media Time does not store personal data. It does transmit files associated with educational video content that normally does not contain user data. If it is used for personal data, a separate agreement with the provider may be required.';
 $string['removestreamiofiles'] = 'Remove Streamio files';
 $string['selectexistingfile'] = 'Select existing file';
+$string['streamioid'] = 'Streamio ID';
 $string['streamio:upload'] = 'Upload files to Streamio';
 $string['streamio:viewall'] = 'View all files available';
 $string['streamiofileaction'] = 'Streamio file action';

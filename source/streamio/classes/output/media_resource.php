@@ -41,6 +41,9 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class media_resource implements renderable, templatable {
+    /** @var ?stdClass $content Media Time content object */
+    protected $content;
+
     /** @var ?stdClass $record Media Time resource record */
     protected $record;
 
@@ -51,6 +54,8 @@ class media_resource implements renderable, templatable {
      */
     public function __construct(stdClass $record) {
         $this->record = $record;
+        $this->content = json_decode($record->content);
+        $this->content->description = shorten_text($this->content->description, 300);
     }
 
     /**
@@ -63,6 +68,8 @@ class media_resource implements renderable, templatable {
         global $DB, $USER;
         $context = \context_system::instance();
         $videourl = $this->video_url($output);
+        $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
+        $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $this->record->id]);
 
         $content = [
             'elementid' => 'video-' . uniqid(),
@@ -82,8 +89,10 @@ class media_resource implements renderable, templatable {
         return [
             'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
             'id' => $this->record->id,
+            'editurl' => $editurl->out(),
+            'removeurl' => $removeurl->out(),
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
-            'resource' => $content,
+            'resource' => $this->content,
             'video' => $output->render_from_template('mediatimesrc_streamio/video', $content),
         ];
     }

@@ -26,12 +26,14 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['addnewcontent'] = 'Add new content';
+$string['editresource'] = 'Edit resource';
 $string['event_resource_created'] = 'Resource created';
 $string['event_resource_deleted'] = 'Resource deleted';
 $string['event_resource_updated'] = 'Resource updated';
 $string['filelinks'] = 'File links';
 $string['keyword'] = 'Keyword';
 $string['library'] = 'Library';
+$string['libraryhome'] = 'Back to library';
 $string['managemediatimesrcplugins'] = 'Manage source plugins';
 $string['mediatime:create'] = 'Create media in library';
 $string['mediatime:manage'] = 'Manage media in library';
@@ -43,6 +45,8 @@ $string['privacy:metadata:tool_mediatime:name'] = 'Media name';
 $string['privacy:metadata:tool_mediatime:timecreated'] = 'Time created';
 $string['privacy:metadata:tool_mediatime:timemodified'] = 'Time modified';
 $string['privacy:metadata:tool_mediatime:usermodified'] = 'User modified';
+$string['removeresource'] = 'Remove resource';
+$string['resourcemanagementoptions'] = 'Resource management options';
 $string['resourcename'] = 'Resource name';
 $string['resourcename_help'] = 'The name for a resource is used internally in the library to identify the resource, but not displayed when it is used.';
 $string['subplugintype_mediatimesrc'] = 'Media Time source';

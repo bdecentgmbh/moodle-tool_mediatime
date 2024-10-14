@@ -266,7 +266,7 @@ class manager implements renderable, templatable {
                     'name' => json_encode($data->name),
                     'description' => json_encode($data->description),
                     'title' => json_encode($data->title),
-                    'tags' => htmlspecialchars(json_encode($data->tags)),
+                    'tags' => htmlspecialchars(json_encode($data->tags), ENT_COMPAT),
                 ]),
             ];
         }

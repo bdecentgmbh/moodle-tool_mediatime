@@ -35,21 +35,4 @@
     }
 
 }}
-<div class="library-resource">
-    <form action="." method="post">
-       {{# canedit }}
-           <input type="hidden" name="source" value="streamio">
-           <button type="submit" name="edit" value="{{ id }}">{{# str }} edit {{/ str }}</button>
-           <button type="submit" name="delete" value="{{ id }}">{{# str }} delete {{/ str }}</button>
-       {{/ canedit }}
-       {{# libraryhome }}
-       <a href="{{ libraryhome }}">{{# str }}library, tool_mediatime {{/ str }}</a>
-       {{/ libraryhome }}
-    </form>
-    <div class="container-fluid">
-        <h3>{{ resource.name }}</h3>
-        <h4>{{ resource.title }}</h4>
-            {{{ video }}}
-        <p>{{ resource.description }}</p>
-    </div>
-</div>
+{{> tool_mediatime/media_resource }}

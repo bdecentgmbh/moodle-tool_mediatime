@@ -1,0 +1,40 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_mediatime/dropdown
+
+    Simple dropdown for the tool_mediatime library page
+
+    Example context (json):
+    {
+        "editurl": "https://moodle.test/tool/admin/mediatime/index.php?edit=1",
+        "removeurl": "https://moodle.test/tool/admin/mediatime/index.php?delete=1"
+    }
+}}
+<div class="btn-group float-right">
+    <a href="#" class="btn btn-link btn-icon icon-size-3 rounded-circle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{{# str }} resourcemanagementoptions, tool_mediatime {{/ str }}">
+        <i class="fa fa-ellipsis-v text-dark  py-2" aria-hidden="true"></i>
+    </a>
+    <div class="dropdown-menu dropdown-menu-right">
+        {{# editurl }}
+            <a class="dropdown-item" href="{{ editurl }}">{{#str}} editresource , tool_mediatime {{/str}}</a>
+        {{/ editurl }}
+        {{# removeurl }}
+            <a class="dropdown-item" href="{{ removeurl }}">{{#str}} removeresource, tool_mediatime {{/str}}</a>
+        {{/ removeurl }}
+    </div>
+</div>

@@ -64,10 +64,14 @@ class media_resource implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
         $context = \context_system::instance();
+        $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
+        $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $this->record->id]);
 
         return [
             'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
             'id' => $this->record->id,
+            'editurl' => $editurl->out(),
+            'removeurl' => $removeurl->out(),
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
             'resource' => $output->render($this->resource),
             'tags' => $this->tags($output),

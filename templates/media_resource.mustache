@@ -25,16 +25,31 @@
 
     Example context (json):
     {
+       "canedit": true,
+       "id": 2,
+       "resource": {
+           "title": "title",
+           "name": "name",
+           "description": "big and blue"
+       }
     }
 
 }}
-<form action='.' method="post">
-   {{# canedit }}
-       <button type="submit" name="edit" value="{{ id }}">{{# str }} edit {{/ str }}</button>
-       <button type="submit" name="delete" value="{{ id }}">{{# str }} delete {{/ str }}</button>
-   {{/ canedit }}
-   <a href="{{ libraryhome }}">{{# str }}library, tool_mediatime {{/ str }}</a>
-</form>
 <div class="library-resource">
-    {{{ resource }}}
+    <form action="." method="post">
+       {{# canedit }}
+           {{> tool_mediatime/dropdown }}
+       {{/ canedit }}
+       {{# libraryhome }}
+       <button action="{{ libraryhome }}" class="float-right"><i class="fa fa-angle-double-left"></i>{{# str }}libraryhome, tool_mediatime {{/ str }}</button>
+       {{/ libraryhome }}
+    </form>
+    <div class="container-fluid">
+        {{$ resourcecontent }}
+        <h3>{{ resource.name }}</h3>
+        <h4>{{ resource.title }}</h4>
+            {{{ video }}}
+        <p>{{ resource.description }}</p>
+        {{/ resourcecontent }}
+    </div>
 </div>
