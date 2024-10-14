@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
+use block_contents;
 use context_system;
 use core_tag_tag;
 use core_tag_area;
@@ -120,6 +121,7 @@ class media_manager implements renderable, templatable {
                     $this->media[] = $media;
                 }
             }
+            $this->setup_page();
 
             $rs->close();
         }
@@ -149,6 +151,7 @@ class media_manager implements renderable, templatable {
         foreach ($this->media as $record) {
             $resource = new output\media_resource($record);
             $url = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $record->id]);
+            $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $record->id]);
             $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $record->id]);
             $media[] = [
                 'imageurl' => $resource->image_url($output),
@@ -156,6 +159,8 @@ class media_manager implements renderable, templatable {
                 'url' => $url->out(),
                 'name' => $record->name,
                 'title' => $resource->get_title(),
+                'description' => shorten_text(json_decode($record->content)->description ?? '', 80),
+                'editurl' => $editurl->out(),
                 'removeurl' => $removeurl->out(),
             ];
         }
@@ -182,10 +187,9 @@ class media_manager implements renderable, templatable {
         } else {
             $action = '';
         }
+
         return [
-            'action' => $action,
             'media' => array_values($media),
-            'search' => $this->search->render(),
         ];
     }
 
@@ -242,5 +246,46 @@ class media_manager implements renderable, templatable {
             $params,
             $order
         );
+    }
+
+    /**
+     * Add the search block to default region
+     *
+     * @param   stdClass    $instance   Video Time instance
+     * @param   stdClass    $cm         The course module
+     */
+    protected function setup_page() {
+        global $OUTPUT, $PAGE, $USER;
+
+        $bc = new block_contents();
+        $bc->title = get_string('sharedvideo', 'videotimeplugin_live');
+        $bc->attributes['class'] = 'block block_book_toc';
+
+        $plugins = \core_plugin_manager::instance()->get_installed_plugins('mediatimesrc');
+
+        $options = [];
+        foreach (plugininfo\mediatimesrc::get_enabled_plugins() as $plugin) {
+            $options[$plugin] = get_string("pluginname", "mediatimesrc_$plugin");
+        }
+        if (!has_capability('tool/mediatime:manage', context_system::instance())) {
+            $action = '';
+        } else if (count($options) == 1) {
+            $button = new single_button(new moodle_url('/admin/tool/mediatime/index.php', [
+                'source' => array_keys($options)[0],
+            ]), get_string('addnewcontent', 'tool_mediatime'));
+            $action = $OUTPUT->render($button);
+        } else if (count($options)) {
+            $select = new single_select(new moodle_url('/admin/tool/mediatime/index.php'), 'source', $options);
+            $action = get_string('addnewcontent', 'tool_mediatime') . ' ' . $OUTPUT->render($select);
+        } else {
+            $action = '';
+        }
+        $bc->content = $OUTPUT->render_from_template('tool_mediatime/block_content', [
+            'action' => $action,
+            'search' => $this->search->render(),
+        ]);
+
+        $defaultregion = $PAGE->blocks->get_default_region();
+        $PAGE->blocks->add_fake_block($bc, $defaultregion);
     }
 }

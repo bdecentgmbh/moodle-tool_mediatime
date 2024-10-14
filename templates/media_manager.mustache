@@ -43,15 +43,6 @@
         {{# media }}
             <div class="col col-12 col-md-6 col-lg-4 col-xl-3 m-0 p-2">
                 <div class="card">
-                    <div class="card-header">
-                        {{# name }}
-                            {{ name }}
-                        {{/ name }}
-                        {{^ name }}
-                            {{ title }}
-                        {{/ name }}
-                        <a href="{{ removeurl }}" class="float-right"><i class="icon fa fa-trash"></i></a>
-                    </div>
                     <a href="{{ url }}">
                         <img class="card-img rounded-0 ratio ratio-16x9" src="{{ imageurl }}">
                     </a>
@@ -59,6 +50,17 @@
                         <div class="card-title"><a href="{{ url }}"> {{ title }} </a></div>
                         <p class="card-text" style="max-height: 100px; overflow: hidden"> {{ description }} </p>
                         {{{ tags }}}
+                    </div>
+                    <div class="card-footer">
+                        {{# name }}
+                            <a href="{{ url }}" class="btn">
+                                <i class="fa fa-play"></i> {{ name }}
+                            </a>
+                        {{/ name }}
+                        {{^ name }}
+                            {{ title }}
+                        {{/ name }}
+                        {{> tool_mediatime/dropdown }}
                     </div>
                 </div>
             </div>

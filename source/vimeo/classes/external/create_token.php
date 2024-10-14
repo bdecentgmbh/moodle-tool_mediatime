@@ -107,7 +107,7 @@ class create_token extends external_api {
                 'tool_mediatime',
                 $id,
                 $context,
-                json_decode(htmlspecialchars_decode($params['tags']))
+                json_decode(htmlspecialchars_decode($params['tags'], ENT_COMPAT))
             );
         }
 
