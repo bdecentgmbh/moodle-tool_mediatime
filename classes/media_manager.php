@@ -88,7 +88,9 @@ class media_manager implements renderable, templatable {
                 $this->source = new $classname($this->record);
             }
         } else {
-            $this->search = new form\search(null, null, 'get', '', [
+            $this->search = new form\search((new moodle_url('/admin/tool/mediatime', [
+                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+            ]))->out(), null, 'POST', '', [
                 'class' => 'form-inline',
             ]);
 
@@ -97,7 +99,9 @@ class media_manager implements renderable, templatable {
                 redirect($url);
             }
 
-            $rs = self::search((array)$this->search->get_data());
+            $rs = self::search([
+                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+            ] + (array)$this->search->get_data());
             foreach ($rs as $media) {
                 if (in_array($media->source, $plugins)) {
                     $media->content = $media->content ?? '{}';
@@ -158,7 +162,9 @@ class media_manager implements renderable, templatable {
             ]), get_string('addnewcontent', 'tool_mediatime'));
             $action = $output->render($button);
         } else if (count($options)) {
-            $select = new single_select(new moodle_url('/admin/tool/mediatime/index.php'), 'source', $options);
+            $select = new single_select(new moodle_url('/admin/tool/mediatime/index.php', [
+                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+            ]), 'source', $options);
             $action = get_string('addnewcontent', 'tool_mediatime') . ' ' . $output->render($select);
         } else {
             $action = '';
@@ -197,6 +203,12 @@ class media_manager implements renderable, templatable {
 
             $params['name'] = "%$query%";
             $order = 'CASE WHEN ' . $DB->sql_like('name', ':name', false) . ' THEN 1 ELSE 0 END DESC, timecreated DESC';
+        }
+
+        // Filter by context.
+        if ($contextid = $filters['contextid'] ?? '') {
+            $sql .= ' AND contextid = :contextid';
+            $params['contextid'] = $contextid;
         }
 
         // Filter by tags.

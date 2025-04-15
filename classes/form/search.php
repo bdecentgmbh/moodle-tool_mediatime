@@ -44,6 +44,10 @@ class search extends moodleform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
+        $mform->addElement('hidden', 'contextid');
+        $mform->setType('contextid', PARAM_INT);
+        $mform->setDefault('contextid', SYSCONTEXTID);
+
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
 

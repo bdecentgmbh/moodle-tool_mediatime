@@ -48,6 +48,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->setType('create', PARAM_TEXT);
         $mform->setDefault('create', '');
 
+        $mform->addElement('hidden', 'contextid');
+        $mform->setType('contextid', PARAM_INT);
+        $mform->setDefault('contextid', SYSCONTEXTID);
+
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
         $mform->setDefault('source', 'videotime');

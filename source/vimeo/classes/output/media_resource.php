@@ -68,7 +68,7 @@ class media_resource implements renderable, templatable {
         return [
             'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
             'id' => $this->record->id,
-            'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
+            'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]),
             'name' => $this->record->name,
             'resource' => $content,
             'video' => $output->render($video),

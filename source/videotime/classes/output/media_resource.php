@@ -91,7 +91,7 @@ class media_resource implements renderable, templatable {
         return [
             'canedit' => has_capability('moodle/tag:edit', $this->context) || $USER->id == $this->record->usermodified,
             'id' => $this->record->id,
-            'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
+            'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]),
             'resource' => json_decode($this->record->content),
             'video' => $output->render_from_template('mediatimesrc_videotime/video', $content),
         ];

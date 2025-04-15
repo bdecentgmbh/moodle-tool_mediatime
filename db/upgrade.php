@@ -34,10 +34,20 @@ function xmldb_tool_mediatime_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    // For further information please read {@link https://docs.moodle.org/dev/Upgrade_API}.
-    //
-    // You will also have to create the db/install.xml file by using the XMLDB Editor.
-    // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
+    if ($oldversion < 2024010805) {
+
+        // Define field contextid to be added to tool_mediatime.
+        $table = new xmldb_table('tool_mediatime');
+        $field = new xmldb_field('contextid', XMLDB_TYPE_INTEGER, '10', null, null, null, '1', 'content');
+
+        // Conditionally launch add field contextid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Mediatime savepoint reached.
+        upgrade_plugin_savepoint(true, 2024010805, 'tool', 'mediatime');
+    }
 
     return true;
 }

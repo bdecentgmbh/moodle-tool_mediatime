@@ -43,4 +43,14 @@ class api extends \videotimeplugin_repository\api {
     public function create_token($params = []) {
         return $this->request('/me/videos', $params, 'POST')['body'];
     }
+
+    /**
+     * Create folder
+     *
+     * @param array $params Upload params
+     * @return array
+     */
+    public function create_folder($params) {
+        return $this->request('/me/projects', $params, 'POST')['body'];
+    }
 }

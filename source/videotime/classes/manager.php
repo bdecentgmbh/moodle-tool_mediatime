@@ -65,6 +65,7 @@ class manager implements renderable, templatable {
             $this->form->set_data(['delete' => $delete]);
         } else {
             $this->form = new form\edit_resource();
+            $this->form->set_data(['contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT)]);
         }
 
         if ($record) {
@@ -110,7 +111,9 @@ class manager implements renderable, templatable {
             ] + (array)$this->content);
         }
         if ($this->form->is_cancelled()) {
-            $redirect = new moodle_url('/admin/tool/mediatime/index.php');
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php', [
+                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+            ]);
             redirect($redirect);
         } else if (
             optional_param('delete', null, PARAM_INT)
@@ -118,7 +121,7 @@ class manager implements renderable, templatable {
         ) {
             $this->delete_resource();
 
-            $redirect = new moodle_url('/admin/tool/mediatime/index.php');
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]);
             redirect($redirect);
         } else if ($data = $this->form->get_data()) {
             require_sesskey();

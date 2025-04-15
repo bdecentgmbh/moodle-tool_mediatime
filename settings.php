@@ -37,7 +37,7 @@ if ($hassiteconfig) {
     $pluginmanager = core_plugin_manager::instance();
     $ADMIN->add('toolmediatime', new admin_category(
         'mediatimesrcplugins',
-        new lang_string('subplugin_mediatimesrc_plural', 'tool_mediatime'),
+        new lang_string('subplugintype_mediatimesrc_plural', 'tool_mediatime'),
         false
     ));
     $temp = new admin_settingpage('managemediatimesrcplugins', new lang_string('managemediatimesrcplugins', 'tool_mediatime'));

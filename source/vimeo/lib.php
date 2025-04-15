@@ -26,6 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/resourcelib.php");
 
+use mediatimesrc_vimeo\api;
+
 /**
  * File serving callback
  *
@@ -78,4 +80,32 @@ function mediatimesrc_vimeo_config_file_areas() {
     return [
         'videofile',
     ];
+}
+
+/**
+ * Callback to share private video
+ *
+ * @param stdClass $moduleinstance Module instance record
+ * @param string $uri Vimeo uri
+ */
+function mediatimesrc_vimeo_share_video($moduleinstance, $uri) {
+    global $DB, $USER;
+
+    $api = new api();
+    $data = new \stdClass();
+    $data->timemodified = time();
+    $data->usermodified = $USER->id;
+    $data->timecreated = $data->timemodified;
+    $data->name = $moduleinstance->name;
+    $data->uri  = $uri;
+    $data->source  = 'vimeo';
+    $video = $api->request($uri)['body'];
+    $data->title = $video['name'];
+    $cm = get_coursemodule_from_instance('videotime', $moduleinstance->id);
+    $context = \context_module::instance($cm->id);
+    $data->contextid = $context->get_course_context()->id;
+    $video['title'] = $data->name;
+    $data->content = json_encode($video);
+
+    $data->id = $DB->insert_record('tool_mediatime', $data);
 }

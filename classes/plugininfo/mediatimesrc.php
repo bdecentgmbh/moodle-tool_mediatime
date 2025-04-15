@@ -162,4 +162,12 @@ class mediatimesrc extends base {
 
         return $enabled;
     }
+
+    /**
+     * Return URL used for management of plugins of this type.
+     * @return moodle_url
+     */
+    public static function get_manage_url() {
+        return new moodle_url('/admin/settings.php', ['section' => 'managemediatimesrcplugins']);
+    }
 }

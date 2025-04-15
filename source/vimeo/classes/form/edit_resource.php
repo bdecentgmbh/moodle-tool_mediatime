@@ -26,7 +26,7 @@ namespace mediatimesrc_vimeo\form;
 
 use context_system;
 use moodleform;
-use videotimeplugin_repository\api;
+use mediatimesrc_vimeo\api;
 use mediatimesrc_vimeo\output\media_resource;
 use mediatimesrc_vimeo\output\video;
 
@@ -45,6 +45,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $mform->addElement('hidden', 'create');
         $mform->setType('create', PARAM_TEXT);
+
+        $mform->addElement('hidden', 'contextid');
+        $mform->setType('contextid', PARAM_INT);
+        $mform->setDefault('contextid', SYSCONTEXTID);
 
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
@@ -89,7 +93,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
      * Display resource or add file fields
      */
     public function definition_after_data() {
-        global $DB, $OUTPUT;
+        global $DB, $OUTPUT, $USER;
 
         $mform =& $this->_form;
 
