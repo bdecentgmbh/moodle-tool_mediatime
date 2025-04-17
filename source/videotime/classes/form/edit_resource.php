@@ -27,6 +27,7 @@ namespace mediatimesrc_videotime\form;
 defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/resourcelib.php");
+require_once($CFG->dirroot . '/repository/lib.php');
 
 use moodleform;
 use mediatimesrc_videotime\output\media_resource;

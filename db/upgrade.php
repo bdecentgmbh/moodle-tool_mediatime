@@ -35,7 +35,6 @@ function xmldb_tool_mediatime_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2024010805) {
-
         // Define field contextid to be added to tool_mediatime.
         $table = new xmldb_table('tool_mediatime');
         $field = new xmldb_field('contextid', XMLDB_TYPE_INTEGER, '10', null, null, null, '1', 'content');

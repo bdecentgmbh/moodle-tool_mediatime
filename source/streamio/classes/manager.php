@@ -102,7 +102,9 @@ class manager implements renderable, templatable {
         }
 
         if ($delete = optional_param('delete', null, PARAM_INT)) {
-            $this->form = new form\delete_resource(null, (array)$this->record);
+            $this->form = new form\delete_resource((new moodle_url('/admin/tool/mediatime', [
+                'contextid' => optional_param('contextid', $this->record->id, PARAM_INT),
+            ]))->out(), (array)$this->record);
             $this->form->set_data(['delete' => $delete]);
         } else {
             $this->form = new form\edit_resource();

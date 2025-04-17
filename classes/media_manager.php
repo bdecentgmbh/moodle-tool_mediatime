@@ -24,6 +24,10 @@
 
 namespace tool_mediatime;
 
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->libdir . '/formslib.php');
+
 use context_system;
 use core_tag_tag;
 use core_tag_area;

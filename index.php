@@ -27,16 +27,11 @@ require_once($CFG->libdir . '/adminlib.php');
 
 use tool_mediatime\media_manager;
 
-require_login();
-
 $source = optional_param('source', '', PARAM_ALPHANUMEXT);
 $id = optional_param('id', null, PARAM_INT);
 $delete = optional_param('delete', null, PARAM_INT);
 $edit = optional_param('edit', null, PARAM_INT);
-
-admin_externalpage_setup('mediatimelibrary');
-
-$PAGE->set_heading(get_string('pluginname', 'tool_mediatime'));
+$contextid = optional_param('contextid', SYSCONTEXTID, PARAM_INT);
 
 if ($id) {
     $record = $DB->get_record('tool_mediatime', ['id' => $id]);
@@ -46,6 +41,28 @@ if ($id) {
     $record = $DB->get_record('tool_mediatime', ['id' => $edit]);
 } else {
     $record = null;
+}
+if (!empty($record)) {
+    $contextid = $record->contextid;
+}
+
+if ($contextid == SYSCONTEXTID) {
+    require_login();
+    admin_externalpage_setup('mediatimelibrary');
+} else {
+    $context = context::instance_by_id($contextid);
+    $PAGE->set_context($context);
+    if ($context->contextlevel == CONTEXT_COURSECAT) {
+        $coursecat = core_course_category::get($context->instanceid);
+        $PAGE->set_category_by_id($coursecat->id);
+        $PAGE->set_heading($coursecat->name);
+    } else {
+        $course = get_course($context->instanceid);
+        $PAGE->set_heading($course->fullname);
+        $PAGE->set_course($course);
+    }
+    $PAGE->set_title(get_string('pluginname', 'tool_mediatime'));
+    $PAGE->set_url('/admin/tool/mediatime/index.php', ['contextid' => $contextid]);
 }
 
 $manager = new media_manager($source, $record);

@@ -63,6 +63,7 @@ class resource_deleted extends base {
      */
     public function get_url() {
         return new \moodle_url('/admin/tool/mediatime/index.php', [
+            'contextid' => $this->contextid,
         ]);
     }
 

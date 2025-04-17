@@ -24,9 +24,12 @@
 
 namespace tool_mediatime\form;
 
+defined('MOODLE_INTERNAL') || die();
+
 use context_system;
 use moodleform;
 
+require_once($CFG->libdir . '/formslib.php');
 /**
  * Media Time media search form
  *
