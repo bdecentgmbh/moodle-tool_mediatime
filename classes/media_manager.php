@@ -94,12 +94,16 @@ class media_manager implements renderable, templatable {
         } else {
             $this->search = new form\search((new moodle_url('/admin/tool/mediatime', [
                 'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
-            ]))->out(), null, 'POST', '', [
+            ]))->out(), [
+                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+            ], 'GET', '', [
                 'class' => 'form-inline',
             ]);
 
             if ($this->search->is_cancelled()) {
-                $url = new moodle_url('/admin/tool/mediatime/index.php');
+                $url = new moodle_url('/admin/tool/mediatime/index.php', [
+                    'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+                ]);
                 redirect($url);
             }
 
@@ -163,6 +167,7 @@ class media_manager implements renderable, templatable {
         } else if (count($options) == 1) {
             $button = new single_button(new moodle_url('/admin/tool/mediatime/index.php', [
                 'source' => array_keys($options)[0],
+                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
             ]), get_string('addnewcontent', 'tool_mediatime'));
             $action = $output->render($button);
         } else if (count($options)) {

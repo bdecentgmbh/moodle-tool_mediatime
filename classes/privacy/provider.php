@@ -74,11 +74,10 @@ class provider implements
     public static function get_contexts_for_userid(int $userid): contextlist {
         $sql = "SELECT c.id
                   FROM {tool_mediatime} m
-                  JOIN {context} c ON c.contextlevel = :contextlevel
+                  JOIN {context} c ON c.id = m.contextid
                  WHERE m.usermodified = :usermodified";
 
         $params = [
-            'contextlevel' => CONTEXT_SYSTEM,
             'usermodified' => $userid,
         ];
         $contextlist = new contextlist();
@@ -95,14 +94,23 @@ class provider implements
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
 
-        if (!is_a($context, \context_system::class)) {
+        if (
+            !(
+            is_a($context, \context_system::class)
+            || is_a($context, \context_coursecat::class)
+            || is_a($context, \context_course::class)
+            )
+        ) {
             return;
         }
 
         $sql = "SELECT usermodified
-                  FROM {tool_mediatime}";
+                  FROM {tool_mediatime}
+                 WHERE contextid = :contextid";
 
-        $params = [];
+        $params = [
+            'contetxtid' => $context->id,
+        ];
 
         $userlist->add_from_sql('usermodified', $sql, $params);
     }
@@ -117,7 +125,11 @@ class provider implements
 
         // Remove contexts different from CONTEXT_SYSTEM.
         $contexts = array_reduce($contextlist->get_contexts(), function ($carry, $context) {
-            if ($context->contextlevel == CONTEXT_SYSTEM) {
+            if (
+                $context->contextlevel == CONTEXT_SYSTEM
+                || $context->contextlevel == CONTEXT_COURSECAT
+                || $context->contextlevel == CONTEXT_COURSE
+            ) {
                 $carry[] = $context->id;
             }
             return $carry;
@@ -129,44 +141,75 @@ class provider implements
 
         $user = $contextlist->get_user();
         $userid = $user->id;
-        // Get motion data.
+        // Get resource data.
         [$insql, $inparams] = $DB->get_in_or_equal($contexts, SQL_PARAMS_NAMED);
         $sql = "SELECT m.id,
                        m.name,
                        m.content,
                        m.source,
+                       m.timecreated,
                        m.timemodified,
                        m.usermodified,
+                       m.contextid
                   FROM {tool_mediatime} m
                  WHERE m.usermodified = :usermodified
-              ORDER BY cmid, m.timemodified";
+                        AND m.contextid $insql
+              ORDER BY m.contextid, m.timemodified";
         $params = array_merge($inparams, [
             'usermodified' => $userid,
-        ]);
+        ]) + $inparams;
 
+        $lastctxid = null;
         $data = [];
         $resources = $DB->get_recordset_sql($sql, $params);
         foreach ($resources as $resource) {
-            $data['motions'][] = (object)[
-                'content' => $motion->content,
-                'name' => $motion->name,
-                'usermodified' => $motion->usermodified,
-                'timemodified' => transform::datetime($motion->timemodified),
-                'source' => $motion->source,
+            if ($lastctxid != $resource->contextid) {
+                if (!empty($data)) {
+                    $context = \context::instance_by_id($lastctxid);
+                    self::export_resource_data_for_user($data, $context, $user);
+                }
+                $data = [
+                    'resources' => [],
+                    'contextid' => $resource->contextid,
+                ];
+                $lastctxid = $resource->contextid;
+            }
+            $data['resources'][] = (object)[
+                'content' => $resource->content,
+                'name' => $resource->name,
+                'usermodified' => $resource->usermodified,
+                'timecreated' => transform::datetime($resource->timecreated),
+                'timemodified' => transform::datetime($resource->timemodified),
+                'source' => $resource->source,
             ];
         }
 
-        $motions->close();
+        // Write last context.
+        if (!empty($data)) {
+            $context = \context::instance_by_id($lastctxid);
+            self::export_resource_data_for_user($data, $context, $user);
+        }
 
-        // Fetch the generic data for system context.
+        $resources->close();
+    }
+
+    /**
+     * Export the supplied personal data for a single Media Time resource, along with any generic data or area files.
+     *
+     * @param array $resourcedata the personal data to export for the meeting.
+     * @param \context $context the context of resource
+     * @param \stdClass $user the user record
+     */
+    protected static function export_resource_data_for_user(array $resourcedata, \context $context, \stdClass $user) {
+        // Fetch the generic module data for the plenary meeting.
         $contextdata = helper::get_context_data($context, $user);
-
-        // Merge with motion data and write it.
-        $contextdata = (object)array_merge((array)$contextdata, $motiondata);
         writer::with_context($context)->export_data([], $contextdata);
 
-        // Write generic module files.
-        helper::export_context_files($context, $user);
+        // Merge with resource data and write it.
+        $contextdata = (object)array_merge((array)$contextdata, $resourcedata);
+        writer::with_context($context)->export_data([
+            get_string('privacy:resources', 'tool_mediatime'),
+        ], $contextdata);
     }
 
     /**
@@ -176,6 +219,8 @@ class provider implements
      */
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
+
+        $DB->delete_records('tool_mediatime', ['contextid' => $context->id]);
     }
 
     /**

@@ -44,6 +44,12 @@ class media_resource implements renderable, templatable {
     /** @var ?stdClass $record Media Time resource record */
     protected $record;
 
+    /** @var ?stdClass $streamiourl Streamio url for resource */
+    protected $streamiourl;
+
+    /** @var ?stdClass $videourl Video url for resource */
+    protected $videourl;
+
     /**
      * Constructor
      *

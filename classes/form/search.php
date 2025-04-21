@@ -49,10 +49,7 @@ class search extends moodleform {
 
         $mform->addElement('hidden', 'contextid');
         $mform->setType('contextid', PARAM_INT);
-        $mform->setDefault('contextid', SYSCONTEXTID);
-
-        $mform->addElement('hidden', 'source');
-        $mform->setType('source', PARAM_TEXT);
+        $mform->setDefault('contextid', $this->_customdata['contextid']);
 
         $mform->addElement('text', 'query', get_string('keyword', 'tool_mediatime'));
         $mform->setType('query', PARAM_TEXT);

@@ -49,6 +49,9 @@ class delete_resource extends \tool_mediatime\form\delete_resource {
         $mform->addElement('static', 'name', get_string('resourcename', 'tool_mediatime'), $this->_customdata['name']);
         $mform->setType('name', PARAM_TEXT);
 
+        $mform->addElement('hidden', 'contextid');
+        $mform->setType('contextid', PARAM_INT);
+
         $mform->addElement('hidden', 'delete');
         $mform->setType('delete', PARAM_INT);
 
