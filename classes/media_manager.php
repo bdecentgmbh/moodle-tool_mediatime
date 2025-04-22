@@ -62,6 +62,7 @@ class media_manager implements renderable, templatable {
 
     /** @var ?stdClass $record Media Time resource record */
     protected $record;
+    protected $context;
 
     /**
      * Constructor
@@ -75,10 +76,13 @@ class media_manager implements renderable, templatable {
 
         $this->record = $record;
 
-        require_capability('tool/mediatime:view', context_system::instance());
         if ($record) {
             $source = $record->source;
+            $this->context = \context::instance_by_id($record->contextid);
+        } else {
+            $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
         }
+        require_capability('tool/mediatime:view', $this->context);
 
         $plugins = plugininfo\mediatimesrc::get_enabled_plugins();
         if (!empty($source) && !in_array($source, $plugins)) {
@@ -162,7 +166,7 @@ class media_manager implements renderable, templatable {
         foreach (plugininfo\mediatimesrc::get_enabled_plugins() as $plugin) {
             $options[$plugin] = get_string("pluginname", "mediatimesrc_$plugin");
         }
-        if (!has_capability('tool/mediatime:manage', context_system::instance())) {
+        if (!has_capability('tool/mediatime:manage', $this->context)) {
             $action = '';
         } else if (count($options) == 1) {
             $button = new single_button(new moodle_url('/admin/tool/mediatime/index.php', [

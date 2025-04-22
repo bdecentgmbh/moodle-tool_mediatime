@@ -60,7 +60,11 @@ class media_resource implements renderable, templatable {
      */
     public function __construct(stdClass $record) {
         $this->record = $record;
-        $this->context = \context_system::instance();
+        if (!empty($record)) {
+            $this->context = \context::instance_by_id($record->contextid);
+        } else {
+            $this->context = \context_system::instance();
+        }
     }
 
     /**

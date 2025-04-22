@@ -42,7 +42,9 @@ class search extends moodleform {
      */
     public function definition() {
         $mform = $this->_form;
-        require_capability('tool/mediatime:manage', context_system::instance());
+
+        $context = \context::instance_by_id($this->_customdata['contextid']);
+        require_capability('tool/mediatime:view', $context);
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);

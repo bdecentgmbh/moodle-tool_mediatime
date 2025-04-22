@@ -30,7 +30,7 @@ $capabilities = [
     'tool/mediatime:create' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
         'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,
         ],
@@ -40,7 +40,7 @@ $capabilities = [
     'tool/mediatime:manage' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,
         ],
@@ -49,7 +49,7 @@ $capabilities = [
 
     'tool/mediatime:view' => [
         'captype' => 'read',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,
         ],

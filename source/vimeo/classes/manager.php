@@ -24,6 +24,7 @@
 
 namespace mediatimesrc_vimeo;
 
+use context;
 use context_system;
 use context_user;
 use core_tag_tag;
@@ -44,6 +45,9 @@ use templatable;
 class manager implements renderable, templatable {
     /** @var $api Vimeo API instance */
     protected ?api $api = null;
+
+    /** @var $context Context */
+    protected ?context $context = null;
 
     /** @var $content Cached Vimeo video record */
     protected ?stdClass $content = null;
@@ -68,6 +72,9 @@ class manager implements renderable, templatable {
 
         if ($record) {
             $this->content = json_decode($record->content);
+            $this->context = \context::instance_by_id($record->contextid);
+        } else {
+            $this->context = \context::instance_by_id(optional_param('contexid', SYSCONTEXTID, PARAM_INT));
         }
 
         if ($delete = optional_param('delete', null, PARAM_INT)) {
@@ -155,7 +162,7 @@ class manager implements renderable, templatable {
                         ]
                     );
                     $url = moodle_url::make_pluginfile_url(
-                        SYSCONTEXTID,
+                        $this->context,
                         'mediatimesrc_vimeo',
                         'videofile',
                         $data->edit,

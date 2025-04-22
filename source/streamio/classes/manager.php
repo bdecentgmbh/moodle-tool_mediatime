@@ -247,7 +247,7 @@ class manager implements renderable, templatable {
         }
         if ($video->transcodings) {
             $fileinfo = [
-                'contextid' => SYSCONTEXTID,
+                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
                 'component' => 'tool_mediatime',
                 'itemid' => $id,
                 'filearea' => 'm3u8',

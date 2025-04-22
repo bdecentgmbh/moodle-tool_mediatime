@@ -39,11 +39,16 @@ require_once("$CFG->libdir/resourcelib.php");
  * @return bool false if the file was not found, just send the file otherwise and do not return anything
  */
 function tool_mediatime_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
-    if ($context->contextlevel != CONTEXT_SYSTEM) {
+    if (!in_array($context->contextlevel, [
+        CONTEXT_SYSTEM,
+        CONTEXT_COURSECAT,
+        CONTEXT_COURSE,
+    ])) {
         return false;
     }
 
     require_login();
+    require_capability('tool/mediatime:view');
 
     if (
         in_array($filearea, [
@@ -84,4 +89,54 @@ function tool_mediatime_config_file_areas() {
     return [
         'm3u8',
     ];
+}
+
+/**
+ * Extends the navigation of the category admin menu with the Mediatime link
+ *
+ * @param navigation_node $navigation The navigation node to extend
+ * @param context $coursecategorycontext The context of the course category
+ */
+function tool_mediatime_extend_navigation_category_settings(
+    navigation_node $navigation,
+    context $coursecategorycontext
+): void {
+    if (has_capability('tool/mediatime:view', $coursecategorycontext)) {
+        $title = get_string('pluginname', 'tool_mediatime');
+        $path = new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $coursecategorycontext->id]);
+        $settingsnode = navigation_node::create(
+            $title,
+            $path,
+            navigation_node::TYPE_SETTING,
+            null,
+            null,
+            new pix_icon('i/course', '')
+        );
+        $navigation->add_node($settingsnode);
+    }
+}
+
+/**
+ * This function extends the navigation with Mediatime links
+ *
+ * @param navigation_node $navigation The navigation node to extend
+ * @param stdClass        $course     The course to object for the tool
+ * @param context         $context    The context of the course
+ */
+function tool_mediatime_extend_navigation_course($navigation, $course, $context) {
+    if (has_capability('tool/mediatime:view', $context)) {
+        $url = new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $context->id]);
+        $settingsnode = navigation_node::create(
+            get_string('pluginname', 'tool_mediatime'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            null,
+            new pix_icon('i/settings', '')
+        );
+
+        if (isset($settingsnode)) {
+            $navigation->add_node($settingsnode);
+        }
+    }
 }

@@ -68,7 +68,9 @@ if ($contextid == SYSCONTEXTID) {
 $manager = new media_manager($source, $record);
 
 echo $OUTPUT->header();
-if (empty($source)) {
+if (!empty($record)) {
+    echo $OUTPUT->heading(get_string('pluginname', "mediatimesrc_$record->source"));
+} else if (empty($source)) {
     echo $OUTPUT->heading(get_string('pluginname', 'tool_mediatime'));
 } else {
     echo $OUTPUT->heading(get_string('pluginname', "mediatimesrc_$source"));

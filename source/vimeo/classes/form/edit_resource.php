@@ -30,6 +30,8 @@ use mediatimesrc_vimeo\api;
 use mediatimesrc_vimeo\output\media_resource;
 use mediatimesrc_vimeo\output\video;
 
+require_once("$CFG->dirroot/mod/videotime/lib.php");
+
 /**
  * Media Time media edit form
  *

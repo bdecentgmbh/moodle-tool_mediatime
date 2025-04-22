@@ -24,6 +24,7 @@
 
 namespace mediatimesrc_videotime;
 
+use context;
 use core_tag_tag;
 use moodle_exception;
 use moodle_url;
@@ -43,6 +44,9 @@ class manager implements renderable, templatable {
     /** @var $content Cached content object */
     protected ?stdClass $content = null;
 
+    /** @var $context Context */
+    protected ?context $context = null;
+
     /** @var $record Media time record for resource */
     protected ?stdClass $record = null;
 
@@ -57,8 +61,13 @@ class manager implements renderable, templatable {
     public function __construct($record = null) {
         global $DB, $USER;
 
-        $context = \context_system::instance();
         $this->record = $record;
+        if ($record) {
+            $this->content = json_decode($record->content);
+            $this->context = \context::instance_by_id($record->contextid);
+        } else {
+            $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
+        }
 
         if ($delete = optional_param('delete', null, PARAM_INT)) {
             $this->form = new form\delete_resource((new moodle_url('/admin/tool/mediatime', [
@@ -70,16 +79,12 @@ class manager implements renderable, templatable {
             $this->form->set_data(['contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT)]);
         }
 
-        if ($record) {
-            $this->content = json_decode($record->content);
-        }
-
         $maxbytes = get_config('mediatimesrc_videotime', 'maxbytes');
         if ($edit = optional_param('edit', null, PARAM_INT)) {
             $draftitemid = file_get_submitted_draft_itemid('videofile');
             file_prepare_draft_area(
                 $draftitemid,
-                $context->id,
+                $this->context->id,
                 'mediatimesrc_videotime',
                 'videofile',
                 $edit,
@@ -94,7 +99,7 @@ class manager implements renderable, templatable {
             $draftitemid = file_get_submitted_draft_itemid('posterimage');
             file_prepare_draft_area(
                 $draftitemid,
-                $context->id,
+                $this->context->id,
                 'mediatimesrc_videotime',
                 'posterimage',
                 $edit,
@@ -154,7 +159,7 @@ class manager implements renderable, templatable {
 
             file_save_draft_area_files(
                 $data->videofile,
-                $context->id,
+                $this->context->id,
                 'mediatimesrc_videotime',
                 'videofile',
                 $data->edit,
@@ -167,7 +172,7 @@ class manager implements renderable, templatable {
 
             file_save_draft_area_files(
                 $data->posterimage,
-                $context->id,
+                $this->context->id,
                 'mediatimesrc_videotime',
                 'posterimage',
                 $data->edit,
@@ -182,7 +187,7 @@ class manager implements renderable, templatable {
                 'tool_mediatime',
                 'tool_mediatime',
                 $data->edit,
-                $context,
+                $this->context,
                 $data->tags
             );
 
