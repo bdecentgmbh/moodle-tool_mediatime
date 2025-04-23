@@ -36,13 +36,11 @@
 
 }}
 <div class="library-resource">
-    <form action="." method="post">
+    <form action="{{ libraryhome }}" method="post">
        {{# canedit }}
            {{> tool_mediatime/dropdown }}
        {{/ canedit }}
-       {{# libraryhome }}
-       <button action="{{ libraryhome }}" class="float-right"><i class="fa fa-angle-double-left"></i>{{# str }}libraryhome, tool_mediatime {{/ str }}</button>
-       {{/ libraryhome }}
+       <button class="float-right btn btn-secondary"><i class="fa fa-angle-double-left"></i>{{# str }}libraryhome, tool_mediatime {{/ str }}</button>
     </form>
     <div class="container-fluid">
         {{$ resourcecontent }}

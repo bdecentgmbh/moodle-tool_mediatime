@@ -40,7 +40,7 @@ class media_resource implements renderable, templatable {
     /** @var ?stdClass $content Media Time content object */
     protected $content;
 
-    /** @var $context System context */
+    /** @var $context Context */
     protected $context = null;
 
     /** @var ?stdClass $record Media Time resource record */
@@ -53,8 +53,9 @@ class media_resource implements renderable, templatable {
      */
     public function __construct(stdClass $record) {
         $this->record = $record;
-        $this->content = json_decode($record->content);
-        $this->content->description = shorten_text($this->content->description, 300);
+        $this->context = \context::instance_by_id($record->contextid);
+        $this->content = json_decode($record->content ?? '{}');
+        $this->content->description = shorten_text($this->content->description ?? '', 300, null);
     }
 
     /**
@@ -67,14 +68,18 @@ class media_resource implements renderable, templatable {
         global $DB, $USER;
         $content = json_decode($this->record->content);
         $api = new \mediatimesrc_vimeo\api();
-        $context = \context_system::instance();
+
+        $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
+        $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $this->record->id]);
 
         $video = new video($content);
         return [
-            'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
+            'canedit' => has_capability('tool/mediatime:manage', $this->context) || ($USER->id == $this->record->usermodified),
+            'editurl' => $editurl->out(),
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]),
             'name' => $this->record->name,
+            'removeurl' => $removeurl->out(),
             'resource' => $content,
             'video' => $output->render($video),
         ];

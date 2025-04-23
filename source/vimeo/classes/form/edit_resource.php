@@ -24,6 +24,8 @@
 
 namespace mediatimesrc_vimeo\form;
 
+defined('MOODLE_INTERNAL') || die();
+
 use context_system;
 use moodleform;
 use mediatimesrc_vimeo\api;
@@ -112,7 +114,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             );
             $mform->removeElement('vimeo_url');
             $mform->insertElementBefore(
-                $mform->createElement('static', 'vimeo_url', get_string('vimeolink', 'mediatimesrc_vimeo'), $content->link),
+                $mform->createElement('static', 'vimeo_url', get_string('vimeolink', 'mediatimesrc_vimeo'), $content->link ?? ''),
                 'filesource'
             );
             $mform->removeElement('filesource');

@@ -139,21 +139,16 @@ class manager implements renderable, templatable {
             if (empty($data->edit)) {
                 $data->timecreated = $data->timemodified;
                 $data->content = json_encode($data);
-                $data->edit = $DB->insert_record('tool_mediatime', $data);
-                $event = \mediatimesrc_videotime\event\resource_created::create([
-                    'contextid' => SYSCONTEXTID,
-                    'objectid' => $data->edit,
-                ]);
+                $data->id = $DB->insert_record('tool_mediatime', $data);
+                $event = \mediatimesrc_videotime\event\resource_created::create_from_record($data);
                 $event->trigger();
+                $data->edit = $data->id;
             } else {
                 $data->id = $data->edit;
                 $data->content = json_encode($data);
                 $DB->update_record('tool_mediatime', $data);
 
-                $event = event\resource_updated::create([
-                    'contextid' => SYSCONTEXTID,
-                    'objectid' => $this->record->id,
-                ]);
+                $event = \mediatimesrc_videotime\event\resource_updated::create_from_record($this->record);
                 $event->trigger();
             }
 
@@ -183,11 +178,12 @@ class manager implements renderable, templatable {
                 ]
             );
 
+            $context = \context::instance_by_id($data->contextid);
             core_tag_tag::set_item_tags(
                 'tool_mediatime',
                 'tool_mediatime',
                 $data->edit,
-                $this->context,
+                $context,
                 $data->tags
             );
 
@@ -226,10 +222,8 @@ class manager implements renderable, templatable {
             'id' => $this->record->id,
         ]);
 
-        $event = \mediatimesrc_videotime\event\resource_deleted::create([
-            'contextid' => SYSCONTEXTID,
-            'objectid' => $this->record->id,
-        ]);
+        $event = \mediatimesrc_videotime\event\resource_deleted::create_from_record($this->record);
+
         $event->trigger();
     }
 }

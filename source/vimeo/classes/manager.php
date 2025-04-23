@@ -71,7 +71,7 @@ class manager implements renderable, templatable {
         $this->record = $record;
 
         if ($record) {
-            $this->content = json_decode($record->content);
+            $this->content = json_decode($record->content ?? '{}');
             $this->context = \context::instance_by_id($record->contextid);
         } else {
             $this->context = \context::instance_by_id(optional_param('contexid', SYSCONTEXTID, PARAM_INT));
@@ -111,14 +111,14 @@ class manager implements renderable, templatable {
 
             // Check for updated values at Vimeo.
             if (!$this->form->is_submitted()) {
-                $video = $this->api->request($this->content->uri)['body'];
+                $video = $this->api->request($this->content->uri ?? '')['body'];
                 $data = [
-                    'description' => $video['description'],
-                    'title' => $video['name'],
+                    'description' => $video['description'] ?? '',
+                    'title' => $video['name'] ?? '',
                     'name' => $this->record->name,
                 ] + $data;
             } else {
-                $data += ['name' => $this->record->name, 'title' => $this->content->name] + (array)$this->content;
+                $data += ['name' => $this->record->name, 'title' => $this->content->name ?? ''] + (array)$this->content;
             }
         }
         $this->form->set_data($data);
@@ -144,7 +144,7 @@ class manager implements renderable, templatable {
             $fs = get_file_storage();
             foreach ($fs->get_area_files(context_user::instance($USER->id)->id, 'user', 'draft', $data->videofile) as $file) {
                 if (!$file->is_directory()) {
-                    $data->edit = $DB->insert_record('tool_mediatime', $data);
+                    $data->id = $DB->insert_record('tool_mediatime', $data);
                     if (empty($data->title)) {
                         $data->title = $data->name;
                     }
@@ -162,7 +162,7 @@ class manager implements renderable, templatable {
                         ]
                     );
                     $url = moodle_url::make_pluginfile_url(
-                        $this->context,
+                        $this->context->id,
                         'mediatimesrc_vimeo',
                         'videofile',
                         $data->edit,
@@ -178,18 +178,17 @@ class manager implements renderable, templatable {
                         ],
                     ]);
 
-                    $event = \mediatimesrc_vimeo\event\resource_created::create([
-                        'contextid' => SYSCONTEXTID,
-                        'objectid' => $data->edit,
-                    ]);
+                    $event = \mediatimesrc_vimeo\event\resource_created::create_from_record($data);
                     $event->trigger();
+                    $date->edit = $data->id;
 
                     if (!empty($data->tags)) {
+                        $context = \context::instance_by_id($data->contextid);
                         core_tag_tag::set_item_tags(
                             'tool_mediatime',
                             'tool_mediatime',
                             $data->edit,
-                            context_system::instance(),
+                            $context,
                             $data->tags
                         );
                     }
@@ -219,14 +218,19 @@ class manager implements renderable, templatable {
                 }
                 $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
-                $data->edit = $DB->insert_record('tool_mediatime', $data);
+                $data->id = $DB->insert_record('tool_mediatime', $data);
+
+                $event = \mediatimesrc_vimeo\event\resource_created::create_from_record($data);
+                $event->trigger();
+                $data->edit = $data->id;
             } else {
                 $data->id = $data->edit;
-                $this->api->request($this->content->uri, array_intersect_key(['name' => $data->title] + (array)$data, [
+                $data->contextid = $this->record->contextid;
+                $this->api->request($this->content->uri ?? '', array_intersect_key(['name' => $data->title] + (array)$data, [
                     'description' => true,
                     'name' => true,
                 ]), 'PATCH');
-                $video = $this->api->request($this->content->uri)['body'];
+                $video = $this->api->request($this->content->uri ?? '')['body'];
                 $data->content = json_encode($video + [
                     'description' => $data->description,
                     'title' => $data->title,
@@ -234,14 +238,11 @@ class manager implements renderable, templatable {
                 ]);
                 $DB->update_record('tool_mediatime', $data);
 
-                $event = \mediatimesrc_vimeo\event\resource_updated::create([
-                    'contextid' => SYSCONTEXTID,
-                    'objectid' => $this->record->id,
-                ]);
+                $event = \mediatimesrc_vimeo\event\resource_updated::create_from_record($this->record);
                 $event->trigger();
             }
 
-            $context = context_system::instance();
+            $context = \context::instance_by_id($data->contextid);
             core_tag_tag::set_item_tags(
                 'tool_mediatime',
                 'tool_mediatime',
@@ -304,10 +305,7 @@ class manager implements renderable, templatable {
             'id' => $this->record->id,
         ]);
 
-        $event = \mediatimesrc_vimeo\event\resource_deleted::create([
-            'contextid' => SYSCONTEXTID,
-            'objectid' => $this->record->id,
-        ]);
+        $event = \mediatimesrc_vimeo\event\resource_deleted::create_from_record($this->record);
         $event->trigger();
     }
 }

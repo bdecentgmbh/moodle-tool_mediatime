@@ -41,6 +41,9 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class media_resource implements renderable, templatable {
+    /** @var $context Context */
+    protected $context = null;
+
     /** @var ?stdClass $content Media Time content object */
     protected $content;
 
@@ -60,8 +63,9 @@ class media_resource implements renderable, templatable {
      */
     public function __construct(stdClass $record) {
         $this->record = $record;
-        $this->content = json_decode($record->content);
-        $this->content->description = shorten_text($this->content->description, 300);
+        $this->context = \context::instance_by_id($record->contextid);
+        $this->content = json_decode($record->content ?? '{}');
+        $this->content->description = shorten_text($this->content->description ?? '{}', 300);
     }
 
     /**
@@ -72,7 +76,6 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
-        $context = \context_system::instance();
         $videourl = $this->video_url($output);
         $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
         $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $this->record->id]);
@@ -90,13 +93,14 @@ class media_resource implements renderable, templatable {
                 'type' => resourcelib_guess_url_mimetype($videourl),
             ]),
             'poster' => $this->image_url($output),
-        ];
+        ] + (array) $this->content;
 
         return [
-            'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
+            'canedit' => has_capability('tool/mediatime:manage', $this->context) || ($USER->id == $this->record->usermodified),
+            'editurl' => $editurl->out(),
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]),
-            'editurl' => $editurl->out(),
+            'name' => $this->record->name,
             'removeurl' => $removeurl->out(),
             'resource' => $this->content,
             'video' => $output->render_from_template('mediatimesrc_streamio/video', $content),

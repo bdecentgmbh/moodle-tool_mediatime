@@ -62,7 +62,7 @@ class video implements renderable, templatable {
         return [
             'resource' => $this->content,
             'instance' => json_encode([
-                'vimeo_url' => $this->content->link,
+                'vimeo_url' => $this->content->link ?? '',
                 'autopause' => 1,
                 'autoplay' => 1,
                 'background' => 0,

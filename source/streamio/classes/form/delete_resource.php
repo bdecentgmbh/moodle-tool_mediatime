@@ -59,6 +59,7 @@ class delete_resource extends \tool_mediatime\form\delete_resource {
         $mform->addGroup($action, 'streamiofileaction', get_string('streamiofileaction', 'mediatimesrc_streamio'), [' '], false);
         $mform->setType('action', PARAM_INT);
         $mform->addHelpButton('streamiofileaction', 'streamiofileaction', 'mediatimesrc_streamio');
+        $mform->setDefault('action', 1);
 
         $this->add_action_buttons(true, get_string('delete'));
     }

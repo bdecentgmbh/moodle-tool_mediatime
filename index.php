@@ -60,7 +60,10 @@ if ($contextid == SYSCONTEXTID) {
         $course = get_course($context->instanceid);
         $PAGE->set_heading($course->fullname);
         $PAGE->set_course($course);
+        require_course_login($course);
     }
+    $PAGE->set_pagelayout('standard');
+
     $PAGE->set_title(get_string('pluginname', 'tool_mediatime'));
     $PAGE->set_url('/admin/tool/mediatime/index.php', ['contextid' => $contextid]);
 }

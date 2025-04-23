@@ -96,7 +96,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
         $context = context_system::instance();
         if ($record) {
-            $content = json_decode($record->content);
+            $content = json_decode($record->content ?? '{}');
             $streamioid = $content->id;
             $resource = new media_resource($record);
 

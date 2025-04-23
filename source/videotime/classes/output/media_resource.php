@@ -81,6 +81,8 @@ class media_resource implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
         $videourl = $this->video_url($output);
+        $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
+        $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $this->record->id]);
 
         $content = [
             'elementid' => 'video-' . uniqid(),
@@ -101,6 +103,9 @@ class media_resource implements renderable, templatable {
             'canedit' => has_capability('moodle/tag:edit', $this->context) || $USER->id == $this->record->usermodified,
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]),
+            'name' => $this->record->name,
+            'editurl' => $editurl->out(),
+            'removeurl' => $removeurl->out(),
             'resource' => json_decode($this->record->content),
             'video' => $output->render_from_template('mediatimesrc_videotime/video', $content),
         ];

@@ -75,15 +75,17 @@ class manager implements renderable, templatable {
             ], 'PUT');
             $video = $this->api->request("/videos/$video->id");
             $video->name = optional_param('name', '', PARAM_ALPHANUM);
-            $id = $DB->insert_record('tool_mediatime', [
+            $record = [
                 'content' => json_encode($video),
                 'source' => 'streamio',
                 'usermodified' => $USER->id,
                 'timecreated' => time(),
                 'timemodified' => time(),
-            ]);
+            ];
+            $record['id'] = $DB->insert_record('tool_mediatime', $record);
+            $context = \context::instance_by_id($data->contextid);
             if ($tags = optional_param('tags', '', PARAM_TEXT)) {
-                $context = context_system::instance();
+                $context = \context::instance_by_id($data->contextid);
                 core_tag_tag::set_item_tags(
                     'tool_mediatime',
                     'tool_meidatime',
@@ -92,10 +94,7 @@ class manager implements renderable, templatable {
                     json_decode($tags)
                 );
             }
-            $event = \mediatimesrc_streamio\event\resource_created::create([
-                'contextid' => SYSCONTEXTID,
-                'objectid' => $id,
-            ]);
+            $event = \mediatimesrc_streamio\event\resource_created::create_from_record((object)$record);
             $event->trigger();
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $id]);
             redirect($redirect);
@@ -145,14 +144,13 @@ class manager implements renderable, templatable {
                 $video->name = $data->name;
                 $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
-                $data->edit = $DB->insert_record('tool_mediatime', $data);
-                $event = \mediatimesrc_streamio\event\resource_created::create([
-                    'contextid' => SYSCONTEXTID,
-                    'objectid' => $data->edit,
-                ]);
+                $data->id = $DB->insert_record('tool_mediatime', $data);
+                $event = \mediatimesrc_streamio\event\resource_created::create_from_record($data);
                 $event->trigger();
+                $data->edit = $data->id;
             } else {
                 $data->id = $data->edit;
+                $data->contextid = $record->contextid;
                 if (has_capability('mediatimesrc/streamio:upload', context_system::instance())) {
                     $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
                         'description' => true,
@@ -164,16 +162,13 @@ class manager implements renderable, templatable {
                 $data->content = json_encode($video);
                 $DB->update_record('tool_mediatime', $data);
 
-                $event = \mediatimesrc_streamio\event\resource_updated::create([
-                    'contextid' => SYSCONTEXTID,
-                    'objectid' => $this->record->id,
-                ]);
+                $event = \mediatimesrc_streamio\event\resource_updated::create_from_record($this->record);
                 $event->trigger();
             }
 
             $this->save_file($data->edit, $video);
 
-            $context = context_system::instance();
+            $context = \context::instance_by_id($data->contextid);
             core_tag_tag::set_item_tags(
                 'tool_mediatime',
                 'tool_mediatime',
@@ -284,10 +279,7 @@ class manager implements renderable, templatable {
             'id' => $this->record->id,
         ]);
 
-        $event = \mediatimesrc_streamio\event\resource_deleted::create([
-            'contextid' => SYSCONTEXTID,
-            'objectid' => $this->record->id,
-        ]);
+        $event = \mediatimesrc_streamio\event\resource_deleted::create_from_record($this->record);
         $event->trigger();
     }
 }

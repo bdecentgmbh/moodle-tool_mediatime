@@ -38,22 +38,15 @@
     }
 
 }}
-<div class="library-resource">
-    <form action="." method="post">
-       {{# canedit }}
-           <input type="hidden" name="source" value="vimeo">
-           <button type="submit" name="edit" value="{{ id }}">{{# str }} edit {{/ str }}</button>
-           <button type="submit" name="delete" value="{{ id }}">{{# str }} delete {{/ str }}</button>
-       {{/ canedit }}
-       {{# libraryhome }}
-       <a href="{{ libraryhome }}">{{# str }}library, tool_mediatime {{/ str }}</a>
-       {{/ libraryhome }}
-    </form>
-    <div class="container-fluid">
+{{< tool_mediatime/media_resource }}
+        {{$ resourcecontent }}
         <h3>{{ name }}</h3>
-        <h4>{{ resource.name }}</h4>
+        <h4>{{ resource.title }}</h4>
             {{{ video }}}
         <p>{{ resource.description }}</p>
+        {{/ resourcecontent }}
+{{/ tool_mediatime/media_resource }}
+    <div class="container-fluid">
         <div class="">
             <h5>{{# str }} filelinks, tool_mediatime {{/ str }}</h5>
             <a
@@ -62,4 +55,3 @@
             ><div>Playlist</div></a>
         </div>
     </div>
-</div>

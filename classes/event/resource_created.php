@@ -17,6 +17,7 @@
 namespace tool_mediatime\event;
 
 use core\event\base;
+use stdClass;
 
 /**
  * The resource_created event class.
@@ -83,5 +84,21 @@ class resource_created extends base {
      */
     public static function get_other_mapping() {
         return false;
+    }
+
+    /**
+     * Utility method to create new event.
+     *
+     * @param \stdClass $resource
+     * @return resource_created
+     */
+    public static function create_from_record(stdClass $resource): resource_created {
+        $event = self::create([
+            'objectid' => $resource->id,
+            'contextid' => $resource->contextid,
+        ]);
+        $event->add_record_snapshot('tool_mediatime', $resource);
+
+        return $event;
     }
 }
