@@ -96,7 +96,7 @@ class manager implements renderable, templatable {
             $draftitemid = file_get_submitted_draft_itemid('videofile');
             file_prepare_draft_area(
                 $draftitemid,
-                SYSCONTEXTID,
+                $data->contextid,
                 'mediatimesrc_vimeo',
                 'videofile',
                 $edit,
@@ -151,10 +151,10 @@ class manager implements renderable, templatable {
 
                     file_save_draft_area_files(
                         $data->videofile,
-                        SYSCONTEXTID,
+                        $data->contextid,
                         'mediatimesrc_vimeo',
                         'videofile',
-                        $data->edit,
+                        $data->id,
                         [
                             'subdirs' => 0,
                             'maxbytes' => $maxbytes,
@@ -162,10 +162,10 @@ class manager implements renderable, templatable {
                         ]
                     );
                     $url = moodle_url::make_pluginfile_url(
-                        $this->context->id,
+                        $data->contextid,
                         'mediatimesrc_vimeo',
                         'videofile',
-                        $data->edit,
+                        $data->id,
                         '/' . $file->get_contenthash() . $file->get_filepath(),
                         $file->get_filename()
                     );
@@ -178,16 +178,12 @@ class manager implements renderable, templatable {
                         ],
                     ]);
 
-                    $event = \mediatimesrc_vimeo\event\resource_created::create_from_record($data);
-                    $event->trigger();
-                    $date->edit = $data->id;
-
                     if (!empty($data->tags)) {
                         $context = \context::instance_by_id($data->contextid);
                         core_tag_tag::set_item_tags(
                             'tool_mediatime',
                             'tool_mediatime',
-                            $data->edit,
+                            $data->id,
                             $context,
                             $data->tags
                         );
@@ -197,10 +193,12 @@ class manager implements renderable, templatable {
                         'name' => $data->title,
                         'description' => $data->description,
                     ], 'PATCH')['body'];
-                    $data->id = $data->edit;
                     $data->content = json_encode($video);
                     $DB->update_record('tool_mediatime', $data);
-                    $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $data->edit]);
+
+                    $event = \mediatimesrc_vimeo\event\resource_created::create_from_record($data);
+                    $event->trigger();
+                    $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $data->id]);
                     redirect($redirect);
                 }
             }
@@ -296,7 +294,7 @@ class manager implements renderable, templatable {
     public function delete_resource(bool $removevimeofile = false) {
         global $DB;
 
-        if ($removevimeofile) {
+        if ($removevimeofile && !empty($this->content->uri)) {
             $uri = $this->content->uri;
             $this->api->request($uri, [], 'DELETE');
         }

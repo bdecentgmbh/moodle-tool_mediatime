@@ -29,6 +29,7 @@ $string['event_resource_created'] = 'Vimeo resource created';
 $string['event_resource_deleted'] = 'Vimeo resource deleted';
 $string['event_resource_updated'] = 'Vimeo resource updated';
 $string['keepvimeofiles'] = 'Keep Vimeo files';
+$string['playlist'] = 'Playlist';
 $string['pluginname'] = 'Vimeo';
 $string['privacy:metadata'] = 'The Vimeo plugin for Media Time does not store personal data. It does transmit files associated with educational video content that normally does not contain user data. If it is used for personal data, a separate agreement with the provider may be required.';
 $string['removevimeofiles'] = 'Remove Vimeo files';
