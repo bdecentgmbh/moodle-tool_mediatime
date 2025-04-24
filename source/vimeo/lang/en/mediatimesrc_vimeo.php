@@ -25,6 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['delete_uploads'] = 'Delete uploads';
 $string['event_resource_created'] = 'Vimeo resource created';
 $string['event_resource_deleted'] = 'Vimeo resource deleted';
 $string['event_resource_updated'] = 'Vimeo resource updated';

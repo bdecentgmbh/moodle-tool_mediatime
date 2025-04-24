@@ -96,7 +96,7 @@ class manager implements renderable, templatable {
             $draftitemid = file_get_submitted_draft_itemid('videofile');
             file_prepare_draft_area(
                 $draftitemid,
-                $data->contextid,
+                $this->context->id,
                 'mediatimesrc_vimeo',
                 'videofile',
                 $edit,
@@ -297,6 +297,12 @@ class manager implements renderable, templatable {
         if ($removevimeofile && !empty($this->content->uri)) {
             $uri = $this->content->uri;
             $this->api->request($uri, [], 'DELETE');
+        }
+
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($this->record->contextid, 'mediatimesrc_vimeo', 'videofile', $this->record->id);
+        foreach($files as $file) {
+            $file->delete();
         }
 
         $DB->delete_records('tool_mediatime', [

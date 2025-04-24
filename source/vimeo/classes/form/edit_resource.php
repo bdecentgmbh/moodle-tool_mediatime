@@ -83,6 +83,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $mform->addElement('url', 'vimeo_url', get_string('vimeo_url', 'mod_videotime'));
         $mform->hideIf('vimeo_url', 'newfile', 'neq', 2);
+        $mform->hideIf('videofile', 'newfile', 'neq', 1);
         $mform->setType('vimeo_url', PARAM_URL);
 
         $mform->addElement('textarea', 'description', get_string('description'));
