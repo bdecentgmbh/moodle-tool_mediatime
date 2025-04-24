@@ -301,7 +301,7 @@ class manager implements renderable, templatable {
 
         $fs = get_file_storage();
         $files = $fs->get_area_files($this->record->contextid, 'mediatimesrc_vimeo', 'videofile', $this->record->id);
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $file->delete();
         }
 
