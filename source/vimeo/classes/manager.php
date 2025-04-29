@@ -74,22 +74,39 @@ class manager implements renderable, templatable {
             $this->content = json_decode($record->content ?? '{}');
             $this->context = \context::instance_by_id($record->contextid);
         } else {
-            $this->context = \context::instance_by_id(optional_param('contexid', SYSCONTEXTID, PARAM_INT));
+            $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
         }
 
         if ($delete = optional_param('delete', null, PARAM_INT)) {
             $this->form = new form\delete_resource((new moodle_url('/admin/tool/mediatime', [
                 'contextid' => optional_param('contextid', $this->record->contextid, PARAM_INT),
             ]))->out(), (array)$this->record, 'GET');
+            if ($this->record->usermodified != $USER->id) {
+                require_capability('tool/mediatime:manage', $this->context);
+            }
             $this->form->set_data(['delete' => $delete]);
         } else {
             $this->form = new form\edit_resource();
-            $this->form->set_data(['contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT)]);
+            if (
+                optional_param('edit', null, PARAM_INT)
+                && $this->record->usermodified != $USER->id
+            ) {
+                require_capability('tool/mediatime:manage', $this->context);
+            }
+            $this->form->set_data([
+                'contextid' => optional_param(
+                    'contextid',
+                    empty($this->record) ? SYSCONTEXTID : $this->record->contextid,
+                    PARAM_INT
+                ),
+                'parent_folder_uri' => optional_param('parent_folder_uri', null, PARAM_RAW),
+            ]);
         }
 
         $data = [
             'create' => optional_param('create', '', PARAM_TEXT),
             'edit' => optional_param('edit', null, PARAM_INT),
+            'parent_folder_uri' => optional_param('parent_folder_uri', null, PARAM_RAW),
         ];
         $maxbytes = get_config('mediatimesrc_videotime', 'maxbytes');
         if ($edit = optional_param('edit', null, PARAM_INT)) {
@@ -131,12 +148,21 @@ class manager implements renderable, templatable {
             optional_param('delete', null, PARAM_INT)
             && ($data = $this->form->get_data())
         ) {
+            require_sesskey();
+            if ($this->record->usermodified != $USER->id) {
+                require_capability('tool/mediatime:manage', \context_system::instance());
+            }
             $this->delete_resource($data->action == 2);
 
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]);
             redirect($redirect);
         } else if (($data = $this->form->get_data()) && (!empty($data->newfile) && $data->newfile == 1)) {
             require_sesskey();
+            if (empty($data->parent_folder_uri)) {
+                require_capability('tool/mediatime:manage', \context_system::instance());
+            } else if (!has_capability('tool/mediatime:manage', \context_system::instance())) {
+                require_capability('mediatimesrc/folder:use', $this->context);
+            }
             $data->timemodified = time();
             $data->usermodified = $USER->id;
             $data->timecreated = $data->timemodified;
@@ -189,6 +215,9 @@ class manager implements renderable, templatable {
                         );
                     }
 
+                    if (!empty($data->parent_folder_uri)) {
+                        $this->api->request("$data->parent_folder_uri/items", ['items' => [['uri' => $video['uri']]]], 'POST');
+                    }
                     $video = $this->api->request($video['uri'], [
                         'name' => $data->title,
                         'description' => $data->description,

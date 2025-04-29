@@ -58,6 +58,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->setType('source', PARAM_TEXT);
         $mform->setDefault('source', 'vimeo');
 
+        $mform->addElement('hidden', 'parent_folder_uri');
+        $mform->setType('parent_folder_uri', PARAM_RAW);
+        $mform->setDefault('parent_folder_uri', '');
+
         $mform->addElement('text', 'name', get_string('resourcename', 'tool_mediatime'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addHelpButton('name', 'resourcename', 'tool_mediatime');
@@ -104,7 +108,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $id = $mform->getElementValue('edit');
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
-        $context = context_system::instance();
+        $systemcontext = context_system::instance();
         if ($record) {
             $resource = new media_resource($record);
             $content = json_decode($record->content);
@@ -120,7 +124,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             );
             $mform->removeElement('filesource');
         } else {
-            if (has_capability('mediatimesrc/vimeo:viewall', $context)) {
+            if (has_capability('mediatimesrc/vimeo:viewall', $systemcontext)) {
                 $options = [null => ''];
                 $api = new api();
                 $videos = $api->request('/me/videos')['body']['data'];
@@ -136,35 +140,51 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 $mform->hideIf('file', 'newfile', 'neq', 0);
                 $mform->setDefault('newfile', 1);
                 $mform->setDefault('file', []);
+            }
 
-                if (has_capability('mediatimesrc/vimeo:upload', context_system::instance())) {
-                    $maxbytes = 200000000;
-                    $mform->insertElementBefore(
-                        $mform->createElement(
-                            'filemanager',
-                            'videofile',
-                            get_string('videofile', 'mediatimesrc_videotime'),
-                            null,
-                            [
-                                'subdirs' => 0,
-                                'maxbytes' => $maxbytes,
-                                'areamaxbytes' => $maxbytes,
-                                'maxfiles' => 1,
-                                'accepted_types' => ['video'],
-                                'return_types' => FILE_INTERNAL,
-                            ]
-                        ),
-                        'description'
-                    );
-                    $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_videotime');
-                    $mform->hideIf('videofile', 'newfile', 'neq', 1);
-                }
-            } else {
-                $mform->removeElement('filesource');
+            if (
+                has_capability('mediatimesrc/vimeo:upload', context_system::instance())
+                || (($contextid = $mform->getElementValue('contextid')) && $DB->get_records('tool_mediatime', [
+                    'source' => 'folder',
+                    'contextid' => $contextid,
+                ]) && has_capability('mediatimesrc/folder:use', \context::instance_by_id($contextid)))
+            ) {
+                $maxbytes = 200000000;
                 $mform->insertElementBefore(
-                    $mform->createElement('hidden', 'newfile', 1),
+                    $mform->createElement(
+                        'filemanager',
+                        'videofile',
+                        get_string('videofile', 'mediatimesrc_videotime'),
+                        null,
+                        [
+                            'subdirs' => 0,
+                            'maxbytes' => $maxbytes,
+                            'areamaxbytes' => $maxbytes,
+                            'maxfiles' => 1,
+                            'accepted_types' => ['video'],
+                            'return_types' => FILE_INTERNAL,
+                        ]
+                    ),
                     'description'
                 );
+                $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_videotime');
+                if (!has_capability('mediatimesrc/vimeo:upload', context_system::instance())) {
+                    if (empty(optional_param('parent_folder_uri', '', PARAM_RAW))) {
+                        $mform->setDefault(
+                            'parent_folder_uri',
+                            (new \mediatimesrc_folder\manager(
+                                \mediatimesrc_folder\manager::default_folder(
+                                    \context::instance_by_id($contextid)
+                                )
+                            ))->get_uri()
+                        );
+                    }
+                    $mform->insertElementBefore(
+                        $mform->createElement('hidden', 'newfile', 1),
+                        'description'
+                    );
+                }
+                $mform->removeElement('filesource');
             }
         }
     }

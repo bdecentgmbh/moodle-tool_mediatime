@@ -84,6 +84,12 @@ class media_manager implements renderable, templatable {
             $this->context = \context::instance_by_id($record->contextid);
         } else {
             $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
+            if (
+                ($source = optional_param('source', null, PARAM_ALPHA))
+                && !component_callback("mediatimesrc_$source", 'can_manage', [$this->context], false)
+            ) {
+                require_capability('tool/mediatime:manage', $this->context);
+            }
         }
         require_capability('tool/mediatime:view', $this->context);
 
@@ -136,6 +142,8 @@ class media_manager implements renderable, templatable {
      * @return array
      */
     public function export_for_template(renderer_base $output): array {
+        global $DB, $USER;
+
         if (!empty($this->source)) {
             $context = [
                 'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php'))->out(),
@@ -156,6 +164,9 @@ class media_manager implements renderable, templatable {
             $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $record->id]);
             $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $record->id]);
             $media[] = [
+                'canedit' => has_capability('tool/mediatime:manage', $this->context)
+                    || component_callback("mediatimesrc_$record->source", 'can_manage', [$this->context], false)
+                    || (!empty($record) && $USER->id == $record->usermodified),
                 'imageurl' => $resource->image_url($output),
                 'tags' => $resource->tags($output),
                 'url' => $url->out(),
@@ -263,15 +274,16 @@ class media_manager implements renderable, templatable {
         $bc->title = get_string('sharedvideo', 'videotimeplugin_live');
         $bc->attributes['class'] = 'block block_book_toc';
 
-        $plugins = \core_plugin_manager::instance()->get_installed_plugins('mediatimesrc');
-
         $options = [];
         foreach (plugininfo\mediatimesrc::get_enabled_plugins() as $plugin) {
-            $options[$plugin] = get_string("pluginname", "mediatimesrc_$plugin");
+            if (
+                has_capability('tool/mediatime:manage', $this->context)
+                || component_callback("mediatimesrc_$plugin", 'can_manage', [$this->context], false)
+            ) {
+                $options[$plugin] = get_string("pluginname", "mediatimesrc_$plugin");
+            }
         }
-        if (!has_capability('tool/mediatime:manage', $this->context)) {
-            $action = '';
-        } else if (count($options) == 1) {
+        if (count($options) == 1) {
             $button = new single_button(new moodle_url('/admin/tool/mediatime/index.php', [
                 'contextid' => $this->context->id,
                 'source' => array_keys($options)[0],
@@ -283,7 +295,7 @@ class media_manager implements renderable, templatable {
             ]), 'source', $options);
             $action = get_string('addnewcontent', 'tool_mediatime') . ' ' . $OUTPUT->render($select);
         } else {
-            $action = '';
+            return;
         }
         $bc->content = $OUTPUT->render_from_template('tool_mediatime/block_content', [
             'action' => $action,

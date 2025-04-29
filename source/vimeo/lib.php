@@ -113,3 +113,18 @@ function mediatimesrc_vimeo_share_video($moduleinstance, $uri) {
 
     $data->id = $DB->insert_record('tool_mediatime', $data);
 }
+
+/**
+ * Callback to allow user to manage this source in Mediatime
+ *
+ * @param \context $context Context for library
+ * @return bool
+ */
+function mediatimesrc_vimeo_can_manage(\context $context): bool {
+    global $DB, $USER;
+
+    return $DB->get_records('tool_mediatime', [
+        'source' => 'folder',
+        'contextid' => $context->id,
+    ]) && has_capability('mediatimesrc/folder:use', $context);
+}

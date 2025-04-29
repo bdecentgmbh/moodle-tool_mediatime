@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['addnewcontent'] = 'Add new content';
+$string['addvideo'] = 'Add video';
 $string['editresource'] = 'Edit resource';
 $string['event_resource_created'] = 'Resource created';
 $string['event_resource_deleted'] = 'Resource deleted';

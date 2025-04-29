@@ -25,6 +25,7 @@
         "removeurl": "https://moodle.test/tool/admin/mediatime/index.php?delete=1"
     }
 }}
+{{# canedit }}
 <div class="btn-group float-right">
     <a href="#" class="btn btn-link btn-icon icon-size-3 rounded-circle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="{{# str }} resourcemanagementoptions, tool_mediatime {{/ str }}">
         <i class="fa fa-ellipsis-v text-dark  py-2" aria-hidden="true"></i>
@@ -36,5 +37,9 @@
         {{# removeurl }}
             <a class="dropdown-item" href="{{ removeurl }}">{{#str}} removeresource, tool_mediatime {{/str}}</a>
         {{/ removeurl }}
+        {{# addvideourl }}
+            <a class="dropdown-item" href="{{ addvideourl }}">{{#str}} addvideo, tool_mediatime {{/str}}</a>
+        {{/ addvideourl }}
     </div>
 </div>
+{{/ canedit }}

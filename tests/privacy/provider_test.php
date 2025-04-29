@@ -17,7 +17,6 @@
 namespace tool_mediatime\privacy;
 
 use context_module;
-use core_grades\component_gradeitem;
 use core_privacy\tests\provider_testcase;
 use tool_mediatime\privacy\provider;
 use core_privacy\local\request\approved_contextlist;

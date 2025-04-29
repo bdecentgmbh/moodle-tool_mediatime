@@ -82,3 +82,13 @@ function mediatimesrc_videotime_config_file_areas() {
         'videofile',
     ];
 }
+
+/**
+ * Callback to allow user to manage this source in Mediatime
+ *
+ * @param \context $context Context for library
+ * @return bool
+ */
+function mediatimesrc_videotime_can_manage(\context $context): bool {
+    return has_capability('mediatimesrc/videotime:manage', $context);
+}

@@ -47,6 +47,9 @@ class manager implements renderable, templatable {
     /** @var $content Cached Streamio video record */
     protected ?stdClass $content = null;
 
+    /** @var $context Context */
+    protected ?context $context = null;
+
     /** @var $record Media time record for resource */
     protected ?stdClass $record = null;
 
@@ -65,6 +68,13 @@ class manager implements renderable, templatable {
 
         $this->record = $record;
 
+        if ($record) {
+            $this->content = json_decode($record->content ?? '{}');
+            $this->context = \context::instance_by_id($record->contextid);
+        } else {
+            $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
+        }
+
         $upload = optional_param('upload', null, PARAM_INT);
         if (!empty($upload) && !optional_param('cancel', false, PARAM_BOOL)) {
             require_sesskey();
@@ -75,28 +85,29 @@ class manager implements renderable, templatable {
             ], 'PUT');
             $video = $this->api->request("/videos/$video->id");
             $video->name = optional_param('name', '', PARAM_ALPHANUM);
+            $context = \context::instance_by_id(required_param('contextid', PARAM_INT));
             $record = [
+                'name' => $video->name,
                 'content' => json_encode($video),
+                'contextid' => $context->id,
                 'source' => 'streamio',
                 'usermodified' => $USER->id,
                 'timecreated' => time(),
                 'timemodified' => time(),
             ];
             $record['id'] = $DB->insert_record('tool_mediatime', $record);
-            $context = \context::instance_by_id($data->contextid);
             if ($tags = optional_param('tags', '', PARAM_TEXT)) {
-                $context = \context::instance_by_id($data->contextid);
                 core_tag_tag::set_item_tags(
                     'tool_mediatime',
                     'tool_meidatime',
-                    $id,
+                    $record['id'],
                     $context,
                     json_decode($tags)
                 );
             }
             $event = \mediatimesrc_streamio\event\resource_created::create_from_record((object)$record);
             $event->trigger();
-            $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $id]);
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $record['id']]);
             redirect($redirect);
         }
 
@@ -104,9 +115,13 @@ class manager implements renderable, templatable {
             $this->form = new form\delete_resource((new moodle_url('/admin/tool/mediatime', [
                 'contextid' => optional_param('contextid', $this->record->contextid, PARAM_INT),
             ]))->out(), (array)$this->record, 'GET');
+            require_capability('tool/mediatime:manage', $this->context);
             $this->form->set_data(['delete' => $delete]);
         } else {
             $this->form = new form\edit_resource();
+            if (optional_param('edit', null, PARAM_INT)) {
+                require_capability('tool/mediatime:manage', $this->context);
+            }
             $this->form->set_data(['contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT)]);
         }
 
@@ -202,6 +217,7 @@ class manager implements renderable, templatable {
 
             $data->upload = file_get_unused_draft_itemid();
             $data->sesskey = sesskey();
+            $data->contextid = optional_param('contextid', SYSCONTEXTID, PARAM_INT);
 
             $data->token = $this->api->create_token([
                 'tags' => "mediatimeupload,$data->upload",

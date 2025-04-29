@@ -36,3 +36,4 @@ $string['posterimage_help'] = 'Select an image to displayed before the video is 
 $string['privacy:metadata'] = 'The Video Time resource does not store or transmit any personal data.';
 $string['videofile'] = 'Video file';
 $string['videofile_help'] = 'Video file to be displayed';
+$string['videotime:manage'] = 'Manage resources';
