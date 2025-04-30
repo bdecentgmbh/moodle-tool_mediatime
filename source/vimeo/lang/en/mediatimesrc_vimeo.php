@@ -42,6 +42,7 @@ $string['videofile_help'] = 'Choose to upload a new video, or choose to use an e
 $string['videoupload'] = 'Vimeo video upload';
 $string['videoupload_help'] = 'Add video file and click \'upload\'. The file will be uploaded from your computer to Vimeo with the information you entered on the previous form. The video will be viewable after Vimeo receives the file and has had time to process it.';
 $string['vimeo:upload'] = 'Upload files to Vimeo';
+$string['vimeo:view'] = 'View Vimeo files';
 $string['vimeo:viewall'] = 'View all files available';
 $string['vimeofileaction'] = 'Vimeo file action';
 $string['vimeofileaction_help'] = 'Select whether the file should be deleted on Vimeo when the local content is deleted. If the file is used in other local resources, it will no longer be available to users.';

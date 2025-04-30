@@ -103,6 +103,7 @@ class media_resource implements renderable, templatable {
             'canedit' => has_capability('moodle/tag:edit', $this->context) || $USER->id == $this->record->usermodified,
             'id' => $this->record->id,
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]),
+            'viewlibrary' => has_capability('tool/mediatime:view', $this->context),
             'name' => $this->record->name,
             'editurl' => $editurl->out(),
             'removeurl' => $removeurl->out(),

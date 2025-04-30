@@ -148,7 +148,7 @@ class media_manager implements renderable, templatable {
 
         if (!empty($this->source)) {
             $context = [
-                'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php'))->out(),
+                'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->context->id]))->out(),
                 'resource' => $output->render($this->source),
             ];
             if (!empty($this->record) && empty(optional_param('edit', null, PARAM_INT))) {

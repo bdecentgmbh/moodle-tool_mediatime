@@ -30,7 +30,17 @@ $capabilities = [
     'mediatimesrc/vimeo:upload' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
         'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'coursecreator' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/blog:manageentries',
+    ],
+
+    'mediatimesrc/vimeo:view' => [
+        'riskbitmask' => RISK_SPAM | RISK_XSS,
+        'captype' => 'view',
+        'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,
         ],

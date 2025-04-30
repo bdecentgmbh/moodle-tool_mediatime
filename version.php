@@ -26,9 +26,9 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_mediatime';
 $plugin->release = '1.0';
-$plugin->version = 2024010810;
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->version = 2025043000;
+$plugin->requires = 2024100700;
+$plugin->maturity = MATURITY_BETA;
 $plugin->dependencies = [
     'mod_videotime' => 2023011200,
 ];

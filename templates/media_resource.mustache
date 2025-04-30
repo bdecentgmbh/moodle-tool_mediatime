@@ -40,7 +40,9 @@
        {{# canedit }}
            {{> tool_mediatime/dropdown }}
        {{/ canedit }}
-       <button class="float-right btn btn-secondary"><i class="fa fa-angle-double-left"></i>{{# str }}libraryhome, tool_mediatime {{/ str }}</button>
+       {{# viewlibrary }}
+           <button class="float-right btn btn-secondary"><i class="fa fa-angle-double-left"></i>{{# str }}libraryhome, tool_mediatime {{/ str }}</button>
+       {{/ viewlibrary }}
     </form>
     <div class="container-fluid">
         {{$ resourcecontent }}

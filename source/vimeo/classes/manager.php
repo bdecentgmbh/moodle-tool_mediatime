@@ -299,13 +299,15 @@ class manager implements renderable, templatable {
             ];
         } else if (($data = $this->form->get_data()) && $this->form->is_submitted() && $data->newfile == 1) {
             require_sesskey();
-            require_capability('mediatimesrc/vimeo:upload', context_system::instance());
+            require_capability('mediatimesrc/vimeo:upload', $this->context);
 
             return [
                 'form' => $output->render_from_template('mediatimesrc_vimeo/file_upload', [
                     'name' => json_encode($data->name),
+                    'contextid' => $this->context->id,
                     'description' => json_encode($data->description),
                     'title' => json_encode($data->title),
+                    'parent_folder_uri' => json_encode($data->parent_folder_uri),
                     'tags' => htmlspecialchars(json_encode($data->tags), ENT_COMPAT),
                 ]),
             ];

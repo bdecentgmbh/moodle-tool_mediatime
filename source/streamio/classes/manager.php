@@ -24,6 +24,7 @@
 
 namespace mediatimesrc_streamio;
 
+use context;
 use context_system;
 use core_tag_tag;
 use moodle_exception;
@@ -116,13 +117,18 @@ class manager implements renderable, templatable {
                 'contextid' => optional_param('contextid', $this->record->contextid, PARAM_INT),
             ]))->out(), (array)$this->record, 'GET');
             require_capability('tool/mediatime:manage', $this->context);
-            $this->form->set_data(['delete' => $delete]);
+            $this->form->set_data([
+                'contextid' => $this->context->id,
+                'delete' => $delete,
+            ]);
         } else {
             $this->form = new form\edit_resource();
             if (optional_param('edit', null, PARAM_INT)) {
                 require_capability('tool/mediatime:manage', $this->context);
             }
-            $this->form->set_data(['contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT)]);
+            $this->form->set_data([
+                'contextid' => $this->context->id,
+            ]);
         }
 
         if ($record) {
@@ -138,7 +144,7 @@ class manager implements renderable, templatable {
         }
         if ($this->form->is_cancelled()) {
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', [
-                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+                'contextid' => optional_param('contextid', $this->context->id, PARAM_INT),
             ]);
             redirect($redirect);
         } else if (
@@ -147,7 +153,7 @@ class manager implements renderable, templatable {
         ) {
             $this->delete_resource($data->action == 2);
 
-            $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->record->contextid]);
+            $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->context->id]);
             redirect($redirect);
         } else if (($data = $this->form->get_data()) && empty($data->newfile)) {
             require_sesskey();

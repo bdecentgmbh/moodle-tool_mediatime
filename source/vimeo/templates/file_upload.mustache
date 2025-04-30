@@ -35,10 +35,12 @@
     <div class="container-fluid">
     <h3>{{# str }} videoupload, mediatimesrc_vimeo {{/ str }}</h3>
     <p>{{# str }} videoupload_help, mediatimesrc_vimeo {{/ str }}</p>
+    <input type="hidden" name="contextid" value="{{ contextid }}" >
     <input type="hidden" name="create" value="" >
     <input type="hidden" name="source" value="vimeo" >
     <input type="hidden" name="filesize" value="" >
     <input type="hidden" name="name" value={{{ name }}} >
+    <input type="hidden" name="parenturi" value="{{ parent_folder_uri }}" >
     <input type="hidden" name="title" value={{{ title }}} >
     <input type="hidden" name="description" value={{{ description }}} >
     <input type="hidden" name="tags" value="{{ tags }}" >

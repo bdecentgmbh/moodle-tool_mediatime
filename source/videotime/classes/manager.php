@@ -119,7 +119,7 @@ class manager implements renderable, templatable {
         }
         if ($this->form->is_cancelled()) {
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', [
-                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+                'contextid' => $this->context->id,
             ]);
             redirect($redirect);
         } else if (

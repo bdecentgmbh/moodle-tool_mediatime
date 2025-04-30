@@ -44,9 +44,11 @@ class create_token extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
+                'contextid' => new external_value(PARAM_INT, 'Context id'),
                 'description' => new external_value(PARAM_TEXT, 'Resource description'),
                 'filesize' => new external_value(PARAM_INT, 'Video file size'),
                 'name' => new external_value(PARAM_TEXT, 'Resource name'),
+                'parenturi' => new external_value(PARAM_RAW, 'Parent folder'),
                 'tags' => new external_value(PARAM_RAW, 'Resource tags'),
                 'title' => new external_value(PARAM_TEXT, 'Resource title'),
             ]
@@ -57,24 +59,28 @@ class create_token extends external_api {
      * Create place holder
      *
      * @param string $description Name of resource
+     * @param int $contextid Context id
      * @param int $filesize Video file size
      * @param string $name Name of resource
-     * @param string $tags Name of resource
+     * @param string $parenturi Parent folder uri
+     * @param string $tags Tags to add
      * @param string $title Name of resource
      * @return array Upload information
      */
-    public static function execute($description, $filesize, $name, $tags, $title): array {
+    public static function execute($contextid, $description, $filesize, $name, $parenturi, $tags, $title): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
+            'contextid' => $contextid,
             'filesize' => $filesize,
             'description' => $description,
             'name' => $name,
+            'parenturi' => $parenturi,
             'tags' => $tags,
             'title' => $title,
         ]);
 
-        $context = context_system::instance();
+        $context = \context::instance_by_id($params['contextid']);
         self::validate_context($context);
 
         require_login();
@@ -96,10 +102,18 @@ class create_token extends external_api {
             'name' => $params['name'],
             'source' => 'vimeo',
             'content' => json_encode($updatedvideo),
+            'contextid' => $params['contextid'],
             'timecreated' => time(),
             'timemodified' => time(),
             'usermodified' => $USER->id,
         ]);
+        if (!empty($params['parenturi'])) {
+            $api->request(
+                json_decode($parenturi). "/items",
+                ['items' => [['uri' => $updatedvideo['uri']]]],
+                'POST'
+            );
+        }
 
         if (!empty($params['tags'])) {
             core_tag_tag::set_item_tags(
@@ -112,7 +126,7 @@ class create_token extends external_api {
         }
 
         $event = \mediatimesrc_vimeo\event\resource_created::create([
-            'contextid' => SYSCONTEXTID,
+            'contextid' => $contextid,
             'objectid' => $id,
         ]);
         $event->trigger();

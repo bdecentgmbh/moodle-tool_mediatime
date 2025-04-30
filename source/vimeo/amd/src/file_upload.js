@@ -6,7 +6,7 @@ import Notification from 'core/notification';
 /**
  * Handle uploading
  *
- * @param Vimeo token request response
+ * @param {object} resource Resource record
  */
 const upload = async (resource) => {
     const file = document.querySelector('input[name="videofile"]').files[0];
@@ -49,7 +49,7 @@ export default {
     /**
      * Handle button click
      *
-     * Event e
+     * @param {Event} e Click event
      */
     handleClick: function(e) {
         const button = e.target.closest('button[name="upload"]');
@@ -59,12 +59,14 @@ export default {
             Ajax.call([{
                 args: {
                     filesize: Number(file.size),
+                    contextid: document.querySelector('input[name="contextid"]').value,
                     description: document.querySelector('input[name="description"]').value,
                     name: document.querySelector('input[name="name"]').value,
+                    parenturi: document.querySelector('input[name="parenturi"]').value,
                     tags: document.querySelector('input[name="tags"]').value,
                     title: document.querySelector('input[name="title"]').value
                 },
-                contextid: 1,
+                contextid: document.querySelector('input[name="contextid"]').value,
                 done: upload,
                 fail: Notification.exception,
                 methodname: 'mediatimesrc_vimeo_create_token'

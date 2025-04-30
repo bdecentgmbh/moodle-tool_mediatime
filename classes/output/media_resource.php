@@ -73,6 +73,7 @@ class media_resource implements renderable, templatable {
             'editurl' => $editurl->out(),
             'removeurl' => $removeurl->out(),
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
+            'viewlibrary' => has_capability('tool/mediatime:view', $context),
             'resource' => $output->render($this->resource),
             'tags' => $this->tags($output),
         ];

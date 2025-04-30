@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mediatimesrc_streamio';
 $plugin->release = '1.0';
-$plugin->version = 2024010801;
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->version = 2025043000;
+$plugin->requires = 2024100700;
+$plugin->maturity = MATURITY_BETA;
