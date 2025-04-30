@@ -91,7 +91,9 @@ class media_manager implements renderable, templatable {
                 require_capability('tool/mediatime:manage', $this->context);
             }
         }
-        require_capability('tool/mediatime:view', $this->context);
+        if (empty($this->record)) {
+            require_capability('tool/mediatime:view', $this->context);
+        }
 
         $plugins = plugininfo\mediatimesrc::get_enabled_plugins();
         if (!empty($source) && !in_array($source, $plugins)) {
