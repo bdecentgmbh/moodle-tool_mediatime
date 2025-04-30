@@ -169,14 +169,15 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 );
                 $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_videotime');
                 if (!has_capability('mediatimesrc/vimeo:upload', context_system::instance())) {
-                    if (empty(optional_param('parent_folder_uri', '', PARAM_RAW))) {
+                    if (
+                        empty(optional_param('parent_folder_uri', '', PARAM_RAW))
+                        && class_exists('\\mediatimesrc_folder\\manager::default_folder')
+
+                        && $default = \mediatimesrc_folder\manager::default_folder($context, true)
+                    ) {
                         $mform->setDefault(
                             'parent_folder_uri',
-                            (new \mediatimesrc_folder\manager(
-                                \mediatimesrc_folder\manager::default_folder(
-                                    \context::instance_by_id($contextid)
-                                )
-                            ))->get_uri()
+                            (new \mediatimesrc_folder\manager($default))->get_uri()
                         );
                     }
                     $mform->insertElementBefore(
