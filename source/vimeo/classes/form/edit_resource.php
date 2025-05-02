@@ -171,8 +171,9 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 if (!has_capability('mediatimesrc/vimeo:upload', context_system::instance())) {
                     if (
                         empty(optional_param('parent_folder_uri', '', PARAM_RAW))
-                        && class_exists('\\mediatimesrc_folder\\manager::default_folder')
-
+                        && class_exists('\\mediatimesrc_folder\\manager')
+                        && ($contextid = $mform->getElementValue('contextid'))
+                        && ($context = \context::instance_by_id($contextid))
                         && $default = \mediatimesrc_folder\manager::default_folder($context, true)
                     ) {
                         $mform->setDefault(
@@ -184,8 +185,8 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                         $mform->createElement('hidden', 'newfile', 1),
                         'description'
                     );
+                    $mform->removeElement('filesource');
                 }
-                $mform->removeElement('filesource');
             }
         }
     }

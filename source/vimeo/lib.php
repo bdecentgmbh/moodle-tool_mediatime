@@ -51,8 +51,7 @@ function mediatimesrc_vimeo_pluginfile($course, $cm, $context, $filearea, $args,
 
     if (
         in_array($filearea, [
-        'posterimage',
-        'videofile',
+            'videofile',
         ])
     ) {
         $itemid = array_shift($args);
@@ -67,6 +66,7 @@ function mediatimesrc_vimeo_pluginfile($course, $cm, $context, $filearea, $args,
             (!$file = $fs->get_file_by_hash(sha1($fullpath)))
             || $file->is_directory()
             || ($contenthash != $file->get_contenthash())
+            || $file->get_timecreated() > time() + HOURSECS
         ) {
             return false;
         }
