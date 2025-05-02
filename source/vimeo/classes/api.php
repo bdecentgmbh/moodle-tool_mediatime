@@ -35,6 +35,21 @@ use stdClass;
  */
 class api extends \videotimeplugin_repository\api {
     /**
+     * Constructor
+     *
+     * @param int|null $userid Optional user id to use for request
+     */
+    public function __construct($userid = 0) {
+        global $DB;
+
+        if (!method_exists(parent::class, 'share_videos')) {
+            parent::__construct();
+        }
+
+        parent::__construct($userid);
+    }
+
+    /**
      * Create place holder for upload
      *
      * @param array $params Upload params
@@ -52,5 +67,12 @@ class api extends \videotimeplugin_repository\api {
      */
     public function create_folder($params) {
         return $this->request('/me/projects', $params, 'POST')['body'];
+    }
+
+    /**
+     * Get Folders
+     */
+    public function get_folders() {
+        return $this->request('/me/folders', ['fields' => 'name, uri, modified_time'])['body'];
     }
 }

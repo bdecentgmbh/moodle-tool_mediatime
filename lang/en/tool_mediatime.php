@@ -50,6 +50,7 @@ $string['privacy:metadata:tool_mediatime:usermodified'] = 'User modified';
 $string['privacy:resources'] = 'Media Time resources';
 $string['removeresource'] = 'Remove resource';
 $string['resourcemanagementoptions'] = 'Resource management options';
+$string['resourcemissing'] = 'Resource missing';
 $string['resourcename'] = 'Resource name';
 $string['resourcename_help'] = 'The name for a resource is used internally in the library to identify the resource, but not displayed when it is used.';
 $string['resourcenamewithlink'] = 'Resource name with link';

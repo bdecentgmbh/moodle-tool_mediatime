@@ -68,6 +68,13 @@ if ($contextid == SYSCONTEXTID) {
     $PAGE->set_url('/admin/tool/mediatime/index.php', ['contextid' => $contextid]);
 }
 
+if (!empty($id) && empty($record)) {
+    echo $OUTPUT->header();
+    echo \core\notification::error(get_string('resourcemissing', 'tool_mediatime'));
+    echo $OUTPUT->footer();
+    die();
+}
+
 $manager = new media_manager($source, $record);
 
 echo $OUTPUT->header();
