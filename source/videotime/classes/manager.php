@@ -139,6 +139,15 @@ class manager implements renderable, templatable {
             if (empty($data->edit)) {
                 $data->timecreated = $data->timemodified;
                 $data->content = json_encode($data);
+                if (
+                    $this->context instanceof \context_course
+                    && ($course = get_course($this->context->instanceid))
+                    && $groupmode = groups_get_course_groupmode($course)
+                ) {
+                    $data->groupid = groups_get_course_group($course);
+                } else {
+                    $data->groupid = 0;
+                }
                 $data->id = $DB->insert_record('tool_mediatime', $data);
                 $event = \mediatimesrc_videotime\event\resource_created::create_from_record($data);
                 $event->trigger();

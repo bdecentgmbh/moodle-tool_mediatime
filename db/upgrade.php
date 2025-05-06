@@ -48,5 +48,20 @@ function xmldb_tool_mediatime_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2024010805, 'tool', 'mediatime');
     }
 
+    if ($oldversion < 2025043001) {
+
+        // Define field groupid to be added to tool_mediatime.
+        $table = new xmldb_table('tool_mediatime');
+        $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'contextid');
+
+        // Conditionally launch add field groupid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Mediatime savepoint reached.
+        upgrade_plugin_savepoint(true, 2025043001, 'tool', 'mediatime');
+    }
+
     return true;
 }

@@ -58,8 +58,8 @@ class create_token extends external_api {
     /**
      * Create place holder
      *
-     * @param string $description Name of resource
      * @param int $contextid Context id
+     * @param string $description Name of resource
      * @param int $filesize Video file size
      * @param string $name Name of resource
      * @param string $parenturi Parent folder uri

@@ -96,6 +96,15 @@ class manager implements renderable, templatable {
                 'timecreated' => time(),
                 'timemodified' => time(),
             ];
+            if (
+                $this->context instanceof \context_course
+                && ($course = get_course($this->context->instanceid))
+                && $groupmode = groups_get_course_groupmode($course)
+            ) {
+                $record['groupid'] = groups_get_course_group($course);
+            } else {
+                $record['groupid'] = 0;
+            }
             $record['id'] = $DB->insert_record('tool_mediatime', $record);
             if ($tags = optional_param('tags', '', PARAM_TEXT)) {
                 core_tag_tag::set_item_tags(
@@ -165,6 +174,15 @@ class manager implements renderable, templatable {
                 $video->name = $data->name;
                 $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
+                if (
+                    $this->context instanceof \context_course
+                    && ($course = get_course($this->context->instanceid))
+                    && $groupmode = groups_get_course_groupmode($course)
+                ) {
+                    $data->groupid = groups_get_course_group($course);
+                } else {
+                    $data->groupid = 0;
+                }
                 $data->id = $DB->insert_record('tool_mediatime', $data);
                 $event = \mediatimesrc_streamio\event\resource_created::create_from_record($data);
                 $event->trigger();

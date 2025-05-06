@@ -1,5 +1,8 @@
 {
   "plugintypes": {
     "mediatimesrc": "admin\/tool\/mediatime\/source"
+  },
+  "subplugintypes": {
+    "mediatimesrc": "source"
   }
 }

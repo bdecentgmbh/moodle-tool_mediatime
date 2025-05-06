@@ -166,6 +166,15 @@ class manager implements renderable, templatable {
             $data->timemodified = time();
             $data->usermodified = $USER->id;
             $data->timecreated = $data->timemodified;
+            if (
+                $this->context instanceof \context_course
+                && ($course = get_course($this->context->instanceid))
+                && $groupmode = groups_get_course_groupmode($course)
+            ) {
+                $data->groupid = groups_get_course_group($course);
+            } else {
+                $data->groupid = 0;
+            }
 
             $fs = get_file_storage();
             foreach ($fs->get_area_files(context_user::instance($USER->id)->id, 'user', 'draft', $data->videofile) as $file) {
@@ -245,6 +254,15 @@ class manager implements renderable, templatable {
                 }
                 $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
+                if (
+                    $this->context instanceof \context_course
+                    && ($course = get_course($this->context->instanceid))
+                    && $groupmode = groups_get_course_groupmode($course)
+                ) {
+                    $data->groupid = groups_get_course_group($course);
+                } else {
+                    $data->groupid = 0;
+                }
                 $data->id = $DB->insert_record('tool_mediatime', $data);
 
                 $event = \mediatimesrc_vimeo\event\resource_created::create_from_record($data);

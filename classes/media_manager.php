@@ -241,6 +241,17 @@ class media_manager implements renderable, templatable {
         if ($contextid = $filters['contextid'] ?? '') {
             $sql .= ' AND contextid = :contextid';
             $params['contextid'] = $contextid;
+
+            $context = \context::instance_by_id($contextid);
+            if (
+                $context instanceof \context_course
+                && ($course = get_course($context->instanceid))
+                && $groupmode = groups_get_course_groupmode($course)
+            ) {
+                $group = optional_param('group', groups_get_course_group($course), PARAM_INT);
+                $sql .= ' AND groupid = :groupid';
+                $params['groupid'] = $group;
+            }
         }
 
         // Filter by tags.
@@ -264,10 +275,7 @@ class media_manager implements renderable, templatable {
     }
 
     /**
-     * Add the search block to default region
-     *
-     * @param   stdClass    $instance   Video Time instance
-     * @param   stdClass    $cm         The course module
+     * Add fake block for search and adding resources
      */
     protected function setup_page() {
         global $OUTPUT, $PAGE, $USER;
