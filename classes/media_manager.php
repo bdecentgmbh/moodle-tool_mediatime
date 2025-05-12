@@ -49,6 +49,9 @@ use recordset;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class media_manager implements renderable, templatable {
+    /** @var \moodleform $form Move resource form */
+    protected $form = null;
+
     /** @var array $media List of media resources to display */
     protected $media = null;
 
@@ -75,6 +78,8 @@ class media_manager implements renderable, templatable {
      * @param int $page Paging offset
      */
     public function __construct(string $source, ?stdClass $record = null, int $page = 0) {
+        global $DB;
+
         $this->page = $page;
 
         $this->record = $record;
@@ -98,6 +103,44 @@ class media_manager implements renderable, templatable {
         $plugins = plugininfo\mediatimesrc::get_enabled_plugins();
         if (!empty($source) && !in_array($source, $plugins)) {
             throw new moodle_exception('invalidsource');
+        }
+
+        if (($action = optional_param('action', null, PARAM_ALPHA)) && $action == 'move') {
+            $formclass = "\\tool_mediatime\\form\\{$action}_resource";
+            $this->form = new $formclass((new moodle_url('/admin/tool/mediatime', [
+                'id' => $this->record->id,
+                'action' => 'move',
+            ]))->out(false), [
+                'context' => $this->context,
+                'record' => $this->record,
+            ], 'GET');
+            if (!$this->form->is_cancelled() && $this->form->is_submitted()) {
+                $data = $this->form->get_data();
+                if ($data->contextlevel == CONTEXT_SYSTEM) {
+                    $this->record->contextid = SYSCONTEXTID;
+                    $this->record->groupid = 0;
+                } else if ($data->contextlevel == CONTEXT_COURSECAT && !empty($data->categoryid)) {
+                    $context = \context_coursecat::instance($data->categoryid);
+                    $this->record->contextid = $context->id;
+                    $this->record->groupid = 0;
+                } else if ($data->contextlevel == CONTEXT_COURSE && !empty($data->courseid)) {
+                    $context = \context_course::instance($data->courseid);
+                    $course = get_course($data->courseid);
+                    if (groups_get_course_groupmode($course)) {
+                        $this->record->groupid = groups_get_course_group($course);
+                    } else {
+                        $this->record->groupid = 0;
+                    }
+                    $this->record->contextid = $context->id;
+                }
+                $DB->update_record('tool_mediatime', $this->record);
+                $eventclass = "\\mediatimesrc_{$this->record->source}\\event\\resource_created";
+                $event = $eventclass::create_from_record($this->record);
+                $event->trigger();
+
+                $url = new moodle_url('/admin/tool/mediatime', ['contextid' => $this->record->contextid]);
+                redirect($url);
+            }
         }
 
         $this->media = [];
@@ -146,6 +189,14 @@ class media_manager implements renderable, templatable {
     public function export_for_template(renderer_base $output): array {
         global $DB, $USER;
 
+        if (!empty($this->form)) {
+            $context = [
+                'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->context->id]))->out(),
+                'resource' => $this->form->render(),
+            ];
+
+            return $context;
+        }
         if (!empty($this->source)) {
             $context = [
                 'libraryhome' => (new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->context->id]))->out(),
@@ -160,23 +211,33 @@ class media_manager implements renderable, templatable {
         }
 
         $media = [];
+        if ($this->context instanceof \context_course) {
+            $course = get_course($this->context->instanceid);
+            if ($groupmode = groups_get_course_groupmode($course)) {
+                $group = groups_get_course_group($course);
+            }
+        }
         foreach ($this->media as $record) {
             $resource = new output\media_resource($record);
             $url = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $record->id]);
             $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $record->id]);
             $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $record->id]);
+            $moveurl = new moodle_url('/admin/tool/mediatime/index.php', ['id' => $record->id, 'action' => 'move']);
             $media[] = [
                 'canedit' => has_capability('tool/mediatime:manage', $this->context)
                     || component_callback("mediatimesrc_$record->source", 'can_manage', [$this->context], false)
                     || (!empty($record) && $USER->id == $record->usermodified),
+                'group' => !empty($groupmode) && !empty($record->groupid)
+                    && ($group = groups_get_group($record->groupid)) ? $group->name : '',
                 'imageurl' => $resource->image_url($output),
                 'tags' => $resource->tags($output),
                 'url' => $url->out(),
                 'name' => $record->name,
                 'title' => $resource->get_title(),
                 'description' => shorten_text(json_decode($record->content)->description ?? '', 80),
-                'editurl' => $editurl->out(),
-                'removeurl' => $removeurl->out(),
+                'editurl' => $editurl->out(false),
+                'moveurl' => $moveurl->out(false),
+                'removeurl' => $removeurl->out(false),
             ];
         }
 
@@ -246,10 +307,10 @@ class media_manager implements renderable, templatable {
             if (
                 $context instanceof \context_course
                 && ($course = get_course($context->instanceid))
-                && $groupmode = groups_get_course_groupmode($course)
+                && ($groupmode = groups_get_course_groupmode($course))
+                && $group = optional_param('group', groups_get_course_group($course), PARAM_INT)
             ) {
-                $group = optional_param('group', groups_get_course_group($course), PARAM_INT);
-                $sql .= ' AND groupid = :groupid';
+                $sql .= ' AND (groupid = :groupid OR groupid = 0)';
                 $params['groupid'] = $group;
             }
         }

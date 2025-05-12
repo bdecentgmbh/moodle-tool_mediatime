@@ -169,12 +169,12 @@ class manager implements renderable, templatable {
             if (
                 $this->context instanceof \context_course
                 && ($course = get_course($this->context->instanceid))
-                && $groupmode = groups_get_course_groupmode($course)
+                && ($groupmode = groups_get_course_groupmode($course))
+                && !groups_is_member($data->groupid)
             ) {
-                $data->groupid = groups_get_course_group($course);
-            } else {
-                $data->groupid = 0;
+                require_capability('moodle/site:accessallgroups', $this->context);
             }
+            $data->groupid = $data->groupid ?? 0;
 
             $fs = get_file_storage();
             foreach ($fs->get_area_files(context_user::instance($USER->id)->id, 'user', 'draft', $data->videofile) as $file) {
@@ -257,12 +257,12 @@ class manager implements renderable, templatable {
                 if (
                     $this->context instanceof \context_course
                     && ($course = get_course($this->context->instanceid))
-                    && $groupmode = groups_get_course_groupmode($course)
+                    && ($groupmode = groups_get_course_groupmode($course))
+                    && !groups_is_member($data->groupid)
                 ) {
-                    $data->groupid = groups_get_course_group($course);
-                } else {
-                    $data->groupid = 0;
+                    require_capability('moodle/site:accessallgroups', $this->context);
                 }
+                $data->groupid = $data->groupid ?? 0;
                 $data->id = $DB->insert_record('tool_mediatime', $data);
 
                 $event = \mediatimesrc_vimeo\event\resource_created::create_from_record($data);
@@ -310,7 +310,7 @@ class manager implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         global $DB;
 
-        if (optional_param('id', null, PARAM_INT)) {
+        if (optional_param('id', null, PARAM_INT) && !optional_param('action', null, PARAM_ALPHA)) {
             $resource = new output\media_resource($this->record);
             return [
                 'resource' => $output->render($resource),
@@ -324,9 +324,10 @@ class manager implements renderable, templatable {
                     'name' => json_encode($data->name),
                     'contextid' => $this->context->id,
                     'description' => json_encode($data->description),
-                    'title' => json_encode($data->title),
+                    'groupid' => $data->groupid,
                     'parent_folder_uri' => json_encode($data->parent_folder_uri),
                     'tags' => htmlspecialchars(json_encode($data->tags), ENT_COMPAT),
+                    'title' => json_encode($data->title),
                 ]),
             ];
         }

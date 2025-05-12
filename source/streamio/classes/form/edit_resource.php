@@ -94,6 +94,12 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $id = $mform->getElementValue('edit');
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
+        if ($record = $DB->get_record('tool_mediatime', ['id' => $id])) {
+            $this->context = \context::instance_by_id($record->contextid);
+        } else {
+            $this->context = \context::instance_by_id($mform->getElementValue('contextid'));
+        }
+        $this->selected_group();
         $context = context_system::instance();
         if ($record) {
             $content = json_decode($record->content ?? '{}');
@@ -127,6 +133,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 'filesource'
             );
             $mform->removeElement('filesource');
+            $mform->setDefault('groupid', $record->groupid);
         } else {
             if (has_capability('mediatimesrc/streamio:viewall', $context)) {
                 $options = [null => ''];

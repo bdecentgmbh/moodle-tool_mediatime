@@ -107,7 +107,12 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform =& $this->_form;
 
         $id = $mform->getElementValue('edit');
-        $record = $DB->get_record('tool_mediatime', ['id' => $id]);
+        if ($record = $DB->get_record('tool_mediatime', ['id' => $id])) {
+            $this->context = \context::instance_by_id($record->contextid);
+        } else {
+            $this->context = \context::instance_by_id($mform->getElementValue('contextid'));
+        }
+        $this->selected_group();
         $systemcontext = context_system::instance();
         if ($record) {
             $resource = new media_resource($record);
@@ -123,6 +128,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 'filesource'
             );
             $mform->removeElement('filesource');
+            $mform->setDefault('groupid', $record->groupid);
         } else {
             if (has_capability('mediatimesrc/vimeo:viewall', $systemcontext)) {
                 $options = [null => ''];

@@ -35,6 +35,11 @@ use moodleform;
  */
 class edit_resource extends moodleform {
     /**
+     * @var ?\context $context
+     */
+    protected ?\context $context = null;
+
+    /**
      * Definition
      */
     public function definition() {
@@ -66,5 +71,34 @@ class edit_resource extends moodleform {
                 'component' => 'tool_mediatime',
             ]
         );
+    }
+
+    /**
+     * Add group selector element
+     */
+    protected function selected_group() {
+        $mform = $this->_form;
+
+        if (!$this->context instanceof \context_course) {
+            return;
+        }
+        $course = get_course($this->context->instanceid);
+        if (!$groupmode = groups_get_course_groupmode($course)) {
+            return;
+        }
+        $group = groups_get_course_group($course);
+        $groups = groups_get_all_groups($course->id);
+        if (!key_exists($group, $groups)) {
+            require_capability('moodle/site:accessallgroups', $this->context);
+        }
+        $options = array_column($groups, 'name', 'id');
+        if (has_capability('moodle/site:accessallgroups', $this->context)) {
+            $options = ['0' => get_string('allgroups')] + $options;
+        }
+        $mform->insertElementBefore(
+            $mform->createElement('select', 'groupid', 'Group', $options),
+            'tags'
+        );
+        $mform->setDefault('groupid', $group);
     }
 }

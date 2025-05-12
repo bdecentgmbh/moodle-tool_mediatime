@@ -47,6 +47,7 @@ class create_token extends external_api {
                 'contextid' => new external_value(PARAM_INT, 'Context id'),
                 'description' => new external_value(PARAM_TEXT, 'Resource description'),
                 'filesize' => new external_value(PARAM_INT, 'Video file size'),
+                'groupid' => new external_value(PARAM_INT, 'Group id'),
                 'name' => new external_value(PARAM_TEXT, 'Resource name'),
                 'parenturi' => new external_value(PARAM_RAW, 'Parent folder'),
                 'tags' => new external_value(PARAM_RAW, 'Resource tags'),
@@ -61,19 +62,21 @@ class create_token extends external_api {
      * @param int $contextid Context id
      * @param string $description Name of resource
      * @param int $filesize Video file size
+     * @param int $groupid Group id
      * @param string $name Name of resource
      * @param string $parenturi Parent folder uri
      * @param string $tags Tags to add
      * @param string $title Name of resource
      * @return array Upload information
      */
-    public static function execute($contextid, $description, $filesize, $name, $parenturi, $tags, $title): array {
+    public static function execute($contextid, $description, $filesize, $groupid, $name, $parenturi, $tags, $title): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
             'contextid' => $contextid,
-            'filesize' => $filesize,
             'description' => $description,
+            'filesize' => $filesize,
+            'groupid' => $groupid,
             'name' => $name,
             'parenturi' => $parenturi,
             'tags' => $tags,
@@ -86,6 +89,17 @@ class create_token extends external_api {
         require_login();
         require_capability('mediatimesrc/vimeo:upload', $context);
 
+        if ($context instanceof \context_course) {
+            $course = get_course($context->instanceid);
+            if ($groupmode = groups_get_course_groupmode($course)) {
+                $groups = groups_get_all_groups($course->id);
+                if (!key_exists($params['groupid'], $groups)) {
+                    require_capability('moodle/site:accessallgroups', $context);
+                }
+            }
+        } else {
+            $params['groupid'] = 0;
+        }
         $api = new api();
 
         $video = $api->create_token([
@@ -103,6 +117,7 @@ class create_token extends external_api {
             'source' => 'vimeo',
             'content' => json_encode($updatedvideo),
             'contextid' => $params['contextid'],
+            'groupid' => $params['groupid'],
             'timecreated' => time(),
             'timemodified' => time(),
             'usermodified' => $USER->id,

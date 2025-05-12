@@ -61,6 +61,7 @@ export default {
                     filesize: Number(file.size),
                     contextid: document.querySelector('input[name="contextid"]').value,
                     description: document.querySelector('input[name="description"]').value,
+                    groupid: document.querySelector('input[name="groupid"]').value || 0,
                     name: document.querySelector('input[name="name"]').value,
                     parenturi: document.querySelector('input[name="parenturi"]').value,
                     tags: document.querySelector('input[name="tags"]').value,

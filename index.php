@@ -49,6 +49,7 @@ if (!empty($record)) {
 if ($contextid == SYSCONTEXTID) {
     require_login();
     admin_externalpage_setup('mediatimelibrary');
+    $context = context_system::instance();
 } else {
     $context = context::instance_by_id($contextid);
     $PAGE->set_context($context);

@@ -91,6 +91,7 @@ class manager implements renderable, templatable {
                 'name' => $video->name,
                 'content' => json_encode($video),
                 'contextid' => $context->id,
+                'groupid' => optional_param('groupid', 0, PARAM_INT),
                 'source' => 'streamio',
                 'usermodified' => $USER->id,
                 'timecreated' => time(),
@@ -99,11 +100,10 @@ class manager implements renderable, templatable {
             if (
                 $this->context instanceof \context_course
                 && ($course = get_course($this->context->instanceid))
-                && $groupmode = groups_get_course_groupmode($course)
+                && ($groupmode = groups_get_course_groupmode($course))
+                && !groups_is_member($record['groupid'])
             ) {
-                $record['groupid'] = groups_get_course_group($course);
-            } else {
-                $record['groupid'] = 0;
+                require_capability('moodle/site:accessallgroups', $this->context);
             }
             $record['id'] = $DB->insert_record('tool_mediatime', $record);
             if ($tags = optional_param('tags', '', PARAM_TEXT)) {
@@ -177,11 +177,10 @@ class manager implements renderable, templatable {
                 if (
                     $this->context instanceof \context_course
                     && ($course = get_course($this->context->instanceid))
-                    && $groupmode = groups_get_course_groupmode($course)
+                    && ($groupmode = groups_get_course_groupmode($course))
+                    && !groups_is_member($data->groupid)
                 ) {
-                    $data->groupid = groups_get_course_group($course);
-                } else {
-                    $data->groupid = 0;
+                    require_capability('moodle/site:accessallgroups', $this->context);
                 }
                 $data->id = $DB->insert_record('tool_mediatime', $data);
                 $event = \mediatimesrc_streamio\event\resource_created::create_from_record($data);
@@ -270,7 +269,7 @@ class manager implements renderable, templatable {
         // First delete stored files for content.
         $fs = get_file_storage();
         $files = $fs->get_area_files(
-            SYSCONTEXTID,
+            $this->context->id,
             'tool_mediatime',
             'm3u8',
             $id,
@@ -282,7 +281,7 @@ class manager implements renderable, templatable {
         }
         if ($video->transcodings) {
             $fileinfo = [
-                'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
+                'contextid' => optional_param('contextid', $this->context->id, PARAM_INT),
                 'component' => 'tool_mediatime',
                 'itemid' => $id,
                 'filearea' => 'm3u8',

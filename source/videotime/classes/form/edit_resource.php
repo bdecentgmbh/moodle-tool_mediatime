@@ -140,6 +140,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $id = $mform->getElementValue('edit');
         $record = $DB->get_record('tool_mediatime', ['id' => $id]);
         if ($record) {
+            $this->context = \context::instance_by_id($record->contextid);
             $resource = new media_resource($record);
 
             $videourl = $resource->video_url($OUTPUT);
@@ -165,6 +166,11 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 ),
                 'name'
             );
+            $this->selected_group();
+            $mform->setDefault('groupid', $record->groupid);
+        } else {
+            $this->context = \context::instance_by_id($mform->getElementValue('contextid'));
+            $this->selected_group();
         }
     }
 }
