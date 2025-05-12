@@ -80,10 +80,12 @@ class edit_resource extends moodleform {
         $mform = $this->_form;
 
         if (!$this->context instanceof \context_course) {
+            $mform->addElement('hidden', 'groupid', 0);
             return;
         }
         $course = get_course($this->context->instanceid);
         if (!$groupmode = groups_get_course_groupmode($course)) {
+            $mform->addElement('hidden', 'groupid', 0);
             return;
         }
         $group = groups_get_course_group($course);
