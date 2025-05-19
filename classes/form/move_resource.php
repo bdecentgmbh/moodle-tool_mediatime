@@ -46,7 +46,7 @@ class move_resource extends moodleform {
         $mform = $this->_form;
         $this->context = $this->_customdata['context'];
         $record = $this->_customdata['record'];
-        require_capability('tool/mediatime:manage', context_system::instance());
+        require_capability('tool/mediatime:manage', $this->context);
 
         $mform->addElement('hidden', 'id', $record->id);
         $mform->setType('id', PARAM_INT);
@@ -54,19 +54,20 @@ class move_resource extends moodleform {
         $mform->addElement('static', 'name', get_string('name'), s($record->name));
 
         $levels = [];
-        $levels[] = $mform->createElement('radio', 'contextlevel', ' ', get_string('site'), CONTEXT_SYSTEM);
-        $levels[] = $mform->createElement('radio', 'contextlevel', ' ', get_string('category'), CONTEXT_COURSECAT);
-        $levels[] = $mform->createElement('radio', 'contextlevel', ' ', get_string('course'), CONTEXT_COURSE);
-        $mform->addGroup($levels, 'levels', get_string('moveto', 'tool_mediatime'), [' '], false);
+        if (has_capability('tool/mediatime:manage', context_system::instance())) {
+            $levels[] = $mform->createElement('radio', 'contextlevel', ' ', get_string('site'), CONTEXT_SYSTEM);
+        }
 
         $categories = \core_course_category::get_all();
-        $options = [];
+        $categoryoptions = [];
         foreach ($categories as $category) {
             if (has_capability('tool/mediatime:manage', \context_coursecat::instance($category->id))) {
-                $options[$category->id] = $category->name;
+                $categoryoptions[$category->id] = $category->name;
             }
         }
-        $mform->addElement('select', 'categoryid', get_string('category'), $options);
+        if (!empty($categoryoptions)) {
+            $levels[] = $mform->createElement('radio', 'contextlevel', ' ', get_string('category'), CONTEXT_COURSECAT);
+        }
         $mform->hideIf('categoryid', 'contextlevel', 'neq', CONTEXT_COURSECAT);
         $mform->hideIf('courseid', 'contextlevel', 'neq', CONTEXT_COURSE);
         $mform->setDefault('contextlevel', $this->context->contextlevel);
@@ -76,6 +77,11 @@ class move_resource extends moodleform {
         foreach ($courses as $course) {
             $options[$course->id] = $course->fullname;
         }
+        if (!empty($options)) {
+            $levels[] = $mform->createElement('radio', 'contextlevel', ' ', get_string('course'), CONTEXT_COURSE);
+        }
+        $mform->addGroup($levels, 'levels', get_string('moveto', 'tool_mediatime'), [' '], false);
+        $mform->addElement('select', 'categoryid', get_string('category'), $categoryoptions);
         $mform->addElement('select', 'courseid', get_string('course'), $options);
 
         $mform->addElement('hidden', 'source');

@@ -114,7 +114,10 @@ class media_manager implements renderable, templatable {
                 'context' => $this->context,
                 'record' => $this->record,
             ], 'GET');
-            if (!$this->form->is_cancelled() && $this->form->is_submitted()) {
+            if ($this->form->is_cancelled()) {
+                $url = new moodle_url('/admin/tool/mediatime', ['contextid' => $this->context->id]);
+                redirect($url);
+            } else if ($this->form->is_submitted()) {
                 $data = $this->form->get_data();
                 if ($data->contextlevel == CONTEXT_SYSTEM) {
                     $this->record->contextid = SYSCONTEXTID;

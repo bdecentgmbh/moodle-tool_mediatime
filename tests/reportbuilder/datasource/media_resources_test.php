@@ -29,7 +29,7 @@ use core_reportbuilder\tests\core_reportbuilder_testcase;
  * @package     tool_mediatime
  * @copyright   2025 bdecent gmbh <https://bdecent.de>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers      \tool_mediatime\reportbuilder\datasource\mediaresources
+ * @covers      \tool_mediatime\reportbuilder\datasource\media_resources
  * @group       tool_mediatime
  */
 final class media_resources_test extends core_reportbuilder_testcase {

@@ -54,7 +54,7 @@ class resource_updated extends base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '{$this->userid}' deleted a mediatime resource with id '{$this->objectid}'.";
+        return "The user with id '{$this->userid}' updated a mediatime resource with id '{$this->objectid}'.";
     }
 
     /**
