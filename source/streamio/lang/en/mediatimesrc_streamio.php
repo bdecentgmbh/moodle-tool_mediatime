@@ -25,6 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['confirmdeleteresource'] = 'Confirm that the Streamio resource below should be deleted.';
 $string['event_resource_created'] = 'Streamio resource created';
 $string['event_resource_deleted'] = 'Streamio resource deleted';
 $string['event_resource_updated'] = 'Streamio resource updated';

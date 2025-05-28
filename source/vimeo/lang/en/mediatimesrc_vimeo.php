@@ -25,6 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['confirmdeleteresource'] = 'Confirm that the Vimeo video below should be deleted.';
 $string['delete_uploads'] = 'Delete uploads';
 $string['event_resource_created'] = 'Vimeo resource created';
 $string['event_resource_deleted'] = 'Vimeo resource deleted';

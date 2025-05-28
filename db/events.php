@@ -1,5 +1,5 @@
 <?php
-// This file is part of Moodle - https://moodle.org/
+// This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -12,23 +12,21 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Event observers for tool_mediatime
  *
  * @package     tool_mediatime
- * @copyright   2024 bdecent gmbh <https://bdecent.de>
- * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright   2025 bdecent gmbh <https://bdecent.de>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->component = 'tool_mediatime';
-$plugin->release = '1.0';
-$plugin->version = 2025043005;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_RC;
-$plugin->dependencies = [
-    'mod_videotime' => 2023011200,
+$observers = [
+    [
+        'eventname' => '\core\event\course_content_deleted',
+        'callback'  => '\tool_mediatime\media_manager::course_content_deleted',
+    ],
 ];

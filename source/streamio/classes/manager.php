@@ -314,6 +314,12 @@ class manager implements renderable, templatable {
             $this->api->request("/videos/$id", [], 'DELETE');
         }
 
+        $fs = get_file_storage();
+
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'm3u8') as $file) {
+            $file->delete();
+        }
+
         $DB->delete_records('tool_mediatime', [
             'id' => $this->record->id,
         ]);

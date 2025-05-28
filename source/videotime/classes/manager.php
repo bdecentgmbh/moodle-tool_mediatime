@@ -227,6 +227,16 @@ class manager implements renderable, templatable {
     public function delete_resource() {
         global $DB;
 
+        $fs = get_file_storage();
+
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'videofile') as $file) {
+            $file->delete();
+        }
+
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'posterimage') as $file) {
+            $file->delete();
+        }
+
         $DB->delete_records('tool_mediatime', [
             'id' => $this->record->id,
         ]);

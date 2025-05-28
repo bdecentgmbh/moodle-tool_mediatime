@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
+use core_course\hook\before_course_deleted;
 use block_contents;
 use context_system;
 use core_tag_tag;
@@ -378,5 +379,23 @@ class media_manager implements renderable, templatable {
 
         $defaultregion = $PAGE->blocks->get_default_region();
         $PAGE->blocks->add_fake_block($bc, $defaultregion);
+    }
+
+    /**
+     * Observe hook to delete resource when a course is deleted
+     *
+     * @param course_content_deleted $hook
+     */
+    public static function before_course_deleted(course_content_deleted $hook) {
+        global $DB;
+
+        $context = \context_course::instance($hook->course->id);
+
+        $records = $DB->get_records('tool_mediatime', ['contextid' => $context->id]);
+        foreach ($records as $record) {
+            $classname = "\\mediatimesrc_$source\\manager";
+            $resource = new $classname($record);
+            $resource->delete_resource();
+        }
     }
 }

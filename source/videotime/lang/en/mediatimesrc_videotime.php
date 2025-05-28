@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['configmaxbytes'] = 'Default maximum file size for all files uploaded';
+$string['confirmdeleteresource'] = 'Confirm that the Video Time resource below should be deleted.';
 $string['event_resource_created'] = 'Video Time resource created';
 $string['event_resource_deleted'] = 'Video Time resource deleted';
 $string['event_resource_updated'] = 'Video Time resource updated';

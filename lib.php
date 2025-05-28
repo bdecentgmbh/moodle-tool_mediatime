@@ -140,3 +140,15 @@ function tool_mediatime_extend_navigation_course($navigation, $course, $context)
         }
     }
 }
+
+/**
+ * Callback to delete resources when category deleted
+ *
+ * @param stdClass $category
+ */
+function tool_mediatime_pre_course_category_delete(stdClass $category) {
+    global $DB;
+
+    $context = \context_coursecat::instance($category->id);
+    $DB->delete_records('tool_mediatime', ['contextid' => $context->id]);
+}

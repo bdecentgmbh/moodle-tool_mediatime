@@ -25,6 +25,7 @@
 namespace mediatimesrc_streamio\form;
 
 use context_system;
+use html_writer;
 use moodleform;
 use mediatimesrc_streamio\api;
 use mediatimesrc_streamio\output\media_resource;
@@ -46,6 +47,11 @@ class delete_resource extends \tool_mediatime\form\delete_resource {
         $mform->setType('source', PARAM_TEXT);
         $mform->setDefault('source', 'streamio');
 
+        $mform->addElement('html', html_writer::tag(
+            'div',
+            get_string('confirmdeleteresource', 'mediatimesrc_streamio'),
+            ['class' => 'p-3']
+        ));
         $mform->addElement('static', 'name', get_string('resourcename', 'tool_mediatime'), $this->_customdata['name']);
         $mform->setType('name', PARAM_TEXT);
 
