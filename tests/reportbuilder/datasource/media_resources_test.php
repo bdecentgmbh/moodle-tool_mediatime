@@ -33,7 +33,6 @@ use core_reportbuilder\tests\core_reportbuilder_testcase;
  * @group       tool_mediatime
  */
 final class media_resources_test extends core_reportbuilder_testcase {
-
     /**
      * Test default datasource
      */

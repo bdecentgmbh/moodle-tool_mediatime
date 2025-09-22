@@ -87,7 +87,7 @@ if (!empty($record)) {
     echo $OUTPUT->heading(get_string('pluginname', "mediatimesrc_$source"));
 }
 if (empty($delete) && empty($record) && empty($source) && $context instanceof \context_course) {
-    echo groups_print_course_menu($course, new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $contextid]) , true);
+    echo groups_print_course_menu($course, new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $contextid]), true);
 }
 
 echo $OUTPUT->render($manager);

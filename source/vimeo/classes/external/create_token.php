@@ -124,7 +124,7 @@ class create_token extends external_api {
         ]);
         if (!empty($params['parenturi'])) {
             $api->request(
-                json_decode($parenturi). "/items",
+                json_decode($parenturi) . "/items",
                 ['items' => [['uri' => $updatedvideo['uri']]]],
                 'POST'
             );

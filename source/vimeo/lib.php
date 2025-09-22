@@ -41,11 +41,13 @@ use mediatimesrc_vimeo\api;
  * @return bool false if the file was not found, just send the file otherwise and do not return anything
  */
 function mediatimesrc_vimeo_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
-    if (!in_array($context->contextlevel, [
-        CONTEXT_SYSTEM,
-        CONTEXT_COURSECAT,
-        CONTEXT_COURSE,
-    ])) {
+    if (
+        !in_array($context->contextlevel, [
+            CONTEXT_SYSTEM,
+            CONTEXT_COURSECAT,
+            CONTEXT_COURSE,
+        ])
+    ) {
         return false;
     }
 

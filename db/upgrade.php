@@ -49,7 +49,6 @@ function xmldb_tool_mediatime_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025043001) {
-
         // Define field groupid to be added to tool_mediatime.
         $table = new xmldb_table('tool_mediatime');
         $field = new xmldb_field('groupid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'contextid');
