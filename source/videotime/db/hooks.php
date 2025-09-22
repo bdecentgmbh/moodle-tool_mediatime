@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hook callbacks for Media Time
+ * Hook callbacks for Video Time Mediatime source
  *
- * @package     tool_mediatime
+ * @package     mediatimesrc_videotime
  * @copyright   2025 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $callbacks = [
     [
-        'hook' => \core_course\hook\before_course_deleted::class,
-        'callback' => '\tool_mediatime\media_manager::before_course_deleted',
+        'hook' => \tool_mediatime\hook\after_resource_moved::class,
+        'callback' => '\mediatimesrc_videotime\manager::after_resource_moved',
     ],
 ];

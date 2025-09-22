@@ -33,6 +33,7 @@ use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
+use tool_mediatime\hook\after_resource_moved;
 
 /**
  * Manage Video Time resource files
@@ -229,11 +230,11 @@ class manager implements renderable, templatable {
 
         $fs = get_file_storage();
 
-        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'videofile') as $file) {
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'videofile', $this->record->id) as $file) {
             $file->delete();
         }
 
-        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'posterimage') as $file) {
+        foreach ($fs->get_area_files($this->context->id, 'mediatimesrc_videotime', 'posterimage', $this->record->id) as $file) {
             $file->delete();
         }
 
@@ -244,5 +245,35 @@ class manager implements renderable, templatable {
         $event = \mediatimesrc_videotime\event\resource_deleted::create_from_record($this->record);
 
         $event->trigger();
+    }
+
+    /**
+     * Handle moved resource
+     *
+     * @param after_resource_moved $hook Hook
+     */
+    public static function after_resource_moved(after_resource_moved $hook) {
+        $record = $hook->get_record();
+
+        if ($record->source != 'videotime') {
+            return;
+        }
+
+        $context = $hook->get_context();
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'mediatimesrc_videotime', 'videofile', $record->id);
+        $files += $fs->get_area_files($context->id, 'mediatimesrc_videotime', 'posterimage', $record->id);
+        foreach ($files as $file) {
+            if (!$file->is_directory()) {
+                $fileinfo = [
+                    'contextid' => $record->contextid,
+                    'filename' => $file->get_filename(),
+                    'filearea' => $file->get_filearea(),
+                    'itemid' => $file->get_itemid(),
+                ];
+                $fs->create_file_from_storedfile($fileinfo, $file);
+                $file->delete();
+            }
+        }
     }
 }

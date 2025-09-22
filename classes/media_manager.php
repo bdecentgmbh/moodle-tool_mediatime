@@ -120,6 +120,7 @@ class media_manager implements renderable, templatable {
                 redirect($url);
             } else if ($this->form->is_submitted()) {
                 $data = $this->form->get_data();
+                $contextid = $this->record->contextid;
                 if ($data->contextlevel == CONTEXT_SYSTEM) {
                     $this->record->contextid = SYSCONTEXTID;
                     $this->record->groupid = 0;
@@ -138,7 +139,10 @@ class media_manager implements renderable, templatable {
                     $this->record->contextid = $context->id;
                 }
                 $DB->update_record('tool_mediatime', $this->record);
-                $eventclass = "\\mediatimesrc_{$this->record->source}\\event\\resource_created";
+                $hook = new \tool_mediatime\hook\after_resource_moved($this->record, $contextid);
+
+                \core\di::get(\core\hook\manager::class)->dispatch($hook);
+                $eventclass = "\\mediatimesrc_{$this->record->source}\\event\\resource_updated";
                 $event = $eventclass::create_from_record($this->record);
                 $event->trigger();
 
