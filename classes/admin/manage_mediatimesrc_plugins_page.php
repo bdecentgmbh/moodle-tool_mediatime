@@ -109,9 +109,9 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
         $pluginmanager = \core_plugin_manager::instance();
         $types = $pluginmanager->get_plugins_of_type('mediatimesrc');
         if (empty($types)) {
-            return get_string('noquestionbanks', 'question');
+            return new lang_string('noquestionbanks', 'question');
         }
-        $txt = get_strings(['settings', 'name', 'enable', 'disable', 'default']);
+        $txt = new lang_strings(['settings', 'name', 'enable', 'disable', 'default']);
         $txt->uninstall = get_string('uninstallplugin', 'core_admin');
 
         $table = new \html_table();

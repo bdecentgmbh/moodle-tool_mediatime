@@ -131,21 +131,31 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $mform->setDefault('groupid', $record->groupid);
         } else {
             if (has_capability('mediatimesrc/vimeo:viewall', $systemcontext)) {
-                $options = [null => ''];
-                $api = new api();
-                $videos = $api->request('/me/videos')['body']['data'];
-                foreach ($videos as $video) {
-                    $options[$video['uri']] = $video['name'];
-                }
+                try {
+                    $options = [null => ''];
+                    $api = new api();
+                    $videos = $api->request('/me/videos')['body']['data'];
+                    foreach ($videos as $video) {
+                        $options[$video['uri']] = $video['name'];
+                    }
 
-                $mform->insertElementBefore(
-                    $mform->createElement('autocomplete', 'file', '', $options, [
-                    ]),
-                    'description'
-                );
-                $mform->hideIf('file', 'newfile', 'neq', 0);
-                $mform->setDefault('newfile', 1);
-                $mform->setDefault('file', []);
+                    $mform->insertElementBefore(
+                        $mform->createElement('autocomplete', 'file', '', $options, [
+                        ]),
+                        'description'
+                    );
+                    $mform->hideIf('file', 'newfile', 'neq', 0);
+                    $mform->setDefault('newfile', 1);
+                    $mform->setDefault('file', []);
+                } catch (\moodle_exception $e) {
+                    $api = null;
+                    $mform->insertElementBefore(
+                        $mform->createElement('hidden', 'newfile', 2),
+                        'description'
+                    );
+                    $mform->removeElement('filesource');
+                    return;
+                }
             }
 
             if (

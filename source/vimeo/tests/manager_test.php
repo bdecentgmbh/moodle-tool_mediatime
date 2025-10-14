@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mediatimesrc_videotime;
+namespace mediatimesrc_vimeo;
 
 /**
  * PHPUnit Media Time vime source manager testcase
  *
- * @package    mediatimesrc_videotime
+ * @package    mediatimesrc_vimeo
  * @category   test
  * @copyright  2025 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mediatimesrc_videotime\manager
+ * @covers     \mediatimesrc_vimeo\manager
  * @group      tool_mediatime
  */
 final class manager_test extends \advanced_testcase {
@@ -32,8 +32,6 @@ final class manager_test extends \advanced_testcase {
      */
     public function test_delete(): void {
         global $DB;
-
-        $fs = get_file_storage();
 
         $this->resetAfterTest(true);
 
@@ -48,19 +46,13 @@ final class manager_test extends \advanced_testcase {
 
         $resource = $generator->create_resource([
             'contextid' => \context_course::instance($course->id)->id,
-            'source' => 'videotime',
+            'source' => 'vimeo',
             'content' => json_encode([
                 'name' => 'Sample',
+                'link' => 'https://vimeo.com/347119375',
+                'uri' => '/videos/347119375',
             ]),
         ]);
-        $fs->create_file_from_string([
-            'contextid' => \context_course::instance($course->id)->id,
-            'component' => 'mediatimesrc_videotime',
-            'filename' => 'Video file.mp4',
-            'filepath' => '/',
-            'filearea' => 'videofile',
-            'itemid' => 0,
-        ], 'xxx');
         $generator->create_resource(['contextid' => \context_coursecat::instance($course->category)->id]);
         $generator->create_resource(['contextid' => SYSCONTEXTID]);
         $this->assertEquals(3, $DB->count_records('tool_mediatime'));
@@ -70,14 +62,5 @@ final class manager_test extends \advanced_testcase {
 
         $this->assertEquals(2, $DB->count_records('tool_mediatime'));
         $this->assertFalse($DB->get_record('tool_mediatime', ['id' => $resource->id]));
-
-        // Make sure files are deleted.
-        $files = $fs->get_area_files(
-            \context_course::instance($course->id)->id,
-            'mediatimesrc_videotime',
-            'videofile',
-            $resource->id
-        );
-        $this->assertEquals(0, count($files));
     }
 }

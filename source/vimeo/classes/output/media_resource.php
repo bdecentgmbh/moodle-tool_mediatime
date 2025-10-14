@@ -67,7 +67,6 @@ class media_resource implements renderable, templatable {
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
         $content = json_decode($this->record->content);
-        $api = new \mediatimesrc_vimeo\api();
 
         $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
         $moveurl = new moodle_url('/admin/tool/mediatime/index.php', ['action' => 'move', 'id' => $this->record->id]);
@@ -96,7 +95,7 @@ class media_resource implements renderable, templatable {
      */
     public function image_url(renderer_base $output) {
         if (empty(json_decode($this->record->content)->pictures)) {
-            return '';
+            return $output->image_url('f/video', 'core');
         }
         return json_decode($this->record->content)->pictures->sizes[2]->link;
     }

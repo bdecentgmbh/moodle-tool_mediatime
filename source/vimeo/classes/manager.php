@@ -66,12 +66,16 @@ class manager implements renderable, templatable {
     public function __construct($record = null) {
         global $DB, $USER;
 
-        $this->api = new api();
+        try {
+            $this->api = new api();
+        } catch (\moodle_exception $e) {
+            $this->api = null;
+        }
 
         $this->record = $record;
 
         if ($record) {
-            $this->content = json_decode($record->content ?? '{}');
+            $this->content = (object)json_decode($record->content ?? '{}');
             $this->context = \context::instance_by_id($record->contextid);
         } else {
             $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
@@ -126,14 +130,20 @@ class manager implements renderable, templatable {
 
             $this->content->tags = core_tag_tag::get_item_tags_array('tool_mediatime', 'tool_mediatime', $edit);
 
+            $this->form->set_data([
+                'edit' => $edit,
+            ] + (array)$this->content);
+
             // Check for updated values at Vimeo.
             if (!$this->form->is_submitted()) {
-                $video = $this->api->request($this->content->uri ?? '')['body'];
-                $data = [
-                    'description' => $video['description'] ?? '',
-                    'title' => $video['name'] ?? '',
-                    'name' => $this->record->name,
-                ] + $data;
+                if (!empty($this->api)) {
+                    $video = $this->api->request($this->content->uri ?? '')['body'];
+                    $data = [
+                        'description' => $video['description'] ?? '',
+                        'title' => $video['name'] ?? '',
+                        'name' => $this->record->name,
+                    ] + $data;
+                }
             } else {
                 $data += ['name' => $this->record->name, 'title' => $this->content->name ?? ''] + (array)$this->content;
             }
@@ -248,13 +258,20 @@ class manager implements renderable, templatable {
             $data->usermodified = $USER->id;
 
             if (empty($data->edit)) {
-                if (empty($data->newfile)) {
-                    $video = $this->api->request("$data->file")['body'];
+                if (!empty($this->api)) {
+                    if (empty($data->newfile)) {
+                        $video = $this->api->request("$data->file")['body'];
+                    } else {
+                        $vimeoid = mod_videotime_get_vimeo_id_from_link($data->vimeo_url);
+                        $video = $this->api->request("/videos/$vimeoid")['body'];
+                    }
+                    $data->content = json_encode($video);
                 } else {
-                    $vimeoid = mod_videotime_get_vimeo_id_from_link($data->vimeo_url);
-                    $video = $this->api->request("/videos/$vimeoid")['body'];
+                    $data->content = json_encode([
+                        'name' => $data->name,
+                        'link' => $data->vimeo_url,
+                    ]);
                 }
-                $data->content = json_encode($video);
                 $data->timecreated = $data->timemodified;
                 if (
                     $this->context instanceof \context_course
@@ -273,11 +290,18 @@ class manager implements renderable, templatable {
             } else {
                 $data->id = $data->edit;
                 $data->contextid = $this->record->contextid;
-                $this->api->request($this->content->uri ?? '', array_intersect_key(['name' => $data->title] + (array)$data, [
-                    'description' => true,
-                    'name' => true,
-                ]), 'PATCH');
-                $video = $this->api->request($this->content->uri ?? '')['body'];
+                if (!empty($this->api)) {
+                    $this->api->request($this->content->uri ?? '', array_intersect_key(['name' => $data->title] + (array)$data, [
+                        'description' => true,
+                        'name' => true,
+                    ]), 'PATCH');
+                    $video = $this->api->request($this->content->uri ?? '')['body'];
+                } else {
+                    $video = [
+                        'uri'  => '/videos/' .  mod_videotime_get_vimeo_id_from_link($data->vimeo_url ?? $this->content->link),
+                        'link'  => $data->vimeo_url ?? $this->content->link,
+                    ];
+                }
                 $data->content = json_encode($video + [
                     'description' => $data->description,
                     'title' => $data->title,
@@ -346,7 +370,7 @@ class manager implements renderable, templatable {
     public function delete_resource(bool $removevimeofile = false) {
         global $DB;
 
-        if ($removevimeofile && !empty($this->content->uri)) {
+        if ($removevimeofile && !empty($this->content->uri) && !empty($this->api)) {
             $uri = $this->content->uri;
             $this->api->request($uri, [], 'DELETE');
         }
