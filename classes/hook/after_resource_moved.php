@@ -33,13 +33,13 @@ class after_resource_moved {
     /**
      * Constructor for the hook
      *
-     * @param context_module $context Module context of meeting
-     * @param stdClass|cm_info $cm Course module record
+     * @param stdClass $record Old resource record
+     * @param int $contextid New context id
      */
     public function __construct(
         /** @var stdClass $record Old resource record */
         public readonly stdClass $record,
-        /** @var int $contextid Ne context id */
+        /** @var int $contextid New context id */
         public readonly int $contextid
     ) {
     }

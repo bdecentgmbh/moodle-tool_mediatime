@@ -26,11 +26,11 @@ namespace mediatimesrc_videotime;
  * @covers     \mediatimesrc_videotime\manager
  * @group      tool_mediatime
  */
-class manager_test extends \advanced_testcase {
+final class manager_test extends \advanced_testcase {
     /**
      * Test Media Time resource creation.
      */
-    public function test_delete() {
+    public function test_delete(): void {
         global $DB;
 
         $fs = get_file_storage();
