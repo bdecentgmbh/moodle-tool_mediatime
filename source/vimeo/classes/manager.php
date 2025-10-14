@@ -163,7 +163,8 @@ class manager implements renderable, templatable {
             } else if (!has_capability('tool/mediatime:manage', \context_system::instance())) {
                 require_capability('mediatimesrc/folder:use', $this->context);
             }
-            $data->timemodified = time();
+            $clock = \core\di::get(\core\clock::class);
+            $data->timemodified = $clock->time();
             $data->usermodified = $USER->id;
             $data->timecreated = $data->timemodified;
             if (
@@ -242,7 +243,8 @@ class manager implements renderable, templatable {
             }
         } else if (($data = $this->form->get_data()) && (empty($data->newfile) || $data->newfile != 1)) {
             require_sesskey();
-            $data->timemodified = time();
+            $clock = \core\di::get(\core\clock::class);
+            $data->timemodified = $clock->time();
             $data->usermodified = $USER->id;
 
             if (empty($data->edit)) {

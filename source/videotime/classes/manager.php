@@ -134,7 +134,8 @@ class manager implements renderable, templatable {
             redirect($redirect);
         } else if ($data = $this->form->get_data()) {
             require_sesskey();
-            $data->timemodified = time();
+            $clock = \core\di::get(\core\clock::class);
+            $data->timemodified = $clock->time();
             $data->usermodified = $USER->id;
 
             if (empty($data->edit)) {

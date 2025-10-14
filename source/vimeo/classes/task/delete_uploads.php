@@ -50,10 +50,11 @@ class delete_uploads extends \core\task\scheduled_task {
               LIMIT 100"
         ));
         $fs = get_file_storage();
+        $clock = \core\di::get(\core\clock::class);
         foreach ($contextids as $contextid) {
             $files = $fs->get_area_files($contextid, 'mediatimesrc_vimeo', 'videofile');
             foreach ($files as $file) {
-                if ($file->get_timecreated() < time() - HOURSECS) {
+                if ($file->get_timecreated() < $clock->time() - HOURSECS) {
                     $file->delete();
                 }
             }

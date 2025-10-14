@@ -32,14 +32,17 @@ class tool_mediatime_generator extends testing_module_generator {
     public function create_resource($record = null): stdClass {
         global $DB, $USER;
 
+        $clock = \core\di::get(\core\clock::class);
+
         $record = (array)(object)$record + [
             'source' => 'videotime',
             'name' => 'Resource 1',
+            'groupid' => 0,
             'usermodified' => $USER->id,
             'contextid' => SYSCONTEXTID,
             'content' => '{}',
-            'timecreated' => time(),
-            'timemodified' => time(),
+            'timecreated' => $clock->time(),
+            'timemodified' => $clock->time(),
         ];
 
         $record['id'] = $DB->insert_record('tool_mediatime', $record);

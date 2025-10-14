@@ -64,11 +64,12 @@ function mediatimesrc_vimeo_pluginfile($course, $cm, $context, $filearea, $args,
         $fullpath = "/$context->id/mediatimesrc_vimeo/$filearea/$itemid/$relativepath";
 
         $fs = get_file_storage();
+        $clock = \core\di::get(\core\clock::class);
         if (
             (!$file = $fs->get_file_by_hash(sha1($fullpath)))
             || $file->is_directory()
             || ($contenthash != $file->get_contenthash())
-            || $file->get_timecreated() > time() + HOURSECS
+            || $file->get_timecreated() > $clock->time() + HOURSECS
         ) {
             return false;
         }
@@ -99,7 +100,8 @@ function mediatimesrc_vimeo_share_video($moduleinstance, $uri) {
 
     $api = new api();
     $data = new \stdClass();
-    $data->timemodified = time();
+    $clock = \core\di::get(\core\clock::class);
+    $data->timemodified = $clock->time();
     $data->usermodified = $USER->id;
     $data->timecreated = $data->timemodified;
     $data->name = $moduleinstance->name;

@@ -14,24 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace tool_mediatime;
+namespace mediatimesrc_videotime;
 
 /**
- * PHPUnit Media Time generator testcase
+ * PHPUnit Media Time vime source manager testcase
  *
- * @package    tool_mediatime
+ * @package    mediatimesrc_videotime
  * @category   test
  * @copyright  2025 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \tool_mediatime_generator
+ * @covers     \mediatimesrc_videotime\manager
  * @group      tool_mediatime
  */
-class generator_test extends \advanced_testcase {
+class manager_test extends \advanced_testcase {
     /**
      * Test Media Time resource creation.
      */
-    public function test_generator() {
+    public function test_delete() {
         global $DB;
+
+        $fs = get_file_storage();
 
         $this->resetAfterTest(true);
 
@@ -43,15 +45,39 @@ class generator_test extends \advanced_testcase {
 
         /** @var tool_mediatime_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('tool_mediatime');
-        $this->assertInstanceOf('tool_mediatime_generator', $generator);
 
-        $generator->create_resource(['contextid' => \context_course::instance($course->id)->id]);
+        $resource = $generator->create_resource([
+            'contextid' => \context_course::instance($course->id)->id,
+            'type' => 'videotime',
+            'content' => json_encode([
+                'name' => 'Sample',
+            ]),
+        ]);
+        $fs->create_file_from_string([
+            'contextid' => \context_course::instance($course->id)->id,
+            'component' => 'mediatimesrc_videotime',
+            'filename' => 'Video file.mp4',
+            'filepath' => '/',
+            'filearea' => 'videofile',
+            'itemid' => 0,
+        ], 'xxx');
         $generator->create_resource(['contextid' => \context_coursecat::instance($course->category)->id]);
-        $resource = $generator->create_resource(['contextid' => SYSCONTEXTID]);
+        $generator->create_resource(['contextid' => SYSCONTEXTID]);
         $this->assertEquals(3, $DB->count_records('tool_mediatime'));
 
-        $this->assertEquals($resource->contextid, SYSCONTEXTID);
+        $manager = new manager($resource);
+        $manager->delete_resource();
 
-        $this->assertEquals($clock->time(), $resource->timemodified);
+        $this->assertEquals(2, $DB->count_records('tool_mediatime'));
+        $this->assertFalse($DB->get_record('tool_mediatime', ['id' => $resource->id]));
+
+        // Make sure files are deleted.
+        $files = $fs->get_area_files(
+            \context_course::instance($course->id)->id,
+            'mediatimesrc_videotime',
+            'videofile',
+            $resource->id
+        );
+        $this->assertEquals(0, count($files));
     }
 }

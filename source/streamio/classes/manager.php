@@ -69,6 +69,8 @@ class manager implements renderable, templatable {
 
         $this->record = $record;
 
+        $clock = \core\di::get(\core\clock::class);
+
         if ($record) {
             $this->content = json_decode($record->content ?? '{}');
             $this->context = \context::instance_by_id($record->contextid);
@@ -94,8 +96,8 @@ class manager implements renderable, templatable {
                 'groupid' => optional_param('groupid', 0, PARAM_INT),
                 'source' => 'streamio',
                 'usermodified' => $USER->id,
-                'timecreated' => time(),
-                'timemodified' => time(),
+                'timecreated' => $clock->time(),
+                'timemodified' => $clock->time(),
             ];
             if (
                 $this->context instanceof \context_course
@@ -166,7 +168,7 @@ class manager implements renderable, templatable {
             redirect($redirect);
         } else if (($data = $this->form->get_data()) && empty($data->newfile)) {
             require_sesskey();
-            $data->timemodified = time();
+            $data->timemodified = $clock->time();
             $data->usermodified = $USER->id;
 
             if (empty($data->edit)) {

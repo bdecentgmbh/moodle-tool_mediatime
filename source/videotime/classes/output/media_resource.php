@@ -82,6 +82,7 @@ class media_resource implements renderable, templatable {
         global $DB, $USER;
         $videourl = $this->video_url($output);
         $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
+        $moveurl = new moodle_url('/admin/tool/mediatime/index.php', ['action' => 'move', 'id' => $this->record->id]);
         $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $this->record->id]);
 
         $content = [
@@ -106,6 +107,7 @@ class media_resource implements renderable, templatable {
             'viewlibrary' => has_capability('tool/mediatime:view', $this->context),
             'name' => $this->record->name,
             'editurl' => $editurl->out(),
+            'moveurl' => $moveurl->out(false),
             'removeurl' => $removeurl->out(),
             'resource' => json_decode($this->record->content),
             'video' => $output->render_from_template('mediatimesrc_videotime/video', $content),
