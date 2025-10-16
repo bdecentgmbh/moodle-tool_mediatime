@@ -111,7 +111,7 @@ class manager implements renderable, templatable {
             if ($tags = optional_param('tags', '', PARAM_TEXT)) {
                 core_tag_tag::set_item_tags(
                     'tool_mediatime',
-                    'tool_meidatime',
+                    'tool_mediatime',
                     $record['id'],
                     $context,
                     json_decode($tags)
