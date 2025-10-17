@@ -24,6 +24,11 @@
 
 namespace tool_mediatime\admin;
 
+use lang_string;
+
+use flexible_table;
+use moodle_url;
+
 /**
  * Manage Media Time source plugins
  *
@@ -111,14 +116,18 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
         if (empty($types)) {
             return new lang_string('noquestionbanks', 'question');
         }
-        $txt = new lang_strings(['settings', 'name', 'enable', 'disable', 'default']);
-        $txt->uninstall = get_string('uninstallplugin', 'core_admin');
 
-        $table = new \html_table();
-        $table->head  = [$txt->name, $txt->enable, $txt->settings, $txt->uninstall];
-        $table->align = ['left', 'center', 'center', 'center', 'center'];
-        $table->attributes['class'] = 'managemediatimesrctable generaltable admintable';
-        $table->data  = [];
+        $table = new flexible_table('managemediatimesrctable');
+        $table->define_headers([new lang_string('name'), new lang_string('enable'), new lang_string('settings'), new lang_string('uninstall', 'plugin')]);
+        $table->define_baseurl(new moodle_url('/admin/settings.php', ['section' => 'managemediatimesrcplugins']));
+        $table->set_attribute('class', 'managemediatimesrctable generaltable admintable m-3');
+        $table->define_columns([
+            'strtypename',
+            'hideshow',
+            'settings',
+            'uninstall',
+        ]);
+        $table->setup();
 
         $totalenabled = 0;
         $count = 0;
@@ -148,19 +157,19 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
             if ($type->is_enabled()) {
                 $hideshow = \html_writer::link(
                     $url->out(false, ['action' => 'disable']),
-                    $OUTPUT->pix_icon('t/hide', $txt->disable, 'moodle', ['class' => 'iconsmall'])
+                    $OUTPUT->pix_icon('t/hide', new lang_string('disable'), 'moodle', ['class' => 'iconsmall'])
                 );
             } else {
                 $class = 'dimmed_text';
                 $hideshow = \html_writer::link(
                     $url->out(false, ['action' => 'enable']),
-                    $OUTPUT->pix_icon('t/show', $txt->enable, 'moodle', ['class' => 'iconsmall'])
+                    $OUTPUT->pix_icon('t/show', new lang_string('enable'), 'moodle', ['class' => 'iconsmall'])
                 );
             }
 
             $settings = '';
             if ($type->get_settings_url()) {
-                $settings = \html_writer::link($type->get_settings_url(), $txt->settings);
+                $settings = \html_writer::link($type->get_settings_url(), new lang_string('settings'));
             }
 
             $uninstall = '';
@@ -170,29 +179,19 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
                     'manage'
                 )
             ) {
-                $uninstall = \html_writer::link($uninstallurl, $txt->uninstall);
+                $uninstall = \html_writer::link($uninstallurl, new lang_string('uninstall', 'plugin'));
             }
 
-            $row = new \html_table_row([$strtypename, $hideshow, $settings, $uninstall]);
-            if ($class) {
-                $row->attributes['class'] = $class;
-            }
-            $table->data[] = $row;
+            $row = [$strtypename, $hideshow, $settings, $uninstall];
+            $table->add_data($row, $class);
             $count++;
         }
 
-        // Sort table data.
-        usort($table->data, function ($a, $b) {
-            $aid = $a->cells[0]->text;
-            $bid = $b->cells[0]->text;
+        ob_start();
+        $table->finish_output();
+        $return .= ob_get_contents();
+        ob_end_clean();
 
-            if ($aid == $bid) {
-                return 0;
-            }
-            return $aid < $bid ? -1 : 1;
-        });
-
-        $return .= \html_writer::table($table);
         return highlight($query, $return);
     }
 }
