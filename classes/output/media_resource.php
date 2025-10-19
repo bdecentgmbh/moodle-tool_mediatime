@@ -65,12 +65,14 @@ class media_resource implements renderable, templatable {
         global $DB, $USER;
         $context = \context_system::instance();
         $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
+        $moveurl = new moodle_url('/admin/tool/mediatime/index.php', ['action' => 'move', 'edit' => $this->record->id]);
         $removeurl = new moodle_url('/admin/tool/mediatime/index.php', ['delete' => $this->record->id]);
 
         return [
             'canedit' => has_capability('tool/mediatime:manage', $context) || ($USER->id == $this->record->usermodified),
             'id' => $this->record->id,
             'editurl' => $editurl->out(),
+            'moveurl' => $moveurl->out(),
             'removeurl' => $removeurl->out(),
             'libraryhome' => new moodle_url('/admin/tool/mediatime/index.php'),
             'viewlibrary' => has_capability('tool/mediatime:view', $context),
