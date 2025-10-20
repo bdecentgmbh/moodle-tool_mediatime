@@ -25,7 +25,6 @@
 namespace tool_mediatime\admin;
 
 use lang_string;
-
 use flexible_table;
 use moodle_url;
 
@@ -118,7 +117,12 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
         }
 
         $table = new flexible_table('managemediatimesrctable');
-        $table->define_headers([new lang_string('name'), new lang_string('enable'), new lang_string('settings'), new lang_string('uninstall', 'plugin')]);
+        $table->define_headers([
+            new lang_string('name'),
+            new lang_string('enable'),
+            new lang_string('settings'),
+            new lang_string('uninstall', 'plugin'),
+        ]);
         $table->define_baseurl(new moodle_url('/admin/settings.php', ['section' => 'managemediatimesrcplugins']));
         $table->set_attribute('class', 'managemediatimesrctable generaltable admintable m-3');
         $table->define_columns([

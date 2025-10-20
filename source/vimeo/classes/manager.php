@@ -260,6 +260,7 @@ class manager implements renderable, templatable {
             if (empty($data->edit)) {
                 if (!empty($this->api)) {
                     if (empty($data->newfile)) {
+                        $data->file = str_replace('https://vimeo.com', '/videos', $data->file);
                         $video = $this->api->request("$data->file")['body'];
                     } else {
                         $vimeoid = mod_videotime_get_vimeo_id_from_link($data->vimeo_url);

@@ -141,12 +141,15 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
                     $mform->insertElementBefore(
                         $mform->createElement('autocomplete', 'file', '', $options, [
+                            'ajax' => 'mediatimesrc_vimeo/video_datasource',
+                            'tags' => true,
                         ]),
                         'description'
                     );
                     $mform->hideIf('file', 'newfile', 'neq', 0);
                     $mform->setDefault('newfile', 1);
                     $mform->setDefault('file', []);
+                    $mform->setType('file', PARAM_URL);
                 } catch (\moodle_exception $e) {
                     $api = null;
                     $mform->insertElementBefore(
@@ -205,5 +208,27 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 }
             }
         }
+    }
+
+    /**
+     * Validate data
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
+    public function validation($data, $files) {
+        $errors = [];
+
+        if (
+            empty($data['edit'])
+            && empty($data['newfile'])
+            && empty(preg_match('~^https://vimeo.com/\\d+$|^/videos/\\d+$~', $data['file']))
+        ) {
+            $errors['file'] = get_string('enteruri', 'mediatimesrc_vimeo');
+        }
+
+        return $errors;
     }
 }

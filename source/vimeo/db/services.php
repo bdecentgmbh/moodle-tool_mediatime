@@ -33,4 +33,11 @@ $functions = [
         'type' => 'write',
         'ajax' => true,
     ],
+    'mediatimesrc_vimeo_video_search' => [
+        'classname' => '\\mediatimesrc_vimeo\\external\\video_search',
+        'methodname' => 'execute',
+        'description' => 'Search user videos on Vimeo.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
 ];
