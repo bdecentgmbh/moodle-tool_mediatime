@@ -173,9 +173,13 @@ class media_manager implements renderable, templatable {
                 redirect($url);
             }
 
-            $rs = self::search([
+            if (
+                !$rs = self::search([
                 'contextid' => optional_param('contextid', SYSCONTEXTID, PARAM_INT),
-            ] + (array)$this->search->get_data());
+                ] + (array)$this->search->get_data())
+            ) {
+                return [];
+            }
             foreach ($rs as $media) {
                 if (in_array($media->source, $plugins)) {
                     $media->content = $media->content ?? '{}';
@@ -290,7 +294,8 @@ class media_manager implements renderable, templatable {
 
         // Require enabled source plugins.
         if (!$sources = plugininfo\mediatimesrc::get_enabled_plugins()) {
-            return $result;
+            \core\notification::error(get_string('nosources', 'tool_mediatime'));
+            return;
         }
         [$sql, $params] = $DB->get_in_or_equal($sources, SQL_PARAMS_NAMED);
 
@@ -390,7 +395,7 @@ class media_manager implements renderable, templatable {
      *
      * @param course_content_deleted $hook
      */
-    public static function before_course_deleted(course_content_deleted $hook) {
+    public static function before_course_deleted(before_course_deleted $hook) {
         global $DB;
 
         $context = \context_course::instance($hook->course->id);

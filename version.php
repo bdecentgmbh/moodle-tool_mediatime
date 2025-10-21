@@ -29,6 +29,7 @@ $plugin->release = '1.0';
 $plugin->version = 2025043005;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_RC;
+$plugin->subported = [405, 501];
 $plugin->dependencies = [
     'mod_videotime' => 2023011200,
 ];

@@ -42,6 +42,7 @@ $string['mediatime:manage'] = 'Manage media in library';
 $string['mediatime:view'] = 'View media in library';
 $string['moveresource'] = 'Move resource';
 $string['moveto'] = 'Move to';
+$string['nosources'] = 'No sources are configured currently.';
 $string['pluginname'] = 'Media Time';
 $string['privacy:metadata:tool_mediatime'] = 'The Media Time plugin stores and transmits data that is not normally private, but does record the last user to modify it.';
 $string['privacy:metadata:tool_mediatime:content'] = 'Media content';
