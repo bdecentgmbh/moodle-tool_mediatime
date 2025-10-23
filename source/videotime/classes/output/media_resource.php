@@ -68,7 +68,7 @@ class media_resource implements renderable, templatable {
         } else {
             $this->context = \context_system::instance();
         }
-        $this->content = json_decode($record->content ?? '{}');
+        $this->content = json_decode($record->content ?? '{}') ?? new stdClass();
         $this->content->description = shorten_text($this->content->description ?? '{}', 300);
     }
 
