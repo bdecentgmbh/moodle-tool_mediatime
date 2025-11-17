@@ -15,21 +15,18 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Code to be executed after the plugin's database scheme has been installed is defined here.
  *
- * @package     tool_mediatime
- * @copyright   2024 bdecent gmbh <https://bdecent.de>
+ * @package     mediatimesrc_ignite
+ * @category    upgrade
+ * @copyright   2025 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Custom code to be run on installing the plugin.
+ */
+function xmldb_mediatimesrc_ignite_install() {
 
-$plugin->component = 'tool_mediatime';
-$plugin->release = '1.0';
-$plugin->version = 2025111500;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->subported = [405, 501];
-$plugin->dependencies = [
-    'mod_videotime' => 2023011200,
-];
+    return true;
+}

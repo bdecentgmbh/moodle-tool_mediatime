@@ -14,22 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+namespace mediatimesrc_ignite\event;
+
+use core\event\base;
+
 /**
- * Plugin version and other meta-data are defined here.
+ * The resource_deleted event class.
  *
- * @package     tool_mediatime
- * @copyright   2024 bdecent gmbh <https://bdecent.de>
+ * @package     mediatimesrc_ignite
+ * @category    event
+ * @copyright   2025 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->component = 'tool_mediatime';
-$plugin->release = '1.0';
-$plugin->version = 2025111500;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->subported = [405, 501];
-$plugin->dependencies = [
-    'mod_videotime' => 2023011200,
-];
+class resource_deleted extends \tool_mediatime\event\resource_deleted {
+    /**
+     * Returns event name.
+     *
+     * @return string
+     */
+    public static function get_name() {
+        return get_string('event_resource_deleted', 'mediatimesrc_ignite');
+    }
+}

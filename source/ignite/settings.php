@@ -15,21 +15,24 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Plugin administration pages are defined here.
  *
- * @package     tool_mediatime
- * @copyright   2024 bdecent gmbh <https://bdecent.de>
+ * @package     mediatimesrc_ignite
+ * @category    admin
+ * @copyright   2025 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_mediatime';
-$plugin->release = '1.0';
-$plugin->version = 2025111500;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->subported = [405, 501];
-$plugin->dependencies = [
-    'mod_videotime' => 2023011200,
-];
+if ($hassiteconfig) {
+    if ($ADMIN->fulltree) {
+        $settings->add(new admin_setting_configtext(
+            'mediatimesrc_ignite/apikey',
+            new lang_string('apikey', 'mediatimesrc_ignite'),
+            new lang_string('apikey_help', 'mediatimesrc_ignite'),
+            '',
+            PARAM_ALPHANUMEXT
+        ));
+    }
+}

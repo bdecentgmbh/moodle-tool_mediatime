@@ -15,21 +15,35 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Plugin capabilities are defined here.
  *
- * @package     tool_mediatime
- * @copyright   2024 bdecent gmbh <https://bdecent.de>
+ * @package     mediatimesrc_ignite
+ * @category    access
+ * @copyright   2025 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_mediatime';
-$plugin->release = '1.0';
-$plugin->version = 2025111500;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_STABLE;
-$plugin->subported = [405, 501];
-$plugin->dependencies = [
-    'mod_videotime' => 2023011200,
+$capabilities = [
+
+    'mediatimesrc/ignite:upload' => [
+        'riskbitmask' => RISK_SPAM | RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'coursecreator' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/blog:manageentries',
+    ],
+
+    'mediatimesrc/ignite:viewall' => [
+        'riskbitmask' => RISK_SPAM | RISK_XSS,
+        'captype' => 'view',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'coursecreator' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/blog:manageentries',
+    ],
 ];

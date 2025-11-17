@@ -26,6 +26,7 @@ namespace tool_mediatime\form;
 
 use context_system;
 use moodleform;
+use stdClass;
 
 /**
  * Media Time media edit form
@@ -40,20 +41,39 @@ class edit_resource extends moodleform {
     protected ?\context $context = null;
 
     /**
+     * @var ?stdClass $record The content record if available
+     */
+    protected ?stdClass $record = null;
+
+    /**
      * Definition
      */
     public function definition() {
         $mform = $this->_form;
         require_capability('tool/mediatime:manage', context_system::instance());
 
-        $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
+        $mform->addElement('hidden', 'contextid');
+        $mform->setType('contextid', PARAM_INT);
+        $mform->setDefault('contextid', SYSCONTEXTID);
 
         $mform->addElement('hidden', 'source');
         $mform->setType('source', PARAM_TEXT);
+        $mform->setDefault('source', 'ignite');
 
-        $mform->addElement('text', 'name', get_string('name'));
+        $mform->addElement('text', 'name', get_string('resourcename', 'tool_mediatime'));
         $mform->setType('name', PARAM_TEXT);
+        $mform->addHelpButton('name', 'resourcename', 'tool_mediatime');
+        $mform->addRule('name', get_string('required'), 'required', null, 'client');
+
+        $mform->addElement('hidden', 'edit');
+        $mform->setType('edit', PARAM_INT);
+
+        if ($this->record = $this->_customdata['record'] ?? null) {
+            $this->context = \context::instance_by_id($this->record->contextid);
+            $mform->setDefault('source', $this->record->source);
+        } else {
+            $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
+        }
     }
 
     /**
@@ -101,6 +121,6 @@ class edit_resource extends moodleform {
             $mform->createElement('select', 'groupid', 'Group', $options),
             'tags'
         );
-        $mform->setDefault('groupid', $group);
+        $mform->setDefault('groupid', !empty($this->record) ? $this->record->groupid : $group);
     }
 }
