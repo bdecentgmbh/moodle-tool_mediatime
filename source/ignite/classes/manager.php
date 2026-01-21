@@ -122,6 +122,8 @@ class manager implements renderable, templatable {
             if (empty($data->edit)) {
                 if (!empty($data->file)) {
                     $video = $this->api->request("/videos/$data->file");
+                } else if (empty($this->form->get_new_filename('videofile'))) {
+                    return;
                 } else {
                     $tempdir = make_request_directory();
                     $fullpath = $tempdir . '/' . $this->form->get_new_filename('videofile');
@@ -200,6 +202,20 @@ class manager implements renderable, templatable {
             $resource = new output\media_resource($this->record);
             return [
                 'resource' => $output->render($resource),
+            ];
+        } else if (($data = $this->form->get_data()) && $this->form->is_submitted() && $data->newfile == 1) {
+            require_sesskey();
+            require_capability('mediatimesrc/ignite:upload', $this->context);
+
+            return [
+                'form' => $output->render_from_template('mediatimesrc_ignite/file_upload', [
+                    'name' => json_encode($data->name),
+                    'contextid' => $this->context->id,
+                    'description' => json_encode($data->description),
+                    'groupid' => $data->groupid,
+                    'tags' => htmlspecialchars(json_encode($data->tags), ENT_COMPAT),
+                    'title' => json_encode($data->title),
+                ]),
             ];
         }
         return [

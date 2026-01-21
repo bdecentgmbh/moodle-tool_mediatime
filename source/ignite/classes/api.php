@@ -18,6 +18,7 @@ namespace mediatimesrc_ignite;
 
 use moodle_exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use stdClass;
 use stored_file;
 
@@ -69,7 +70,11 @@ class api {
                 'headers' => $headers,
             ];
         }
-        $response = $this->client->request($method, "https://app.ignitevideo.cloud/api$endpoint", $options);
+        try {
+            $response = $this->client->request($method, "https://app.ignitevideo.cloud/api$endpoint", $options);
+        } catch (RequestException $e) {
+            return null;
+        }
         return json_decode($response->getBody(), false);
     }
 

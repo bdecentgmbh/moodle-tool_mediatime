@@ -57,7 +57,7 @@ class media_resource implements renderable, templatable {
     public function __construct(stdClass $record) {
         $this->record = $record;
         $this->context = \context::instance_by_id($record->contextid);
-        $this->content = json_decode($record->content ?? '{}');
+        $this->content = json_decode($record->content ?? '{}') ?? new stdClass();
         $this->content->description = shorten_text($this->content->description ?? '', 300);
     }
 
@@ -112,7 +112,7 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function image_url(renderer_base $output) {
-        return json_decode($this->record->content)->src->thumbnailUrl ?? '';
+        return json_decode($this->record->content)->src->thumbnailUrl ?? $output->image_url('f/video', 'core')->out();
     }
 
     /**
@@ -141,5 +141,14 @@ class media_resource implements renderable, templatable {
         curl_close($ch);
 
         return $response;
+    }
+
+    /**
+     * Return resource title
+     *
+     * @return string
+     */
+    public function get_title() {
+        return json_decode($this->record->content)->title ?? $this->record->name;
     }
 }

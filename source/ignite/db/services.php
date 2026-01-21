@@ -26,6 +26,27 @@
 defined('MOODLE_INTERNAL') || die;
 
 $functions = [
+    'mediatimesrc_ignite_create_token' => [
+        'classname' => '\\mediatimesrc_ignite\\external\\create_token',
+        'methodname' => 'execute',
+        'description' => 'Create place holder to upload video',
+        'type' => 'write',
+        'ajax' => true,
+    ],
+    'mediatimesrc_ignite_finish_upload' => [
+        'classname' => '\\mediatimesrc_ignite\\external\\finish_upload',
+        'methodname' => 'execute',
+        'description' => 'Finish multipart upload',
+        'type' => 'write',
+        'ajax' => true,
+    ],
+    'mediatimesrc_ignite_reattempt_upload' => [
+        'classname' => '\\mediatimesrc_ignite\\external\\reattempt_upload',
+        'methodname' => 'execute',
+        'description' => 'Get new upload url for failed part',
+        'type' => 'write',
+        'ajax' => true,
+    ],
     'mediatimesrc_ignite_video_search' => [
         'classname' => '\\mediatimesrc_ignite\\external\\video_search',
         'methodname' => 'execute',

@@ -68,8 +68,11 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->disabledIf('title', 'newfile', 0);
 
         $context = context_system::instance();
-        if ($this->record) {
-            $content = json_decode($this->record->content ?? '{}');
+        if (
+            $this->record
+            && ($content = json_decode($this->record->content ?? '{}'))
+            && !empty($content->id)
+        ) {
             $igniteid = $content->id;
             $resource = new media_resource($this->record);
 
@@ -143,6 +146,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 $mform->removeElement('filesource');
             }
         }
+        $mform->setType('groupid', PARAM_INT);
         $this->tag_elements();
 
         $this->selected_group();
