@@ -50,17 +50,17 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         parent::definition();
 
+        $mform->addElement('text', 'title', get_string('title', 'tool_mediatime'));
+        $mform->setType('title', PARAM_TEXT);
+        $mform->addHelpButton('title', 'title', 'tool_mediatime');
+
         $filesource = [
             $mform->createElement('radio', 'newfile', '', get_string('uploadnewfile', 'mediatimesrc_ignite'), 1, []),
             $mform->createElement('radio', 'newfile', '', get_string('selectexistingfile', 'mediatimesrc_ignite'), 0, []),
         ];
-        $mform->addGroup($filesource, 'filesource', get_string('videofile', 'mediatimesrc_ignite'), [' '], false);
+        $mform->addGroup($filesource, 'filesource', get_string('filesource', 'mediatimesrc_ignite'), [' '], false);
         $mform->setType('newfile', PARAM_INT);
-        $mform->addHelpButton('filesource', 'videofile', 'mediatimesrc_ignite');
-
-        $mform->addElement('text', 'title', get_string('title', 'tool_mediatime'));
-        $mform->setType('title', PARAM_TEXT);
-        $mform->addHelpButton('title', 'title', 'tool_mediatime');
+        $mform->addHelpButton('filesource', 'filesource', 'mediatimesrc_ignite');
 
         $mform->addElement('textarea', 'description', get_string('description'));
         $mform->setType('description', PARAM_TEXT);
@@ -78,8 +78,9 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
             $videourl = $resource->video_url($OUTPUT);
             $content = [
-                'poster' => $resource->image_url($OUTPUT),
                 'elementid' => 'video-' . uniqid(),
+                'poster' => $resource->image_url($OUTPUT),
+                'texttracks' => $resource->texttracks(),
                 'instance' => json_encode([
                     'vimeo_url' => $videourl,
                     'controls' => true,
@@ -102,7 +103,6 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 $mform->createElement('static', 'vimeo_url', get_string('igniteid', 'mediatimesrc_ignite'), $igniteid),
                 'filesource'
             );
-            $mform->removeElement('filesource');
             $mform->setDefault('groupid', $this->record->groupid);
         } else {
             $options = [null => ''];
@@ -126,7 +126,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     $mform->createElement(
                         'filepicker',
                         'videofile',
-                        get_string('videofile', 'mediatimesrc_videotime'),
+                        get_string('videofile', 'mediatimesrc_ignite'),
                         null,
                         [
                             'maxbytes' => $maxbytes,
@@ -135,7 +135,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     ),
                     'description'
                 );
-                $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_videotime');
+                $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_ignite');
                 $mform->hideIf('videofile', 'newfile', 'neq', 1);
             } else {
                 $mform->addRule('file', get_string('required'), 'required', null, 'client');

@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mediatimesrc_streamio/video
+    @template mediatimesrc_ignite/video
 
     This template will render a resource to embed in library
 
@@ -25,11 +25,7 @@
 
     Example context (json):
     {
-        "elementid": "324lk32sK",
-        "instance": "[{'vimeo_url': 'https://example.com/video.m3u8'}]",
-        "screenshot": {
-            "normal": "example.com/image.jpg"
-        }
+        "elementId": "a3lj4l3j4"
     }
 
 }}
@@ -39,6 +35,15 @@
         controls
         class="video-js"
     >
+        {{# texttracks }}
+            <track
+                kind="{{ type }}"
+                {{# label }}label="{{ label }}"{{/ label }}
+                src="{{ url }}"
+                srclang="{{ language }}"
+            >
+            </track>
+        {{/ texttracks }}
     </video>
 </p>
 {{#js}}

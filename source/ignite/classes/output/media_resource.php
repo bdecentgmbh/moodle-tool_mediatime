@@ -76,6 +76,7 @@ class media_resource implements renderable, templatable {
         $playerurl = preg_replace('/(.*)\/videos\/([a-h\d]*).*/', '$1/player/index.html?id=$2', $videourl);
 
         $content = [
+            'chapters' => $this->chapters_url(),
             'elementid' => 'video-' . uniqid(),
             'instance' => json_encode([
                 'vimeo_url' => $videourl,
@@ -87,8 +88,9 @@ class media_resource implements renderable, templatable {
                 'muted' => true,
                 'type' => resourcelib_guess_url_mimetype($videourl),
             ]),
-            'src' => $playerurl,
             'poster' => $this->image_url($output),
+            'src' => $playerurl,
+            'texttracks' => $this->texttracks(),
         ] + (array) $this->content;
 
         return [
@@ -150,5 +152,51 @@ class media_resource implements renderable, templatable {
      */
     public function get_title() {
         return json_decode($this->record->content)->title ?? $this->record->name;
+    }
+
+    public function chapters() {
+        if (!$chapters = $this->content->chapters) {
+            return '';
+        }
+        $lines = ['WEBVTT'];
+        $endings = array_values(array_column($chapters, 'timestamp'));
+        array_shift($endings);
+        $duration = $this->content->duration;
+        array_push($endings, sprintf('%02d:%02d:%02.0f', floor($duration / HOURSECS), floor($duration / 60) % 60, fmod($duration, 60)));
+        foreach ($chapters as $key => $chapter) {
+           $lines[] = '';
+           $lines[] = "{$chapter->timestamp}.000 --> {$endings[$key]}.000";
+           $lines[] = $chapter->title;
+        }
+        return implode("\n", $lines);
+    }
+
+    public function chapters_url(): string {
+        if (!$chapters = $this->content->chapters) {
+            return '';
+        }
+        $url = moodle_url::make_pluginfile_url(
+            $this->record->contextid,
+            'mediatimesrc_ignite',
+            'chapters',
+            $this->record->id,
+            '/',
+            'chapters.vtt'
+        );
+
+        return $url->out();
+    }
+
+    public function texttracks(): array {
+        $texttracks = (array)$this->content->texttracks;
+
+        if ($url = $this->chapters_url()) {
+            array_push($texttracks, (object)[
+                'type' => 'chapters',
+                'url' => $url,
+            ]);
+        }
+
+        return $texttracks;
     }
 }

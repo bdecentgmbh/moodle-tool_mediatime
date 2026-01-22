@@ -31,7 +31,7 @@ use stdClass;
  * External function for creating resource place holder for Vimeo upload
  *
  * @package    mediatimesrc_ignite
- * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @copyright  2025 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class reattempt_upload extends external_api {
