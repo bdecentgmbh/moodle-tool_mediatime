@@ -99,6 +99,7 @@ class manager implements renderable, templatable {
 
             $this->form->set_data([
                 'edit' => $edit,
+                'ignitetags' => array_column($this->content->tags, 'id'),
             ] + (array)$this->content);
         }
         if ($this->form->is_cancelled()) {
@@ -152,7 +153,7 @@ class manager implements renderable, templatable {
                     $result = $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
                         'description' => true,
                         'title' => true,
-                    ]), 'PATCH');
+                    ]) + ['tags' => $data->ignitetags ?? []], 'PATCH');
                 }
                 $video = $this->api->request("/videos/" . $this->content->id);
                 $video->name = $data->name;
@@ -213,6 +214,7 @@ class manager implements renderable, templatable {
                     'contextid' => $this->context->id,
                     'description' => json_encode($data->description),
                     'groupid' => $data->groupid,
+                    'subtitlelanguage' => $data->subtitlelanguage,
                     'tags' => htmlspecialchars(json_encode($data->tags), ENT_COMPAT),
                     'title' => json_encode($data->title),
                 ]),

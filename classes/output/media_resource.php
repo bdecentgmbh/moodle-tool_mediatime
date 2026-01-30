@@ -140,4 +140,20 @@ class media_resource implements renderable, templatable {
         }
         return json_decode($this->record->content)->title ?? '';
     }
+
+    /**
+     * Get url for chapters of resource
+     */
+    public function chapters() {
+        return method_exists($this->resource, 'chapters') ? $this->resource->chapters() : [];
+    }
+
+    /**
+     * Get text tracks for resource
+     *
+     * @return array
+     */
+    public function texttracks(): array {
+        return method_exists($this->resource, 'texttracks') ? $this->resource->texttracks() : [];
+    }
 }

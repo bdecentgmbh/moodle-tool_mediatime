@@ -17,7 +17,7 @@
 {{!
     @template mediatimesrc_ignite/file_upload
 
-    This template will render the file upload form for add files to Vimeo
+    This template will render the file upload form for add files to Ignite
 
     Variables required for this template:
 
@@ -41,9 +41,10 @@
     <input type="hidden" name="source" value="ignite" >
     <input type="hidden" name="filesize" value="" >
     <input type="hidden" name="groupid" value={{ groupid }} >
-    <input type="hidden" name="name" value={{{ name }}} >
-    <input type="hidden" name="title" value={{{ title }}} >
-    <input type="hidden" name="description" value={{{ description }}} >
+    <input type="hidden" name="name" value="{{ name }}" >
+    <input type="hidden" name="subtitlelanguage" value="{{ subtitlelanguage }}" >
+    <input type="hidden" name="title" value="{{ title }}" >
+    <input type="hidden" name="description" value="{{ description }}" >
     <input type="hidden" name="tags" value="{{ tags }}" >
     <fieldset class="w-100 m-0 p-0 border-0">
         <input type="file" name="videofile" accept="video/*">

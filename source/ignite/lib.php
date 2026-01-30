@@ -61,11 +61,13 @@ function mediatimesrc_ignite_pluginfile($course, $cm, $context, $filearea, $args
         $itemid = array_shift($args);
         $filename = array_pop($args);
         $ext = resourcelib_get_extension($filename);
-        if ($ext == 'vtt' && $record = $DB->get_record('tool_mediatime', [
+        if (
+            $ext == 'vtt' && $record = $DB->get_record('tool_mediatime', [
             'id' => $itemid,
             'source' => 'ignite',
-        ])) {
-            header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
+            ])
+        ) {
+            header('Expires: ' . gmdate('D, d M Y H:i:s', 0) . ' GMT');
             header("Content-Type: text/vtt\n");
             $resource = new \mediatimesrc_ignite\output\media_resource($record);
             echo $resource->chapters();

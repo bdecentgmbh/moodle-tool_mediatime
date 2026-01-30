@@ -28,10 +28,10 @@ use core_tag_tag;
 use stdClass;
 
 /**
- * External function for creating resource place holder for Vimeo upload
+ * External function for completing Ignite upload
  *
  * @package    mediatimesrc_ignite
- * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class finish_upload extends external_api {
@@ -53,16 +53,12 @@ class finish_upload extends external_api {
     }
 
     /**
-     * Create place holder
+     * Finish upload
      *
-     * @param int $contextid Context id
-     * @param string $description Name of resource
-     * @param int $filesize Video file size
-     * @param int $groupid Group id
-     * @param string $mimetype Mime type
-     * @param string $name Name of resource
-     * @param string $tags Tags to add
-     * @param string $title Name of resource
+     * @param int $id Resource id
+     * @param string $key Ignite video key
+     * @param array $parts Parts array
+     * @param string $uploadid uploadid
      * @return array Upload information
      */
     public static function execute($id, $key, $parts, $uploadid): array {

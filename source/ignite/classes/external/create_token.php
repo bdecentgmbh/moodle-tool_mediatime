@@ -17,6 +17,7 @@
 namespace mediatimesrc_ignite\external;
 
 use mediatimesrc_ignite\api;
+use mediatimesrc_ignite\form\edit_resource;
 use context;
 use context_system;
 use core_external\external_api;
@@ -28,10 +29,10 @@ use core_tag_tag;
 use stdClass;
 
 /**
- * External function for creating resource place holder for Vimeo upload
+ * External function for creating resource place holder for Ignite upload
  *
  * @package    mediatimesrc_ignite
- * @copyright  2025 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class create_token extends external_api {
@@ -50,6 +51,7 @@ class create_token extends external_api {
                 'mimetype' => new external_value(PARAM_TEXT, 'Mime type'),
                 'name' => new external_value(PARAM_TEXT, 'Resource name'),
                 'parts' => new external_value(PARAM_INT, 'Number of parts'),
+                'subtitlelanguage' => new external_value(PARAM_TEXT, 'Subtitle language'),
                 'tags' => new external_value(PARAM_RAW, 'Resource tags'),
                 'title' => new external_value(PARAM_TEXT, 'Resource title'),
             ]
@@ -66,11 +68,23 @@ class create_token extends external_api {
      * @param string $mimetype Mime type
      * @param string $name Name of resource
      * @param string $parts Number of parts to upload
+     * @param string $subtitlelanguage Subtitle language
      * @param string $tags Tags to add
      * @param string $title Name of resource
      * @return array Upload information
      */
-    public static function execute($contextid, $description, $filesize, $groupid, $mimetype, $name, $parts, $tags, $title): array {
+    public static function execute(
+        $contextid,
+        $description,
+        $filesize,
+        $groupid,
+        $mimetype,
+        $name,
+        $parts,
+        $subtitlelanguage,
+        $tags,
+        $title
+    ): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
@@ -81,6 +95,7 @@ class create_token extends external_api {
             'mimetype' => $mimetype,
             'name' => $name,
             'parts' => $parts,
+            'subtitlelanguage' => $subtitlelanguage,
             'tags' => $tags,
             'title' => $title,
         ]);
@@ -106,15 +121,20 @@ class create_token extends external_api {
         $params['title'] = $params['title'] ?: $params['name'];
 
         $api = new api();
+        $options = [
+            'mimeType' => $params['mimetype'],
+            'title' => $params['title'],
+            'useMultipart' => true,
+            'visibility' => 'public',
+        ];
+        if (!empty($params['subtitlelanguage'])) {
+            $options['autoTranscribe'] = true;
+            $options['language'] = edit_resource::supported_code($params['subtitlelanguage']);
+        }
 
         $video = $api->request(
             "/videos/upload",
-            [
-                'mimeType' => $params['mimetype'],
-                'title' => $params['title'],
-                'useMultipart' => true,
-                'visibility' => 'public',
-            ],
+            $options,
             'PUT'
         );
         $video->id = $video->videoId;

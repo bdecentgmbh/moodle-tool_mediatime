@@ -26,7 +26,7 @@ namespace mediatimesrc_ignite\form;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once("$CFG->libdir/resourcelib.php");
+require_once("$CFG->libdir/formslib.php");
 
 use context_system;
 use moodleform;
@@ -75,6 +75,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         ) {
             $igniteid = $content->id;
             $resource = new media_resource($this->record);
+            $ignitetags = array_column($content->tags ?? [], 'title', 'id');
 
             $videourl = $resource->video_url($OUTPUT);
             $content = [
@@ -104,6 +105,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 'filesource'
             );
             $mform->setDefault('groupid', $this->record->groupid);
+            $mform->removeElement('filesource');
         } else {
             $options = [null => ''];
 
@@ -137,6 +139,23 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 );
                 $mform->addHelpButton('videofile', 'videofile', 'mediatimesrc_ignite');
                 $mform->hideIf('videofile', 'newfile', 'neq', 1);
+
+                $languages = ['' => get_string('none')];
+                foreach (\get_string_manager()->get_list_of_translations() as $key => $language) {
+                    if (!empty(self::supported_code($key))) {
+                        $languages[$key] = $language;
+                    }
+                }
+                $mform->insertElementBefore(
+                    $mform->createElement(
+                        'select',
+                        'subtitlelanguage',
+                        get_string('subtitlelanguage', 'mediatimesrc_ignite'),
+                        $languages
+                    ),
+                    'description'
+                );
+                $mform->addHelpButton('subtitlelanguage', 'subtitlelanguage', 'mediatimesrc_ignite');
             } else {
                 $mform->addRule('file', get_string('required'), 'required', null, 'client');
                 $mform->insertElementBefore(
@@ -147,6 +166,17 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             }
         }
         $mform->setType('groupid', PARAM_INT);
+
+        $mform->addElement('autocomplete', 'ignitetags', get_string('ignitetags', 'mediatimesrc_ignite'), $ignitetags ?? [], [
+            'ajax' => 'mediatimesrc_ignite/tag_datasource',
+            'multiple' => true,
+        ]);
+
+        $mform->setDefault('ignitetags', array_keys($ignitetags ?? []));
+        $mform->hideIf('ignitetags', 'newfile', 0);
+        $mform->hideIf('file', 'newfile', 'eq', 1);
+        $mform->setDefault('newfile', 0);
+        $mform->setDefault('file', []);
         $this->tag_elements();
 
         $this->selected_group();
@@ -169,5 +199,24 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         }
 
         return $errors;
+    }
+
+    /**
+     * Formatted language code to supported Ignite form
+     *
+     * @param string $language Moodle language code
+     * @return string Ignite code
+     */
+    public static function supported_code(string $language): string {
+        $key = explode('_', $language)[0];
+
+        return [
+            'de' => 'de-DE',
+            'en' => 'en-US',
+            'fr' => 'fr-FR',
+            'it' => 'it-IT',
+            'pt' => 'pt-PT',
+            'es' => 'es-ES',
+        ][$key] ?? '';
     }
 }

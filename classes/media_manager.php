@@ -393,7 +393,7 @@ class media_manager implements renderable, templatable {
     /**
      * Observe hook to delete resource when a course is deleted
      *
-     * @param course_content_deleted $hook
+     * @param before_course_deleted $hook
      */
     public static function before_course_deleted(before_course_deleted $hook) {
         global $DB;

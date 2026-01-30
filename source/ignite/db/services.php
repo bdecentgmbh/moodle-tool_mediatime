@@ -47,10 +47,17 @@ $functions = [
         'type' => 'write',
         'ajax' => true,
     ],
+    'mediatimesrc_ignite_tag_search' => [
+        'classname' => '\\mediatimesrc_ignite\\external\\tag_search',
+        'methodname' => 'execute',
+        'description' => 'Search user tags on Ignite.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
     'mediatimesrc_ignite_video_search' => [
         'classname' => '\\mediatimesrc_ignite\\external\\video_search',
         'methodname' => 'execute',
-        'description' => 'Search user videos on Vimeo.',
+        'description' => 'Search user videos on Ignite.',
         'type' => 'read',
         'ajax' => true,
     ],

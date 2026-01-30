@@ -154,6 +154,9 @@ class media_resource implements renderable, templatable {
         return json_decode($this->record->content)->title ?? $this->record->name;
     }
 
+    /**
+     * Get chapters file vtt file content
+     */
     public function chapters() {
         if (!$chapters = $this->content->chapters) {
             return '';
@@ -162,17 +165,25 @@ class media_resource implements renderable, templatable {
         $endings = array_values(array_column($chapters, 'timestamp'));
         array_shift($endings);
         $duration = $this->content->duration;
-        array_push($endings, sprintf('%02d:%02d:%02.0f', floor($duration / HOURSECS), floor($duration / 60) % 60, fmod($duration, 60)));
+        array_push($endings, sprintf(
+            '%02d:%02d:%02.0f',
+            floor($duration / HOURSECS),
+            floor($duration / 60) % 60,
+            fmod($duration, 60)
+        ));
         foreach ($chapters as $key => $chapter) {
-           $lines[] = '';
-           $lines[] = "{$chapter->timestamp}.000 --> {$endings[$key]}.000";
-           $lines[] = $chapter->title;
+            $lines[] = '';
+            $lines[] = "{$chapter->timestamp}.000 --> {$endings[$key]}.000";
+            $lines[] = $chapter->title;
         }
         return implode("\n", $lines);
     }
 
+    /**
+     * Get url for chapters of resource
+     */
     public function chapters_url(): string {
-        if (!$chapters = $this->content->chapters) {
+        if (!$chapters = $this->content->chapters ?? '') {
             return '';
         }
         $url = moodle_url::make_pluginfile_url(
@@ -187,8 +198,11 @@ class media_resource implements renderable, templatable {
         return $url->out();
     }
 
+    /**
+     * Get text tracks for resource
+     */
     public function texttracks(): array {
-        $texttracks = (array)$this->content->texttracks;
+        $texttracks = (array)($this->content->texttracks ?? []);
 
         if ($url = $this->chapters_url()) {
             array_push($texttracks, (object)[

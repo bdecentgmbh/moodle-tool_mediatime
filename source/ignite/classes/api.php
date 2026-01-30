@@ -16,6 +16,7 @@
 
 namespace mediatimesrc_ignite;
 
+use mediatimesrc_ignite\form\edit_resource;
 use moodle_exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -27,6 +28,7 @@ use stored_file;
  *
  * @copyright  2025 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package mediatimesrc_ignite
  */
 class api {
     /** @var $apikey Ignite apikey */
@@ -81,14 +83,22 @@ class api {
     /**
      * Put stored file to S3 url
      *
-     * @param string $url Url suplied by Ignite
-     * @param stored_file $file
+     * @param string $fullpath Path to file
+     * @param stdClass $data Form data
+     * @return stdClass
      */
     public function put_file($fullpath, $data) {
-        $result = $this->request('/videos/upload', [
+        $params = [
+            'description' => $data->description,
             'title' => $data->title ?: $data->name,
             'visibility' => 'public',
-        ], 'PUT');
+            'tags' => $data->ignitetags ?? [],
+        ];
+        if ($data->subtitlelanguage) {
+            $params['autoTranscribe'] = true;
+            $params['language'] = edit_resource::supported_code($data->subtitlelanguage);
+        }
+        $result = $this->request('/videos/upload', $params, 'PUT');
 
         $ch = curl_init($result->signedUrl);
 

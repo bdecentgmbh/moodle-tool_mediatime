@@ -26,7 +26,7 @@ use core_external\external_value;
 use mediatimesrc_ignite\api;
 
 /**
- * External function for Vimeo video search
+ * External function for Ignite video search
  *
  * @package    mediatimesrc_ignite
  * @copyright  2025 bdecent gmbh <https://bdecent.de>

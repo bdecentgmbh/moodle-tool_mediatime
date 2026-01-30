@@ -16,73 +16,63 @@
 
 namespace mediatimesrc_ignite\external;
 
-use mediatimesrc_ignite\api;
 use context;
-use context_system;
+use context_module;
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
-use core_tag_tag;
-use stdClass;
+use mediatimesrc_ignite\api;
 
 /**
- * External function for get Ignite upload url after failure
+ * External function for Ignite tag search
  *
  * @package    mediatimesrc_ignite
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class reattempt_upload extends external_api {
+class tag_search extends external_api {
     /**
-     * Get parameter definition for execute.
+     * Get parameter definition for execute
      *
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
-                'contextid' => new external_value(PARAM_INT, 'Context id'),
-                'key' => new external_value(PARAM_TEXT, 'Key'),
-                'partnumber' => new external_value(PARAM_INT, 'Part number'),
-                'uploadid' => new external_value(PARAM_TEXT, 'Upload id'),
+                'query' => new external_value(PARAM_TEXT, 'Query string for tag name'),
             ]
         );
     }
 
     /**
-     * Create new part url
+     * Get tag list
      *
-     * @param int $contextid Context id
-     * @param string $key Key
-     * @param int $partnumber Part number
-     * @param string $uploadid Upload id
-     * @return array Upload information
+     * @param int $query Query
+     * @return array
      */
-    public static function execute($contextid, $key, $partnumber, $uploadid): array {
+    public static function execute($query): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
-            'contextid' => $contextid,
-            'key' => $key,
-            'partnumber' => $partnumber,
-            'uploadid' => $uploadid,
+            'query' => $query,
         ]);
 
-        $context = \context::instance_by_id($params['contextid']);
+        $context = \context_system::instance();
         self::validate_context($context);
-
-        require_login();
-        require_capability('mediatimesrc/ignite:upload', $context);
 
         $api = new api();
 
-        $result = $api->request(
-            "/videos/upload/s3/multipart/{$params['uploadid']}/{$params['partnumber']}?key={$params['key']}"
-        );
+        $tags = $api->request("/tags?sortBy=title&limit=25&where[title][like]=" . $params['query'], [ ]);
 
-        return (array)$result;
+        return array_map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'slug' => $tag->slug,
+                'title' => $tag->title,
+            ];
+        }, $tags->docs);
     }
 
     /**
@@ -90,9 +80,13 @@ class reattempt_upload extends external_api {
      *
      * @return external_single_structure
      */
-    public static function execute_returns(): external_single_structure {
-        return new external_single_structure([
-            'url' => new external_value(PARAM_TEXT, 'Upload URL'),
-        ]);
+    public static function execute_returns(): external_multiple_structure {
+        return new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_TEXT, 'Tag id'),
+                'slug' => new external_value(PARAM_TEXT, 'Tag slug'),
+                'title' => new external_value(PARAM_TEXT, 'Tag title'),
+            ])
+        );
     }
 }

@@ -131,6 +131,7 @@ export default {
                     mimetype: file.type,
                     name: document.querySelector('input[name="name"]').value,
                     parts: Math.ceil(file.size / CHUNK_SIZE),
+                    subtitlelanguage: document.querySelector('input[name="subtitlelanguage"]').value,
                     tags: document.querySelector('input[name="tags"]').value,
                     title: document.querySelector('input[name="title"]').value
                 },
