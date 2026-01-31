@@ -47,6 +47,7 @@ $string['removeignitefiles'] = 'Remove Ignite files';
 $string['selectexistingfile'] = 'Select existing file';
 $string['subtitlelanguage'] = 'Subtitle language';
 $string['subtitlelanguage_help'] = 'Select language of audio to autogenerate subtitles.';
+$string['updatevideos'] = 'Update videos';
 $string['uploadnewfile'] = 'Upload new file';
 $string['videofile'] = 'Video file';
 $string['videofile_help'] = 'Add a new video file here to upload or for larger files leave it empty and you will be prompted after to saving to the file.';
