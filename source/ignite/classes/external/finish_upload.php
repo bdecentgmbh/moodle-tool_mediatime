@@ -88,8 +88,6 @@ class finish_upload extends external_api {
             'POST'
         );
 
-        $content = json_decode($record->content);
-
         return [
             'status' => true,
             'result' => json_encode($result),

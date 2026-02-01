@@ -143,6 +143,12 @@ class manager implements renderable, templatable {
                     require_capability('moodle/site:accessallgroups', $this->context);
                 }
                 $data->id = $DB->insert_record('tool_mediatime', $data);
+                $DB->insert_record('mediatimesrc_ignite', [
+                    'resourceid' => $data->id,
+                    'igniteid' => $video->id,
+                    'timecreated' => $data->timemodified,
+                    'timemodified' => $data->timemodified,
+                ]);
                 $event = \mediatimesrc_ignite\event\resource_created::create_from_record($data);
                 $event->trigger();
                 $data->edit = $data->id;
@@ -215,8 +221,9 @@ class manager implements renderable, templatable {
                     'description' => json_encode($data->description),
                     'groupid' => $data->groupid,
                     'subtitlelanguage' => $data->subtitlelanguage,
+                    'ignitetags' => htmlspecialchars(json_encode($data->ignitetags), ENT_COMPAT),
                     'tags' => htmlspecialchars(json_encode($data->tags), ENT_COMPAT),
-                    'title' => json_encode($data->title),
+                    'title' => json_encode($data->title ?: $data->name),
                 ]),
             ];
         }
@@ -282,6 +289,10 @@ class manager implements renderable, templatable {
         }
 
         $fs = get_file_storage();
+
+        $DB->delete_records('mediatimesrc_ignite', [
+            'resourceid' => $this->record->id,
+        ]);
 
         $DB->delete_records('tool_mediatime', [
             'id' => $this->record->id,

@@ -128,6 +128,7 @@ export default {
                     contextid: document.querySelector('input[name="contextid"]').value,
                     description: document.querySelector('input[name="description"]').value,
                     groupid: document.querySelector('input[name="groupid"]').value || 0,
+                    ignitetags: document.querySelector('input[name="ignitetags"]').value,
                     mimetype: file.type,
                     name: document.querySelector('input[name="name"]').value,
                     parts: Math.ceil(file.size / CHUNK_SIZE),

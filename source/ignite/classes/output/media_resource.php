@@ -91,6 +91,7 @@ class media_resource implements renderable, templatable {
             'poster' => $this->image_url($output),
             'src' => $playerurl,
             'texttracks' => $this->texttracks(),
+            'videourl' => $videourl,
         ] + (array) $this->content;
 
         return [

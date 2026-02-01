@@ -50,7 +50,6 @@ class edit_resource extends moodleform {
      */
     public function definition() {
         $mform = $this->_form;
-        require_capability('tool/mediatime:manage', context_system::instance());
 
         $mform->addElement('hidden', 'contextid');
         $mform->setType('contextid', PARAM_INT);
@@ -74,6 +73,7 @@ class edit_resource extends moodleform {
         } else {
             $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
         }
+        require_capability('tool/mediatime:manage', $this->context);
     }
 
     /**

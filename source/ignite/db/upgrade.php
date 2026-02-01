@@ -39,5 +39,29 @@ function xmldb_mediatimesrc_ignite_upgrade($oldversion) {
     // You will also have to create the db/install.xml file by using the XMLDB Editor.
     // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
 
+    if ($oldversion < 2025111106) {
+        // Define table mediatimesrc_ignite to be created.
+        $table = new xmldb_table('mediatimesrc_ignite');
+
+        // Adding fields to table mediatimesrc_ignite.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('resourceid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('igniteid', XMLDB_TYPE_CHAR, '80', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table mediatimesrc_ignite.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('resourceid', XMLDB_KEY_FOREIGN_UNIQUE, ['resourceid'], 'tool_mediatime', ['id']);
+
+        // Conditionally launch create table for mediatimesrc_ignite.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Ignite savepoint reached.
+        upgrade_plugin_savepoint(true, 2025111106, 'mediatimesrc', 'ignite');
+    }
+
     return true;
 }

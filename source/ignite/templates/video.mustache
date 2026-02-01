@@ -26,15 +26,19 @@
     Example context (json):
     {
         "elementid": "a3lj4l3j4",
+        "poster": "https://example.com/pluginfile.php/1/mediatimesrc_ignite/image/9/sample.png",
+        "title": "Ducks",
         "instance": "{}"
     }
 
 }}
-<p class="col col-12 col-md-9 col-lg-8 col-xl-6 text-center">
+<div class="col col-12 text-center">
+    {{# videourl }}
     <video 
         id="{{ elementid }}"
         controls
-        class="video-js"
+        poster="{{ poster }}"
+        class="video-js col col-12"
     >
         {{# texttracks }}
             <track
@@ -46,7 +50,14 @@
             </track>
         {{/ texttracks }}
     </video>
-</p>
+    {{/ videourl }}
+    {{^ videourl }}
+    <div class="alert alert-info">
+        {{# str }} processingmessage, mediatimesrc_ignite {{/ str }}
+    </div>
+    <img src="{{ poster }}" class="col col-12" alt="{{ title }}">
+    {{/ videourl }}
+</div>
 {{#js}}
 if (document.getElementById('{{ elementid }}')) {
     require(['videotimeplugin_videojs/videotime'], function(VideoTime) {

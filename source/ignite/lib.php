@@ -26,8 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/resourcelib.php");
 
-use mediatimesrc_vimeo\api;
-
 /**
  * File serving callback
  *

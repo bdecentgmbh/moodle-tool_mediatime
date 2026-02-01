@@ -54,16 +54,14 @@ class update_videos extends \core\task\scheduled_task {
 
         $api = new api();
 
-        $starttime = new DateTime();
-        $starttime->setTimestamp($lasttime);
-
         $query = http_build_query([
-            'sortBy' => 'updatedAt',
             'where' => [
                 'updatedAt' => [
-                    'greater_than' => $starttime->format(DateTime::ATOM),
+                    'greater_than' => $lasttime,
                 ],
             ],
+            'sort' => 'updatedAt',
+            'limit' => 100,
         ]);
 
         $list = $api->request("/videos?$query");
@@ -72,35 +70,42 @@ class update_videos extends \core\task\scheduled_task {
         foreach ($list->docs as $video) {
             $datetime = new \DateTime($video->updatedAt);
             $timestamp = $datetime->getTimestamp();
-            mtrace("Update Ignite video $video->id at timestap $timestamp.");
+            $lasttime = $video->updatedAt;
+            mtrace("Ignite video $video->id updated at timestap $timestamp.");
             $videos[$video->id] = $video;
         }
 
         if (empty($videos)) {
-            set_config('lasttime', $currenttime, 'mediatimesrc_ignite');
             return;
         }
 
+        [$sql, $params] = $DB->get_in_or_equal(array_keys($videos), SQL_PARAMS_NAMED);
+
         try {
             $transaction = $DB->start_delegated_transaction();
-            foreach ($DB->get_records('tool_mediatime', ['source' => 'ignite']) as $record) {
+            $rs = $DB->get_recordset_select('tool_mediatime', "source = :source AND id IN (
+                SELECT resourceid
+                  FROM {mediatimesrc_ignite}
+                 WHERE igniteid $sql
+            )", $params + ['source' => 'ignite']);
+
+            foreach ($rs as $record) {
                 $content = json_decode($record->content);
                 if (!empty($content->id) && key_exists($content->id, $videos)) {
-                    mtrace("Updating $record->name");
                     $video = $videos[$content->id];
-                    $video->name = $content->name;
-                    $record->content = json_encode($video);
-                    $record->timemodified = $clock->time();
-                    $DB->update_record('tool_mediatime', $record);
+                    $videoupdated = new DateTime($video->updatedAt);
+                    if ($video->updatedAt != $content->updatedAt ?? '') {
+                        mtrace("Updating $record->name");
+                        $video->name = $content->name;
+                        $record->content = json_encode($video);
+                        $record->timemodified = $clock->time();
+                        $DB->update_record('tool_mediatime', $record);
+                    }
                 }
             }
+            $rs->close();
 
-            if (empty($list->next)) {
-                set_config('lasttime', $currenttime, 'mediatimesrc_ignite');
-            } else {
-                $starttime->setTimestamp($lasttime);
-                set_config('lasttime', $starttime->getTimestamp(), 'mediatimesrc_ignite');
-            }
+            set_config('lasttime', $lasttime, 'mediatimesrc_ignite');
 
             $transaction->allow_commit();
         } catch (Exception $e) {

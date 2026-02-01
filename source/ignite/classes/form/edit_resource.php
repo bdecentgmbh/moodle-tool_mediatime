@@ -66,6 +66,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->setType('description', PARAM_TEXT);
         $mform->disabledIf('description', 'newfile', 0);
         $mform->disabledIf('title', 'newfile', 0);
+        $mform->disabledIf('subtitlelanguage', 'newfile', 0);
 
         $context = context_system::instance();
         if (
@@ -92,6 +93,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     'muted' => true,
                     'type' => resourcelib_guess_url_mimetype($videourl),
                 ]),
+                'videourl' => $videourl,
             ];
             $mform->insertElementBefore(
                 $mform->createElement(

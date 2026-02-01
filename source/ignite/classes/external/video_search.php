@@ -105,8 +105,8 @@ class video_search extends external_api {
     public static function execute_returns(): external_multiple_structure {
         return new external_multiple_structure(
             new external_single_structure([
-                'name' => new external_value(PARAM_TEXT, 'Video name'),
-                'uri' => new external_value(PARAM_TEXT, 'Vimeo uri'),
+                'name' => new external_value(PARAM_TEXT, 'Video title'),
+                'uri' => new external_value(PARAM_TEXT, 'Ignit id'),
             ])
         );
     }

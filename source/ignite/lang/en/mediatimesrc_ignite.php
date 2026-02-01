@@ -43,6 +43,7 @@ $string['ignitetags'] = 'Ignite tags';
 $string['keepignitefiles'] = 'Keep Ignite files';
 $string['pluginname'] = 'Ignite';
 $string['privacy:metadata'] = 'The Ignite plugin for Media Time does not store personal data. It does transmit files associated with educational video content that normally does not contain user data. If it is used for personal data, a separate agreement with the provider may be required.';
+$string['processingmessage'] = 'The video is not ready to display.';
 $string['removeignitefiles'] = 'Remove Ignite files';
 $string['selectexistingfile'] = 'Select existing file';
 $string['subtitlelanguage'] = 'Subtitle language';

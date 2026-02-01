@@ -48,6 +48,7 @@ class create_token extends external_api {
                 'description' => new external_value(PARAM_TEXT, 'Resource description'),
                 'filesize' => new external_value(PARAM_INT, 'Video file size'),
                 'groupid' => new external_value(PARAM_INT, 'Group id'),
+                'ignitetags' => new external_value(PARAM_RAW, 'Ignite tags'),
                 'mimetype' => new external_value(PARAM_TEXT, 'Mime type'),
                 'name' => new external_value(PARAM_TEXT, 'Resource name'),
                 'parts' => new external_value(PARAM_INT, 'Number of parts'),
@@ -65,6 +66,7 @@ class create_token extends external_api {
      * @param string $description Name of resource
      * @param int $filesize Video file size
      * @param int $groupid Group id
+     * @param string $ignitetags Ignite tags to add
      * @param string $mimetype Mime type
      * @param string $name Name of resource
      * @param string $parts Number of parts to upload
@@ -78,6 +80,7 @@ class create_token extends external_api {
         $description,
         $filesize,
         $groupid,
+        $ignitetags,
         $mimetype,
         $name,
         $parts,
@@ -92,6 +95,7 @@ class create_token extends external_api {
             'description' => $description,
             'filesize' => $filesize,
             'groupid' => $groupid,
+            'ignitetags' => $ignitetags,
             'mimetype' => $mimetype,
             'name' => $name,
             'parts' => $parts,
@@ -131,6 +135,9 @@ class create_token extends external_api {
             $options['autoTranscribe'] = true;
             $options['language'] = edit_resource::supported_code($params['subtitlelanguage']);
         }
+        if (!empty($params['ignitetags'])) {
+            $options['tags'] = json_decode(htmlspecialchars_decode($params['ignitetags'], ENT_COMPAT));
+        }
 
         $video = $api->request(
             "/videos/upload",
@@ -140,15 +147,24 @@ class create_token extends external_api {
         $video->id = $video->videoId;
         $video->description = $params['description'];
         $video->name = $params['name'];
+        $clock = \core\di::get(\core\clock::class);
+        $timenow = $clock->time();
         $id = $DB->insert_record('tool_mediatime', [
             'name' => $params['name'],
             'source' => 'ignite',
             'content' => json_encode($video),
             'contextid' => $params['contextid'],
             'groupid' => $params['groupid'],
-            'timecreated' => time(),
-            'timemodified' => time(),
+            'timecreated' => $timenow,
+            'timemodified' => $timenow,
             'usermodified' => $USER->id,
+        ]);
+
+        $DB->insert_record('mediatimesrc_ignite', [
+            'resourceid' => $id,
+            'igniteid' => $video->videoId,
+            'timecreated' => $timenow,
+            'timemodified' => $timenow,
         ]);
 
         if (!empty($params['tags'])) {
