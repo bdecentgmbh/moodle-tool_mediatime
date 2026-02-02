@@ -67,6 +67,7 @@ class manager implements renderable, templatable {
         if ($record) {
             $this->content = json_decode($record->content ?? '{}');
             $this->context = \context::instance_by_id($record->contextid);
+            $record->sync = $DB->record_exists('mediatimesrc_ignite', ['resourceid' => $record->id]);
         } else {
             $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
         }
@@ -143,19 +144,21 @@ class manager implements renderable, templatable {
                     require_capability('moodle/site:accessallgroups', $this->context);
                 }
                 $data->id = $DB->insert_record('tool_mediatime', $data);
-                $DB->insert_record('mediatimesrc_ignite', [
-                    'resourceid' => $data->id,
-                    'igniteid' => $video->id,
-                    'timecreated' => $data->timemodified,
-                    'timemodified' => $data->timemodified,
-                ]);
+                if (!empty($data->sync)) {
+                    $DB->insert_record('mediatimesrc_ignite', [
+                        'resourceid' => $data->id,
+                        'igniteid' => $video->id,
+                        'timecreated' => $data->timemodified,
+                        'timemodified' => $data->timemodified,
+                    ]);
+                }
                 $event = \mediatimesrc_ignite\event\resource_created::create_from_record($data);
                 $event->trigger();
                 $data->edit = $data->id;
             } else {
                 $data->id = $data->edit;
                 $data->contextid = $record->contextid;
-                if (has_capability('mediatimesrc/ignite:upload', context_system::instance())) {
+                if (!empty($this->record->sync) && has_capability('mediatimesrc/ignite:upload', $this->context)) {
                     $result = $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
                         'description' => true,
                         'title' => true,

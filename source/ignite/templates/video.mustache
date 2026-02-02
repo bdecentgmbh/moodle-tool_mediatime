@@ -32,7 +32,7 @@
     }
 
 }}
-<div class="col col-12 text-center">
+<div class="col col-12 {{ classes }} text-center">
     {{# videourl }}
     <video 
         id="{{ elementid }}"
@@ -55,7 +55,7 @@
     <div class="alert alert-info">
         {{# str }} processingmessage, mediatimesrc_ignite {{/ str }}
     </div>
-    <img src="{{ poster }}" class="col col-12" alt="{{ title }}">
+    <img src="{{ poster }}" class="col col-12 {{ classes }}" alt="{{ title }}">
     {{/ videourl }}
 </div>
 {{#js}}

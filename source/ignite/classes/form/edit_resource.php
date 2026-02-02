@@ -80,6 +80,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
             $videourl = $resource->video_url($OUTPUT);
             $content = [
+                'classes' => 'col-md-9 col-lg-8 col-xl-6',
                 'elementid' => 'video-' . uniqid(),
                 'poster' => $resource->image_url($OUTPUT),
                 'texttracks' => $resource->texttracks(),
@@ -121,6 +122,16 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $mform->hideIf('file', 'newfile', 'eq', 1);
             $mform->setDefault('newfile', 0);
             $mform->setDefault('file', []);
+
+            $mform->insertElementBefore(
+                $mform->createElement('select', 'sync', get_string('synccontent', 'mediatimesrc_ignite'), [
+                    get_string('localcontent', 'mediatimesrc_ignite'),
+                    get_string('syncedcontent', 'mediatimesrc_ignite'),
+                ]),
+                'description'
+            );
+            $mform->addHelpButton('sync', 'synccontent', 'mediatimesrc_ignite');
+            $mform->hideIf('sync', 'newfile', 'eq', 1);
 
             if (
                 has_capability('mediatimesrc/ignite:upload', context_system::instance())
@@ -174,6 +185,12 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             'multiple' => true,
         ]);
 
+        if (!empty($this->record->sync) && !has_capability('mediatimesrc/ignite:upload', $this->context)) {
+            $mform->hardFreeze('description');
+            $mform->hardFreeze('title');
+            $mform->hardFreeze('ignitetags');
+        }
+
         $mform->setDefault('ignitetags', array_keys($ignitetags ?? []));
         $mform->hideIf('ignitetags', 'newfile', 0);
         $mform->hideIf('file', 'newfile', 'eq', 1);
@@ -185,6 +202,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
 
         $this->add_action_buttons();
     }
+
     /**
      * Validate data
      *
