@@ -37,17 +37,19 @@ class select_content extends dynamic_form {
     public function definition() {
         global $CFG, $COURSE, $PAGE, $DB;
 
-        $records = media_manager::search();
+        $rs = media_manager::search();
         $options = ['' => ''];
-        foreach ($records as $record) {
+        foreach ($rs as $record) {
             $options[$record->id] = $record->name;
         }
-        $records->close();
+        $rs->close();
 
         $mform = $this->_form;
 
         $mform->registerNoSubmitButton('updatecontent');
-        $mform->addElement('autocomplete', 'id', get_string('resourcename', 'tool_mediatime'), $options);
+        $mform->addElement('autocomplete', 'id', get_string('resourcename', 'tool_mediatime'), $options, [
+            'ajax' => 'tool_mediatime/resource_datasource',
+        ]);
         $mform->addElement('submit', 'updatecontent', 'updatecontent', ['style' => 'display: none;']);
     }
 

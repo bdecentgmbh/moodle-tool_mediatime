@@ -326,6 +326,25 @@ class media_manager implements renderable, templatable {
                 $sql .= ' AND (groupid = :groupid OR groupid = 0)';
                 $params['groupid'] = $group;
             }
+        } else {
+            $categories = \core_course_category::get_all();
+            $contextids = [];
+            foreach ($categories as $category) {
+                $context = \context_coursecat::instance($category->id);
+                if (has_capability('tool/mediatime:manage', $context)) {
+                    $contextids[] = $context->id;
+                }
+            }
+
+            $courses = \core_course_category::search_courses([], [], ['tool/mediatime:manage']);
+            foreach ($courses as $course) {
+                $contextids[] = \context_course::instance($course->id)->id;
+            }
+
+            [$csql, $cparams] = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED, 'ctx');
+
+            $sql .= " AND contextid $csql";
+            $params += $cparams;
         }
 
         // Filter by tags.
