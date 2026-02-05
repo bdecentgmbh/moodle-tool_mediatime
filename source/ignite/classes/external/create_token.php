@@ -127,6 +127,7 @@ class create_token extends external_api {
         $api = new api();
         $options = [
             'mimeType' => $params['mimetype'],
+            'description' => $params['description'],
             'title' => $params['title'],
             'useMultipart' => true,
             'visibility' => 'public',

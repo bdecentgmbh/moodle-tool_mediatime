@@ -44,7 +44,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
      * Definition
      */
     public function definition() {
-        global $OUTPUT;
+        global $CFG, $COURSE, $OUTPUT;
 
         $mform = $this->_form;
 
@@ -136,7 +136,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             if (
                 has_capability('mediatimesrc/ignite:upload', context_system::instance())
             ) {
-                $maxbytes = 200000000;
+                $maxbytes = get_max_upload_file_size($CFG->maxbytes, $COURSE->maxbytes, 100 * 2 ** 20);
                 $mform->insertElementBefore(
                     $mform->createElement(
                         'filepicker',
@@ -188,6 +188,8 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         if (!empty($this->record->sync) && !has_capability('mediatimesrc/ignite:upload', $this->context)) {
             $mform->hardFreeze('description');
             $mform->hardFreeze('title');
+        }
+        if (!has_capability('mediatimesrc/ignite:upload', $this->context)) {
             $mform->hardFreeze('ignitetags');
         }
 

@@ -144,7 +144,7 @@ class manager implements renderable, templatable {
                     require_capability('moodle/site:accessallgroups', $this->context);
                 }
                 $data->id = $DB->insert_record('tool_mediatime', $data);
-                if (!empty($data->sync)) {
+                if (empty($data->file) || !empty($data->sync)) {
                     $DB->insert_record('mediatimesrc_ignite', [
                         'resourceid' => $data->id,
                         'igniteid' => $video->id,

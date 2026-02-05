@@ -82,6 +82,15 @@ class select_content extends dynamic_form {
             $record = $DB->get_record('tool_mediatime', ['id' => $data->id]);
             $resource = new \tool_mediatime\output\media_resource($record);
             $data->texttracks = count($resource->texttracks());
+            if (
+                ($content = json_decode($record->content))
+                && ($api = new \mediatimesrc_ignite\api())
+                && ($video = $api->request("/videos/" . $content->id))
+            ) {
+                $video->name = $content->name;
+                $record->content = json_encode($video);
+                $DB->update_record('tool_mediatime', $record);
+            }
         }
 
         return json_encode($data);
