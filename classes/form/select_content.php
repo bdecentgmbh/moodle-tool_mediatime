@@ -81,16 +81,7 @@ class select_content extends dynamic_form {
         if (!empty($data->texttracks)) {
             $record = $DB->get_record('tool_mediatime', ['id' => $data->id]);
             $resource = new \tool_mediatime\output\media_resource($record);
-            $data->texttracks = count($resource->texttracks());
-            if (
-                ($content = json_decode($record->content))
-                && ($api = new \mediatimesrc_ignite\api())
-                && ($video = $api->request("/videos/" . $content->id))
-            ) {
-                $video->name = $content->name;
-                $record->content = json_encode($video);
-                $DB->update_record('tool_mediatime', $record);
-            }
+            $data->texttracks = $resource->texttrack_count();
         }
 
         return json_encode($data);
@@ -105,18 +96,12 @@ class select_content extends dynamic_form {
         $data = (object)$this->_ajaxformdata;
         $mform = $this->_form;
 
-        $mform->setDefault('id', $data->id);
-
-        if (empty($data->id)) {
+        if (empty($data->id) || !$record = $DB->get_record('tool_mediatime', ['id' => $data->id])) {
             return;
         }
 
-        $record = $DB->get_record(
-            'tool_mediatime',
-            [
-                'id' => $data->id,
-            ]
-        );
+        $mform->setDefault('id', $data->id);
+
         $resource = new media_resource($record);
 
         $mform->addElement('static', 'name', get_string('title', 'tool_mediatime'), $resource->get_title());
@@ -126,7 +111,7 @@ class select_content extends dynamic_form {
             $mform->createElement('checkbox', 'tags', ' ', get_string('tags', 'tag')),
             $mform->createElement('checkbox', 'url', ' ', get_string('url')),
         ];
-        if (count($resource->texttracks())) {
+        if ($resource->texttrack_count()) {
             $group[] = $mform->createElement('checkbox', 'texttracks', ' ', get_string('texttracks', 'mod_videotime'));
         }
         $mform->addGroup($group, 'options', get_string('content'), [' '], false);

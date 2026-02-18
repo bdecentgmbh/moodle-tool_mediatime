@@ -112,14 +112,16 @@ class create_token extends external_api {
             'name' => $params['title'] ?: $params['name'],
             'description' => $params['description'],
         ], 'PATCH')['body'];
+        $clock = \core\di::get(\core\clock::class);
+        $timenow = $clock->time();
         $id = $DB->insert_record('tool_mediatime', [
             'name' => $params['name'],
             'source' => 'vimeo',
             'content' => json_encode($updatedvideo),
             'contextid' => $params['contextid'],
             'groupid' => $params['groupid'],
-            'timecreated' => time(),
-            'timemodified' => time(),
+            'timecreated' => $timenow,
+            'timemodified' => $timenow,
             'usermodified' => $USER->id,
         ]);
         if (!empty($params['parenturi'])) {

@@ -42,4 +42,14 @@ if ($hassiteconfig) {
             PARAM_ALPHANUM
         ));
     }
+
+    $name = new lang_string('enabledraganddrop', 'mediatimesrc_streamio');
+    $description = new lang_string('enabledraganddrop_help', 'mediatimesrc_streamio');
+    $setting = new admin_setting_configcheckbox(
+        'mediatimesrc_streamio/enabledraganddrop',
+        $name,
+        $description,
+        0
+    );
+    $settings->add($setting);
 }

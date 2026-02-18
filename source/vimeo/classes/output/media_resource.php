@@ -66,6 +66,7 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
+
         $content = json_decode($this->record->content);
 
         $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
@@ -116,7 +117,7 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function video_url($output) {
-        return json_decode($this->record->content)->link;
+        return json_decode($this->record->content)->link ?? '';
     }
 
     /**
@@ -127,5 +128,60 @@ class media_resource implements renderable, templatable {
      */
     public function video_file_content($output) {
         return file_get_contents($this->video_url($output));
+    }
+
+    /**
+     * Get number of text tracks for resource
+     *
+     * @return int
+     */
+    public function texttrack_count(): int {
+        return $this->content->metadata->connections->texttracks->total ?? 0;
+    }
+
+    public function texttrack_files(): array {
+        global $USER;
+
+        $texttracks = [];
+        $fs = get_file_storage();
+        $languages = \get_string_manager()->get_list_of_translations();
+
+        $api = new \mediatimesrc_vimeo\api();
+        $texttracks = $api->request($this->content->uri . '/texttracks')['body']['data'];
+
+        $result = [];
+        foreach ($texttracks as $key => $texttrack) {
+            $langparts = explode('-', $texttrack['language'] ?? '');
+            if (!empty($langparts[1])) {
+                $langparts[1] = strtoupper($langparts[1]);
+            }
+            if (key_exists(implode('_', $langparts), $languages)) {
+                $srclang = implode('_', $langparts);
+            } else if (key_exists($langparts[0], $languages)) {
+                $srclang = $langparts[0];
+            }
+            $fileinfo = [
+                'contextid' => \context_user::instance($USER->id)->id,
+                'component' => 'user',
+                'filearea' => 'draft',
+                'itemid' => file_get_unused_draft_itemid(),
+                'filepath' => '/',
+                'filename' => 'chapters.vtt',
+            ];
+            if ($texttrack['type'] == 'chapters') {
+                $fs->create_file_from_string($fileinfo, $resource->chapters());
+            } else {
+                $path = explode('/', $texttrack['link']);
+                $fileinfo['filename'] = end($path);
+                $fs->create_file_from_string($fileinfo, file_get_contents($texttrack['link']));
+            }
+            $result[] = [
+                'texttrack' => $fileinfo['itemid'],
+                'type' => $texttrack['type'],
+                'srclang' => $srclang,
+            ];
+        }
+
+        return $result;
     }
 }

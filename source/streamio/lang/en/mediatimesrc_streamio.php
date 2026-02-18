@@ -26,6 +26,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['confirmdeleteresource'] = 'Confirm that the Streamio resource below should be deleted.';
+$string['delete_uploads'] = 'Delete uploads';
+$string['enabledraganddrop'] = 'Enable drag and drop';
+$string['enabledraganddrop_help'] = 'Upload video file to Streamio when creating a Video Time activity by drag and drop, instead of storing file in Moodle. A Streamio resource is also created in Media Time with the link.';
 $string['event_resource_created'] = 'Streamio resource created';
 $string['event_resource_deleted'] = 'Streamio resource deleted';
 $string['event_resource_updated'] = 'Streamio resource updated';

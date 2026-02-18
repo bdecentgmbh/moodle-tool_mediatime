@@ -156,4 +156,22 @@ class media_resource implements renderable, templatable {
     public function texttracks(): array {
         return method_exists($this->resource, 'texttracks') ? $this->resource->texttracks() : [];
     }
+
+    /**
+     * Get number of text tracks for resource
+     *
+     * @return int
+     */
+    public function texttrack_count(): int {
+        return method_exists($this->resource, 'texttrack_count') ? $this->resource->texttrack_count() : 0;
+    }
+
+    /**
+     * Get number of text tracks for resource
+     *
+     * @return int
+     */
+    public function texttrack_files(): array {
+        return method_exists($this->resource, 'texttrack_files') ? $this->resource->texttrack_files() : [];
+    }
 }

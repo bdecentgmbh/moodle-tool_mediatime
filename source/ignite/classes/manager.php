@@ -26,6 +26,8 @@ use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
+use mod_videotime\hook\dndupload_handle;
+use mod_videotime\hook\dndupload_register;
 
 /**
  * Manage Ignite source files
@@ -130,6 +132,7 @@ class manager implements renderable, templatable {
                     $tempdir = make_request_directory();
                     $fullpath = $tempdir . '/' . $this->form->get_new_filename('videofile');
                     $this->form->save_file('videofile', $fullpath);
+                    $data->ignitetags = $this->api->create_tags($data->ignitetags);
                     $video = $this->api->put_file($fullpath, $data);
                 }
                 $video->name = $data->name;
@@ -159,12 +162,17 @@ class manager implements renderable, templatable {
                 $data->id = $data->edit;
                 $data->contextid = $record->contextid;
                 if (!empty($this->record->sync) && has_capability('mediatimesrc/ignite:upload', $this->context)) {
+                    $tags = $this->api->create_tags($data->ignitetags);
                     $result = $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
                         'description' => true,
                         'title' => true,
-                    ]) + ['tags' => $data->ignitetags ?? []], 'PATCH');
+                    ]) + ['tags' => $tags], 'PATCH');
+                    $video = $this->api->request("/videos/" . $this->content->id);
+                } else {
+                    $video = $this->content;
+                    $video->description = $data->description;
+                    $video->title = $data->title;
                 }
-                $video = $this->api->request("/videos/" . $this->content->id);
                 $video->name = $data->name;
                 $data->content = json_encode($video);
                 $DB->update_record('tool_mediatime', $data);
@@ -199,16 +207,6 @@ class manager implements renderable, templatable {
         global $DB;
 
         if (optional_param('id', null, PARAM_INT)) {
-            if (
-                !empty($this->content->id)
-                && empty($this->content->src->thumbnailUrl)
-                && ($video = $this->api->request("/videos/" . $this->content->id))
-                && !empty($video->src->thumbnailUrl)
-            ) {
-                $video->name = $this->content->name;
-                $this->record->content = json_encode($video);
-                $DB->update_record('tool_mediatime', $this->record);
-            }
             $resource = new output\media_resource($this->record);
             return [
                 'resource' => $output->render($resource),
@@ -303,5 +301,92 @@ class manager implements renderable, templatable {
 
         $event = \mediatimesrc_ignite\event\resource_deleted::create_from_record($this->record);
         $event->trigger();
+    }
+
+    /**
+     * Register drag and drop file upload handler
+     *
+     * @param dndupload_register $hook Hook
+     */
+    public static function dndupload_register(dndupload_register $hook): void {
+        if (!get_config('mediatimesrc_ignite', 'enabled') || !get_config('mediatimesrc_ignite', 'enabledraganddrop')) {
+            return;
+        }
+
+        foreach (
+            [
+            'avi',
+            'mp4',
+            'm3u8',
+            'mkv',
+            'oga',
+            'ogg',
+            'ogv',
+            'webm',
+            ] as $extension
+        ) {
+            $hook->register_handler($extension);
+        }
+    }
+
+    /**
+     * Handle drag and drop file upload
+     *
+     * @param dndupload_handle $hook Hook
+     */
+    public static function dndupload_handle(dndupload_handle $hook): void {
+        global $CFG, $DB, $USER;
+
+        if (!get_config('mediatimesrc_ignite', 'enabled') || !get_config('mediatimesrc_ignite', 'enabledraganddrop')) {
+            return;
+        }
+
+        if ($hook->get_instanceid()) {
+            return;
+        }
+
+        $data = new stdClass();
+        $data->source = 'ignite';
+        $clock = \core\di::get(\core\clock::class);
+        $data->timemodified = $clock->time();
+        $data->usermodified = $USER->id;
+        $data->timecreated = $data->timemodified;
+        $data->contextid = $hook->get_context()->get_course_context()->id;
+        $data->name = $hook->get_displayname();
+        $data->title = $data->name;
+
+        $fs = get_file_storage();
+        foreach ($fs->get_area_files(\context_user::instance($USER->id)->id, 'user', 'draft', $hook->get_draftitemid()) as $file) {
+            if (!$file->is_directory()) {
+                $api = new api();
+                $tempdir = make_request_directory();
+                $fullpath = $tempdir . '/' . $file->get_filename();
+                $file->copy_content_to($fullpath);
+                $video = $api->put_file($fullpath, $data);
+            }
+        }
+
+        $video->name = $data->name;
+        $data->content = json_encode($video);
+        $data->id = $DB->insert_record('tool_mediatime', $data);
+
+        $event = \mediatimesrc_ignite\event\resource_created::create_from_record($data);
+        $event->trigger();
+        $video = $api->request("/videos/$video->id");
+
+        // Create a default videotime object to pass to videotime_add_instance()!
+        $videotime = get_config('videotime');
+        $videotime->intro = '';
+        $videotime->introformat = FORMAT_HTML;
+        $videotime->course = $hook->get_course()->id;
+        $videotime->coursemodule = $hook->get_coursemodule();
+        $videotime->grade = $CFG->gradepointdefault;
+
+        $videotime->cmidnumber = '';
+        $videotime->name = $hook->get_displayname();
+        $videotime->reference = $hook->get_displayname();
+        $videotime->mediatimeid = $data->id;
+
+        $hook->set_instanceid(videotime_add_instance($videotime, null));
     }
 }

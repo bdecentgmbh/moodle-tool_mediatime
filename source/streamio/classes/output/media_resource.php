@@ -76,6 +76,7 @@ class media_resource implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output) {
         global $DB, $USER;
+
         $videourl = $this->video_url($output);
         $editurl = new moodle_url('/admin/tool/mediatime/index.php', ['edit' => $this->record->id]);
         $moveurl = new moodle_url('/admin/tool/mediatime/index.php', ['action' => 'move', 'id' => $this->record->id]);
@@ -117,7 +118,11 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function image_url(renderer_base $output) {
-        return 'https://' . json_decode($this->record->content)->screenshot->normal;
+        if (!empty(json_decode($this->record->content)->screenshot->normal)) {
+            return 'https://' . json_decode($this->record->content)->screenshot->normal;
+        }
+        return $output->image_url('f/video', 'core')->out();
+        ;
     }
 
     /**
@@ -129,7 +134,7 @@ class media_resource implements renderable, templatable {
     public function video_url($output) {
         $this->videourl = '';
 
-        $id = json_decode($this->record->content)->id;
+        $id = json_decode($this->record->content)->id ?? '';
 
         return "https://streamio.com/api/v1/videos/$id/public_show.m3u8";
     }
@@ -148,5 +153,52 @@ class media_resource implements renderable, templatable {
         curl_close($ch);
 
         return $response;
+    }
+
+    /**
+     * Get number of text tracks for resource
+     *
+     * @return int
+     */
+    public function texttrack_count(): int {
+        return empty($this->content->subtitles) ? 0 : count($this->content->subtitles);
+    }
+
+    public function texttrack_files(): array {
+        global $USER;
+
+        $texttracks = [];
+        $fs = get_file_storage();
+        $languages = \get_string_manager()->get_list_of_translations();
+
+        $result = [];
+        foreach ($this->content->subtitles as $key => $texttrack) {
+            $langparts = explode('-', $texttrack->language ?? '');
+            if (!empty($langparts[1])) {
+                $langparts[1] = strtoupper($langparts[1]);
+            }
+            if (key_exists(implode('_', $langparts), $languages)) {
+                $srclang = implode('_', $langparts);
+            } else if (key_exists($langparts[0], $languages)) {
+                $srclang = $langparts[0];
+            }
+            $fileinfo = [
+                'contextid' => \context_user::instance($USER->id)->id,
+                'component' => 'user',
+                'filearea' => 'draft',
+                'itemid' => file_get_unused_draft_itemid(),
+                'filepath' => '/',
+                'filename' => 'chapters.vtt',
+            ];
+            $fileinfo['filename'] = $texttrack->title;
+            $fs->create_file_from_string($fileinfo, file_get_contents($texttrack->original_file->http_uri));
+            $result[] = [
+                'texttrack' => $fileinfo['itemid'],
+                'type' => 'subtti',
+                'srclang' => $srclang,
+            ];
+        }
+
+        return $result;
     }
 }

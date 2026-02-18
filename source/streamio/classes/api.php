@@ -26,6 +26,7 @@ namespace mediatimesrc_streamio;
 
 use moodle_exception;
 use stdClass;
+use CURLFile;
 
 /**
  * Manage Streamio source files

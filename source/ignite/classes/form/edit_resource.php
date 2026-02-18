@@ -183,13 +183,17 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->addElement('autocomplete', 'ignitetags', get_string('ignitetags', 'mediatimesrc_ignite'), $ignitetags ?? [], [
             'ajax' => 'mediatimesrc_ignite/tag_datasource',
             'multiple' => true,
+            'tags' => has_capability('mediatimesrc/ignite:upload', $this->context),
         ]);
 
         if (!empty($this->record->sync) && !has_capability('mediatimesrc/ignite:upload', $this->context)) {
             $mform->hardFreeze('description');
             $mform->hardFreeze('title');
         }
-        if (!has_capability('mediatimesrc/ignite:upload', $this->context)) {
+        if (
+            (!empty($this->record) && empty($this->record->sync))
+            || !has_capability('mediatimesrc/ignite:upload', $this->context)
+        ) {
             $mform->hardFreeze('ignitetags');
         }
 

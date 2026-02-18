@@ -15,17 +15,23 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Callback from vimeo when upload is processed
  *
- * @package     mediatimesrc_ignite
- * @copyright   2025 bdecent gmbh <https://bdecent.de>
+ * @package     mediatimesrc_streamio
+ * @copyright   2026 bdecent gmbh <https://bdecent.de>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+require_once('../../../../../config.php');
 
-$plugin->component = 'mediatimesrc_ignite';
-$plugin->release = '1.0';
-$plugin->version = 2025111107;
-$plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_STABLE;
+$relativepath = get_file_argument();
+$args = explode('/', trim($relativepath, '/'));
+$record = $DB->get_record('tool_mediatime', ['id' => $args[0]]);
+$content = json_decode($record->content);
+$content->post = $_POST;
+$videoid = json_decode(array_keys($_POST)[0])->video_id;
+$api = new \mediatimesrc_streamio\api();
+$video = $api->request("/videos/$videoid");
+$record->content = json_encode($video);
+$DB->update_record('tool_mediatime', $record);
+require_login(null, true);

@@ -73,7 +73,6 @@ class edit_resource extends moodleform {
         } else {
             $this->context = \context::instance_by_id(optional_param('contextid', SYSCONTEXTID, PARAM_INT));
         }
-        require_capability('tool/mediatime:manage', $this->context);
     }
 
     /**

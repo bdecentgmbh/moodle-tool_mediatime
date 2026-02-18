@@ -55,10 +55,25 @@ class media_resource implements renderable, templatable {
      * @param stdClass $record Media Time resource record
      */
     public function __construct(stdClass $record) {
+        global $DB;
+
         $this->record = $record;
         $this->context = \context::instance_by_id($record->contextid);
         $this->content = json_decode($record->content ?? '{}') ?? new stdClass();
         $this->content->description = shorten_text($this->content->description ?? '', 300);
+        if (
+            !empty($this->content->id)
+            && empty($this->content->src->thumbnailUrl)
+            && ($this->record->timecreated + HOURSECS > time())
+        ) {
+            $api = new \mediatimesrc_ignite\api();
+            $video = $api->request("/videos/" . $this->content->id);
+            if (!empty($video->src->thumbnailUrl)) {
+                $video->name = $this->content->name;
+                $this->record->content = json_encode($video);
+                $DB->update_record('tool_mediatime', $this->record);
+            }
+        }
     }
 
     /**
@@ -210,6 +225,63 @@ class media_resource implements renderable, templatable {
                 'type' => 'chapters',
                 'url' => $url,
             ]);
+        }
+
+        return $texttracks;
+    }
+
+    /**
+     * Get number of text tracks for resource
+     *
+     * @return int
+     */
+    public function texttrack_count(): int {
+        return count($this->texttracks());
+    }
+
+    public function texttrack_files(): array {
+        global $DB, $USER;
+
+        $texttracks = [];
+        $fs = get_file_storage();
+        $languages = \get_string_manager()->get_list_of_translations();
+
+        $api = new \mediatimesrc_ignite\api();
+        $video = $api->request("/videos/" . $this->content->id);
+        $video->name = $this->content->name;
+        $this->record->content = json_encode($video);
+        $DB->update_record('tool_mediatime', $this->record);
+
+        foreach ($this->texttracks() as $key => $texttrack) {
+            $langparts = explode('-', $texttrack->language ?? '');
+            if (!empty($langparts[1])) {
+                $langparts[1] = strtoupper($langparts[1]);
+            }
+            if (key_exists(implode('_', $langparts), $languages)) {
+                $srclang = implode('_', $langparts);
+            } else if (key_exists($langparts[0], $languages)) {
+                $srclang = $langparts[0];
+            }
+            $fileinfo = [
+                'contextid' => \context_user::instance($USER->id)->id,
+                'component' => 'user',
+                'filearea' => 'draft',
+                'itemid' => file_get_unused_draft_itemid(),
+                'filepath' => '/',
+                'filename' => 'chapters.vtt',
+            ];
+            if ($texttrack->type == 'chapters') {
+                $fs->create_file_from_string($fileinfo, $resource->chapters());
+            } else {
+                $path = explode('/', $texttrack->url);
+                $fileinfo['filename'] = end($path);
+                $fs->create_file_from_string($fileinfo, file_get_contents($texttrack->url));
+            }
+            $texttracks[] = [
+                'texttrack' => $fileinfo['itemid'],
+                'type' => $texttrack->type,
+                'srclang' => $srclang,
+            ];
         }
 
         return $texttracks;

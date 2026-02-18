@@ -35,4 +35,14 @@ if ($hassiteconfig) {
             PARAM_ALPHANUMEXT
         ));
     }
+
+    $name = new lang_string('enabledraganddrop', 'mediatimesrc_ignite');
+    $description = new lang_string('enabledraganddrop_help', 'mediatimesrc_ignite');
+    $setting = new admin_setting_configcheckbox(
+        'mediatimesrc_ignite/enabledraganddrop',
+        $name,
+        $description,
+        0
+    );
+    $settings->add($setting);
 }

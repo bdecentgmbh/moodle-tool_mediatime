@@ -116,4 +116,50 @@ class api {
 
         return $this->request("/videos/$result->videoId");
     }
+
+    /**
+     * Create missing categories
+     *
+     * @param array[string] $rawcategories Categories for resource from form
+     * @param array[string]
+     */
+    public function create_categories($rawcategories) {
+        $categories = [];
+        foreach ($rawcategories as $category) {
+            if ($result = $this->request("/categories/$category")) {
+                $categories[] = $category;
+            } else {
+                $result = $this->request('/categories', [
+                    'slug' => $category,
+                    'title' => $category,
+                ], 'POST');
+                $categories[] = $result->doc->id;
+            }
+        }
+
+        return $categories;
+    }
+
+    /**
+     * Create missing tags
+     *
+     * @param array[string] $rawtags Tags for resource from form
+     * @param array[string]
+     */
+    public function create_tags($rawtags) {
+        $tags = [];
+        foreach ($rawtags as $tag) {
+            if ($result = $this->request("/tags/$tag")) {
+                $tags[] = $tag;
+            } else {
+                $result = $this->request('/tags', [
+                    'slug' => $tag,
+                    'title' => $tag,
+                ], 'POST');
+                $tags[] = $result->doc->id;
+            }
+        }
+
+        return $tags;
+    }
 }

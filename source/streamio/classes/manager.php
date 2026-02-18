@@ -18,7 +18,7 @@
  * Manage Streamio source files
  *
  * @package    mediatimesrc_streamio
- * @copyright  2024 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,6 +26,7 @@ namespace mediatimesrc_streamio;
 
 use context;
 use context_system;
+use context_user;
 use core_tag_tag;
 use moodle_exception;
 use moodle_url;
@@ -34,6 +35,8 @@ use renderable;
 use renderer_base;
 use stdClass;
 use templatable;
+use mod_videotime\hook\dndupload_handle;
+use mod_videotime\hook\dndupload_register;
 
 /**
  * Manage Streamio source files
@@ -143,7 +146,7 @@ class manager implements renderable, templatable {
         }
 
         if ($record) {
-            $this->content = json_decode($record->content);
+            $this->content = json_decode($record->content ?? '{}');
         }
 
         if ($edit = optional_param('edit', null, PARAM_INT)) {
@@ -328,5 +331,137 @@ class manager implements renderable, templatable {
 
         $event = \mediatimesrc_streamio\event\resource_deleted::create_from_record($this->record);
         $event->trigger();
+    }
+
+    /**
+     * Register drag and drop file upload handler
+     *
+     * @param dndupload_register $hook Hook
+     */
+    public static function dndupload_register(dndupload_register $hook): void {
+        if (!get_config('mediatimesrc_streamio', 'enabled') || !get_config('mediatimesrc_streamio', 'enabledraganddrop')) {
+            return;
+        }
+
+        foreach (
+            [
+            'avi',
+            'mp4',
+            'm3u8',
+            'mkv',
+            'oga',
+            'ogg',
+            'ogv',
+            'webm',
+            ] as $extension
+        ) {
+            $hook->register_handler($extension);
+        }
+    }
+
+    /**
+     * Handle drag and drop file upload
+     *
+     * @param dndupload_handle $hook Hook
+     */
+    public static function dndupload_handle(dndupload_handle $hook): void {
+        global $CFG, $DB, $USER;
+
+        if (!get_config('mediatimesrc_streamio', 'enabled') || !get_config('mediatimesrc_streamio', 'enabledraganddrop')) {
+            return;
+        }
+
+        if ($hook->get_instanceid()) {
+            return;
+        }
+
+        $data = new stdClass();
+        $data->source = 'streamio';
+        $data->timemodified = time();
+        $data->usermodified = $USER->id;
+        $data->timecreated = $data->timemodified;
+        $data->contextid = $hook->get_context()->get_course_context()->id;
+        $data->name = $hook->get_displayname();
+        $data->title = $data->name;
+        $data->tags = json_encode($data->tags);
+
+        $data = self::create_from_draft_area($hook->get_draftitemid(), $data);
+
+        // Create a default videotime object to pass to videotime_add_instance()!
+        $videotime = get_config('videotime');
+        $videotime->intro = '';
+        $videotime->introformat = FORMAT_HTML;
+        $videotime->course = $hook->get_course()->id;
+        $videotime->coursemodule = $hook->get_coursemodule();
+        $videotime->grade = $CFG->gradepointdefault;
+
+        $videotime->cmidnumber = '';
+        $videotime->name = $hook->get_displayname();
+        $videotime->reference = $hook->get_displayname();
+        $videotime->mediatimeid = $data->id;
+
+        $hook->set_instanceid(videotime_add_instance($videotime, null));
+    }
+
+    /**
+     * Create resource by upload draft file
+     *
+     * @param int $draftitemid Draft area item id
+     * @param stdClass $data Resource data
+     * @return stdClass
+     */
+    protected static function create_from_draft_area(int $draftitemid, stdClass $data): stdClass {
+        global $DB, $USER;
+
+        $fs = get_file_storage();
+        foreach ($fs->get_area_files(context_user::instance($USER->id)->id, 'user', 'draft', $draftitemid) as $file) {
+            if (!$file->is_directory()) {
+                if (empty($data->title)) {
+                    $data->title = $data->name;
+                }
+                $data->content = json_encode([
+                    'name' => $data->name,
+                    'title' => $data->name,
+                ]);
+                $data->id = $DB->insert_record('tool_mediatime', $data);
+
+                $event = \mediatimesrc_streamio\event\resource_created::create_from_record($data);
+                $event->trigger();
+
+                file_save_draft_area_files(
+                    $draftitemid,
+                    $data->contextid,
+                    'mediatimesrc_streamio',
+                    'videofile',
+                    $data->id,
+                    [
+                        'subdirs' => 0,
+                        'maxfiles' => 1,
+                    ]
+                );
+                $url = moodle_url::make_pluginfile_url(
+                    $data->contextid,
+                    'mediatimesrc_streamio',
+                    'videofile',
+                    $data->id,
+                    '/' . $file->get_contenthash() . $file->get_filepath(),
+                    $file->get_filename()
+                );
+                $callback = new moodle_url("/admin/tool/mediatime/source/streamio/callback.php/$data->id", [
+                ]);
+
+                $api = new api();
+                $token = $api->request('/videos/create_token', [
+                ], 'POST')->token;
+                $api->request('/videos/pull', [
+                    'callback_url' => $callback->out(false),
+                    'pull_filename' => $file->get_filename(),
+                    'pull_url' => $url->out(false),
+                    'upload_token' => $token,
+                ], 'POST');
+            }
+        }
+
+        return $data;
     }
 }

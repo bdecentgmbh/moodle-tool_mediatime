@@ -118,6 +118,7 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
 
         $table = new flexible_table('managemediatimesrctable');
         $table->define_headers([
+            '',
             new lang_string('name'),
             new lang_string('enable'),
             new lang_string('settings'),
@@ -126,6 +127,7 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
         $table->define_baseurl(new moodle_url('/admin/settings.php', ['section' => 'managemediatimesrcplugins']));
         $table->set_attribute('class', 'managemediatimesrctable generaltable admintable m-3');
         $table->define_columns([
+            'icon',
             'strtypename',
             'hideshow',
             'settings',
@@ -186,7 +188,11 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
                 $uninstall = \html_writer::link($uninstallurl, new lang_string('uninstall', 'plugin'));
             }
 
-            $row = [$strtypename, $hideshow, $settings, $uninstall];
+            $icon = $OUTPUT->pix_icon('icon', '', 'mediatimesrc_' . $type->name, [
+                'class' => 'smallicon pluginicon',
+            ]);
+
+            $row = [$icon, $strtypename, $hideshow, $settings, $uninstall];
             $table->add_data($row, $class);
             $count++;
         }
