@@ -121,7 +121,7 @@ class api {
      * Create missing categories
      *
      * @param array[string] $rawcategories Categories for resource from form
-     * @param array[string]
+     * @return array[string]
      */
     public function create_categories($rawcategories) {
         $categories = [];
@@ -144,7 +144,7 @@ class api {
      * Create missing tags
      *
      * @param array[string] $rawtags Tags for resource from form
-     * @param array[string]
+     * @return array[string]
      */
     public function create_tags($rawtags) {
         $tags = [];

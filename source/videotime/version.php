@@ -28,4 +28,4 @@ $plugin->component = 'mediatimesrc_videotime';
 $plugin->release = '1.0';
 $plugin->version = 2025043000;
 $plugin->requires = 2024100700;
-$plugin->maturity = MATURITY_BETA;
+$plugin->maturity = MATURITY_STABLE;

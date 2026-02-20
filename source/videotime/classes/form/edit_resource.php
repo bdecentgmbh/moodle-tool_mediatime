@@ -146,6 +146,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $videourl = $resource->video_url($OUTPUT);
 
             $content = [
+                'classes' => 'col-md-9 col-lg-8 col-xl-6',
                 'poster' => $resource->image_url($OUTPUT),
                 'elementid' => 'video-' . uniqid(),
                 'instance' => json_encode([

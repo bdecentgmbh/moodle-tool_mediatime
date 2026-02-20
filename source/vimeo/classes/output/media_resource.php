@@ -139,6 +139,11 @@ class media_resource implements renderable, templatable {
         return $this->content->metadata->connections->texttracks->total ?? 0;
     }
 
+    /**
+     * Return array with text track draft file area ids and types
+     *
+     * @return array[array]
+     */
     public function texttrack_files(): array {
         global $USER;
 

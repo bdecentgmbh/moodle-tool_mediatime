@@ -164,6 +164,11 @@ class media_resource implements renderable, templatable {
         return empty($this->content->subtitles) ? 0 : count($this->content->subtitles);
     }
 
+    /**
+     * Return array with text track draft file area ids and types
+     *
+     * @return array[array]
+     */
     public function texttrack_files(): array {
         global $USER;
 

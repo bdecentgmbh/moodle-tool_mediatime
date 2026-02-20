@@ -31,14 +31,8 @@
     }
 
 }}
-<div {{^responsive}}class="vimeo-container justify-content-center"{{/responsive}}>
-    <div class="vimeo-intro">
-        {{{intro}}}
-    </div>
+<div {{^responsive}}class="vimeo-container justify-content-center col col-12 {{ classes }}"{{/responsive}}>
     <div class="vimeo-embed" id="vimeo-embed-{{uniqueid}}"></div>
-    <div class="vimeo-video-description">
-        {{{video_description}}}
-    </div>
 </div>
 {{#js}}
     require(['mod_videotime/videotime'], function(VideoTime) {

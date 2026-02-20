@@ -27,18 +27,16 @@
     {
         "elementid": "324lk32sK",
         "instance": "[{'vimeo_url': 'https://example.com/video.m3u8'}]",
-        "screenshot": {
-            "normal": "example.com/image.jpg"
-        }
+        "poster": "https://example.com/image.jpg"
     }
 
 }}
-<p class="col col-12 col-md-9 col-lg-8 col-xl-6 text-center">
+<p class="col col-12 {{ classes }} text-center">
     <video 
         id="{{ elementid }}"
         controls
         class="video-js"
-        poster="https://{{ screenshot.normal }}"
+        poster="{{ poster }}"
     >
     </video>
 </p>

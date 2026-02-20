@@ -119,7 +119,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $content = json_decode($record->content);
             $video = new video($content);
             $mform->insertElementBefore(
-                $mform->createElement('html', $OUTPUT->render($video)),
+                $mform->createElement('html', $OUTPUT->render_from_template(
+                    'mediatimesrc_vimeo/video',
+                    $video->export_for_template($OUTPUT) + ['classes' => 'col-md-9 col-lg-8 col-xl-6']
+                )),
                 'name'
             );
             $mform->removeElement('vimeo_url');
