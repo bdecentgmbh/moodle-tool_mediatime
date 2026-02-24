@@ -89,6 +89,7 @@ class api {
      */
     public function put_file($fullpath, $data) {
         $params = [
+            'categories' => $data->categories ?? [],
             'description' => $data->description,
             'title' => $data->title ?: $data->name,
             'visibility' => 'public',
@@ -128,7 +129,7 @@ class api {
         foreach ($rawcategories as $category) {
             if ($result = $this->request("/categories/$category")) {
                 $categories[] = $category;
-            } else {
+            } else if (has_capability('mediatimesrc/ignite:manage', \context_system::instance())) {
                 $result = $this->request('/categories', [
                     'slug' => $category,
                     'title' => $category,
@@ -151,7 +152,7 @@ class api {
         foreach ($rawtags as $tag) {
             if ($result = $this->request("/tags/$tag")) {
                 $tags[] = $tag;
-            } else {
+            } else if (has_capability('mediatimesrc/ignite:manage', \context_system::instance())) {
                 $result = $this->request('/tags', [
                     'slug' => $tag,
                     'title' => $tag,

@@ -77,6 +77,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $igniteid = $content->id;
             $resource = new media_resource($this->record);
             $ignitetags = array_column($content->tags ?? [], 'title', 'id');
+            $categories = array_column($content->categories ?? [], 'title', 'id');
 
             $videourl = $resource->video_url($OUTPUT);
             $content = [
@@ -180,10 +181,16 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         }
         $mform->setType('groupid', PARAM_INT);
 
+        $mform->addElement('autocomplete', 'categories', get_string('categories', 'mediatimesrc_ignite'), $categories ?? [], [
+            'ajax' => 'mediatimesrc_ignite/category_datasource',
+            'multiple' => true,
+            'tags' => has_capability('mediatimesrc/ignite:manage', \context_system::instance()),
+        ]);
+
         $mform->addElement('autocomplete', 'ignitetags', get_string('ignitetags', 'mediatimesrc_ignite'), $ignitetags ?? [], [
             'ajax' => 'mediatimesrc_ignite/tag_datasource',
             'multiple' => true,
-            'tags' => has_capability('mediatimesrc/ignite:upload', $this->context),
+            'tags' => has_capability('mediatimesrc/ignite:manage', \context_system::instance()),
         ]);
 
         if (!empty($this->record->sync) && !has_capability('mediatimesrc/ignite:upload', $this->context)) {
@@ -194,10 +201,12 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             (!empty($this->record) && empty($this->record->sync))
             || !has_capability('mediatimesrc/ignite:upload', $this->context)
         ) {
+            $mform->hardFreeze('categories');
             $mform->hardFreeze('ignitetags');
         }
 
         $mform->setDefault('ignitetags', array_keys($ignitetags ?? []));
+        $mform->hideIf('categories', 'newfile', 0);
         $mform->hideIf('ignitetags', 'newfile', 0);
         $mform->hideIf('file', 'newfile', 'eq', 1);
         $mform->setDefault('newfile', 0);

@@ -103,6 +103,7 @@ class manager implements renderable, templatable {
             $this->form->set_data([
                 'edit' => $edit,
                 'ignitetags' => array_column($this->content->tags, 'id'),
+                'categories' => array_column($this->content->categories ?? [], 'id'),
             ] + (array)$this->content);
         }
         if ($this->form->is_cancelled()) {
@@ -163,15 +164,15 @@ class manager implements renderable, templatable {
                 $data->contextid = $record->contextid;
                 if (!empty($this->record->sync) && has_capability('mediatimesrc/ignite:upload', $this->context)) {
                     $tags = $this->api->create_tags($data->ignitetags);
+                    $categories = $this->api->create_categories($data->categories);
                     $result = $this->api->request("/videos/" . $this->content->id, array_intersect_key((array)$data, [
                         'description' => true,
                         'title' => true,
-                    ]) + ['tags' => $tags], 'PATCH');
+                    ]) + [
+                        'categories' => $categories,
+                        'tags' => $tags,
+                    ], 'PATCH');
                     $video = $this->api->request("/videos/" . $this->content->id);
-                } else {
-                    $video = $this->content;
-                    $video->description = $data->description;
-                    $video->title = $data->title;
                 }
                 $video->name = $data->name;
                 $data->content = json_encode($video);
@@ -217,6 +218,7 @@ class manager implements renderable, templatable {
 
             return [
                 'form' => $output->render_from_template('mediatimesrc_ignite/file_upload', [
+                    'categories' => htmlspecialchars(json_encode($data->categories), ENT_COMPAT),
                     'name' => json_encode($data->name),
                     'contextid' => $this->context->id,
                     'description' => json_encode($data->description),

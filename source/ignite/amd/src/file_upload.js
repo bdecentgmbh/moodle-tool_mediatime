@@ -125,6 +125,7 @@ export default {
             const data = await Ajax.call([{
                 args: {
                     filesize: Number(file.size),
+                    categories: document.querySelector('input[name="categories"]').value,
                     contextid: document.querySelector('input[name="contextid"]').value,
                     description: document.querySelector('input[name="description"]').value,
                     groupid: document.querySelector('input[name="groupid"]').value || 0,

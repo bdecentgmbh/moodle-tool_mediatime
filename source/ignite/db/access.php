@@ -27,6 +27,16 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
 
+    'mediatimesrc/ignite:manage' => [
+        'riskbitmask' => RISK_SPAM | RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/tag:manage',
+    ],
+
     'mediatimesrc/ignite:upload' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
         'captype' => 'write',

@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mediatimesrc_ignite';
 $plugin->release = '1.0';
-$plugin->version = 2025111107;
+$plugin->version = 2025111108;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
