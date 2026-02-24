@@ -370,6 +370,12 @@ class manager implements renderable, templatable {
         $data->content = json_encode($video);
         $data->id = $DB->insert_record('tool_mediatime', $data);
 
+        $DB->insert_record('mediatimesrc_ignite', [
+            'resourceid' => $data->id,
+            'igniteid' => $video->id,
+            'timecreated' => $data->timemodified,
+            'timemodified' => $data->timemodified,
+        ]);
         $event = \mediatimesrc_ignite\event\resource_created::create_from_record($data);
         $event->trigger();
         $video = $api->request("/videos/$video->id");
@@ -381,6 +387,8 @@ class manager implements renderable, templatable {
         $videotime->course = $hook->get_course()->id;
         $videotime->coursemodule = $hook->get_coursemodule();
         $videotime->grade = $CFG->gradepointdefault;
+        $videotime->video_description = '';
+        $videotime->video_description_format = FORMAT_HTML;
 
         $videotime->cmidnumber = '';
         $videotime->name = $hook->get_displayname();

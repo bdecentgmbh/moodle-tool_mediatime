@@ -62,5 +62,17 @@ function xmldb_tool_mediatime_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025043001, 'tool', 'mediatime');
     }
 
+    if ($oldversion < 2025111502) {
+        // Changing precision of field name on table tool_mediatime to (1024).
+        $table = new xmldb_table('tool_mediatime');
+        $field = new xmldb_field('name', XMLDB_TYPE_CHAR, '1024', null, null, null, null, 'groupid');
+
+        // Launch change of precision for field name.
+        $dbman->change_field_precision($table, $field);
+
+        // Mediatime savepoint reached.
+        upgrade_plugin_savepoint(true, 2025111502, 'tool', 'mediatime');
+    }
+
     return true;
 }

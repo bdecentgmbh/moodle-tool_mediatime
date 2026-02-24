@@ -394,6 +394,8 @@ class manager implements renderable, templatable {
         $videotime->course = $hook->get_course()->id;
         $videotime->coursemodule = $hook->get_coursemodule();
         $videotime->grade = $CFG->gradepointdefault;
+        $videotime->video_description = '';
+        $videotime->video_description_format = FORMAT_HTML;
 
         $videotime->cmidnumber = '';
         $videotime->name = $hook->get_displayname();
