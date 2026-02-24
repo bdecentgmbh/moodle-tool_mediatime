@@ -47,6 +47,13 @@ $functions = [
         'type' => 'write',
         'ajax' => true,
     ],
+    'mediatimesrc_ignite_category_search' => [
+        'classname' => '\\mediatimesrc_ignite\\external\\category_search',
+        'methodname' => 'execute',
+        'description' => 'Search categoriess on Ignite.',
+        'type' => 'read',
+        'ajax' => true,
+    ],
     'mediatimesrc_ignite_tag_search' => [
         'classname' => '\\mediatimesrc_ignite\\external\\tag_search',
         'methodname' => 'execute',

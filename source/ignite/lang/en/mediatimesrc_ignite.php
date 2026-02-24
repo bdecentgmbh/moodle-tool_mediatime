@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['apikey'] = 'API key';
 $string['apikey_help'] = 'Ignite API key for administrative access that is created in the Ignite control panel';
+$string['categories'] = 'Categories';
 $string['confirmdeleteresource'] = 'Confirm that the Ignite resource below should be deleted.';
 $string['enabledraganddrop'] = 'Enabledrag and drop';
 $string['enabledraganddrop_help'] = 'Upload video file to Ignite when creating a Video Time activity by drag and drop, instead of storing file in Moodle. A Ignite resource is also created in Media Time with the link.';
@@ -35,6 +36,7 @@ $string['event_resource_deleted'] = 'Ignite resource deleted';
 $string['event_resource_updated'] = 'Ignite resource updated';
 $string['filesource'] = 'File source';
 $string['filesource_help'] = 'Choose to upload a new video, or choose to use an existing one that you select';
+$string['ignite:manage'] = 'Manage Ignite';
 $string['ignite:upload'] = 'Upload files to Ignite';
 $string['ignite:view'] = 'View Ignite files';
 $string['ignite:viewall'] = 'View all files available';

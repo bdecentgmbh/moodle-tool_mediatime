@@ -44,6 +44,7 @@ class create_token extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters(
             [
+                'categories' => new external_value(PARAM_RAW, 'Ignite categories'),
                 'contextid' => new external_value(PARAM_INT, 'Context id'),
                 'description' => new external_value(PARAM_TEXT, 'Resource description'),
                 'filesize' => new external_value(PARAM_INT, 'Video file size'),
@@ -62,6 +63,7 @@ class create_token extends external_api {
     /**
      * Create place holder
      *
+     * @param string $categories Ignite categories ids to add
      * @param int $contextid Context id
      * @param string $description Name of resource
      * @param int $filesize Video file size
@@ -76,6 +78,7 @@ class create_token extends external_api {
      * @return array Upload information
      */
     public static function execute(
+        $categories,
         $contextid,
         $description,
         $filesize,
@@ -91,6 +94,7 @@ class create_token extends external_api {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::execute_parameters(), [
+            'categories' => $categories,
             'contextid' => $contextid,
             'description' => $description,
             'filesize' => $filesize,
@@ -135,6 +139,9 @@ class create_token extends external_api {
         if (!empty($params['subtitlelanguage'])) {
             $options['autoTranscribe'] = true;
             $options['language'] = edit_resource::supported_code($params['subtitlelanguage']);
+        }
+        if (!empty($params['categories'])) {
+            $options['categories'] = json_decode(htmlspecialchars_decode($params['categories'], ENT_COMPAT));
         }
         if (!empty($params['ignitetags'])) {
             $options['tags'] = json_decode(htmlspecialchars_decode($params['ignitetags'], ENT_COMPAT));
