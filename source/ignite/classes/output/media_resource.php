@@ -252,10 +252,11 @@ class media_resource implements renderable, templatable {
         $languages = \get_string_manager()->get_list_of_translations();
 
         $api = new \mediatimesrc_ignite\api();
-        $video = $api->request("/videos/" . $this->content->id);
-        $video->name = $this->content->name;
-        $this->record->content = json_encode($video);
-        $DB->update_record('tool_mediatime', $this->record);
+        if ($video = $api->request("/videos/" . $this->content->id)) {
+            $video->name = $this->content->name;
+            $this->record->content = json_encode($video);
+            $DB->update_record('tool_mediatime', $this->record);
+        }
 
         foreach ($this->texttracks() as $key => $texttrack) {
             $langparts = explode('-', $texttrack->language ?? '');
