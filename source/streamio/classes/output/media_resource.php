@@ -199,7 +199,7 @@ class media_resource implements renderable, templatable {
             $fs->create_file_from_string($fileinfo, file_get_contents($texttrack->original_file->http_uri));
             $result[] = [
                 'texttrack' => $fileinfo['itemid'],
-                'type' => 'subtti',
+                'type' => 'subtitles',
                 'srclang' => $srclang,
             ];
         }
