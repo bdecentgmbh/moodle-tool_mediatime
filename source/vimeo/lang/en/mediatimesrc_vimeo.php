@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['apikey'] = 'API key';
+$string['apikey_help'] = 'Vimeo API key for administrative access that is created in the Vimeo App control panel';
 $string['confirmdeleteresource'] = 'Confirm that the Vimeo video below should be deleted.';
 $string['delete_uploads'] = 'Delete uploads';
 $string['enteruri'] = 'Select video or enter Vimeo uri or link';
