@@ -25,6 +25,8 @@
 namespace mediatimesrc_vimeo;
 
 use moodle_exception;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use stdClass;
 
 /**
@@ -33,7 +35,13 @@ use stdClass;
  * @copyright  2024 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class api extends \videotimeplugin_repository\api {
+class api {
+    /** @var $apikey Ignite apikey */
+    protected ?string $apikey = null;
+
+    /** @var $client GuzzleHttp client */
+    protected ?Client $client = null;
+
     /**
      * Constructor
      *
@@ -42,11 +50,14 @@ class api extends \videotimeplugin_repository\api {
     public function __construct($userid = 0) {
         global $DB;
 
-        if (!method_exists(parent::class, 'share_videos')) {
-            parent::__construct();
+        if (
+            !$this->apikey = get_config('mediatimesrc_vimeo', 'apikey')
+                ?: get_config('videotimeplugin_repository', 'vimeo_access_token')
+        ) {
+            throw new moodle_exception('credentialsnotconfigured');
         }
 
-        parent::__construct($userid);
+        $this->client = new Client();
     }
 
     /**
@@ -74,5 +85,43 @@ class api extends \videotimeplugin_repository\api {
      */
     public function get_folders() {
         return $this->request('/me/folders', ['fields' => 'name, uri, modified_time'])['body'];
+    }
+
+    /**
+     * Submit request to Vimeo
+     *
+     * @param string $endpoint
+     * @param ?array $params Options for request
+     * @param string $method HTTP method to use
+     * @return mixed
+     */
+    public function request($endpoint, $params = [], $method = 'GET') {
+        $headers = [
+            "Authorization" => "Bearer $this->apikey",
+            "Content-type" => "application/json",
+        ];
+
+        if (empty($params) || $method == 'GET') {
+            $options = ['headers' => $headers];
+        } else {
+            $options = [
+                'body' => json_encode($params),
+                'headers' => $headers,
+            ];
+        }
+        try {
+            if (empty($params) || $method != 'GET') {
+                $response = $this->client->request($method, "https://api.vimeo.com$endpoint", $options);
+            } else {
+                $response = $this->client->request(
+                    $method,
+                    "https://api.vimeo.com$endpoint?" . http_build_query($params),
+                    $options
+                );
+            }
+        } catch (RequestException $e) {
+            return null;
+        }
+        return ['body' => json_decode($response->getBody(), true)];
     }
 }
