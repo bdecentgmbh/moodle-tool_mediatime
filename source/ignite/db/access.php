@@ -43,6 +43,7 @@ $capabilities = [
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
             'coursecreator' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
         ],
         'clonepermissionsfrom' => 'moodle/blog:manageentries',
     ],
