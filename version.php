@@ -25,11 +25,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_mediatime';
-$plugin->release = '1.1';
-$plugin->version = 2026020500;
+$plugin->release = '1.1.1';
+$plugin->version = 2026020501;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->subported = [405, 501];
+$plugin->subported = [405, 502];
 $plugin->dependencies = [
     'mod_videotime' => 2023011200,
 ];

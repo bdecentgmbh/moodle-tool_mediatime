@@ -135,7 +135,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
             $mform->hideIf('sync', 'newfile', 'eq', 1);
 
             if (
-                has_capability('mediatimesrc/ignite:upload', context_system::instance())
+                has_capability('mediatimesrc/ignite:upload', $this->context)
             ) {
                 $maxbytes = get_max_upload_file_size($CFG->maxbytes, $COURSE->maxbytes, 100 * 2 ** 20);
                 $mform->insertElementBefore(

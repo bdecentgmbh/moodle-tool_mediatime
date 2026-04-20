@@ -101,19 +101,13 @@ class api {
         }
         $result = $this->request('/videos/upload', $params, 'PUT');
 
-        $ch = curl_init($result->signedUrl);
-
-        curl_setopt($ch, CURLOPT_UPLOAD, true);
-        curl_setopt($ch, CURLOPT_PUT, true);
-
-        $filehandle = fopen($fullpath, 'r');
-
-        curl_setopt($ch, CURLOPT_INFILESIZE, filesize($fullpath));
-        curl_setopt($ch, CURLOPT_INFILE, $filehandle);
-
-        curl_exec($ch);
-        curl_close($ch);
-        fclose($filehandle);
+        try {
+            $this->client->request('PUT', $result->signedUrl, [
+                'body' => fopen($fullpath, 'r'),
+            ]);
+        } catch (RequestException $e) {
+            return null;
+        }
 
         return $this->request("/videos/$result->videoId");
     }

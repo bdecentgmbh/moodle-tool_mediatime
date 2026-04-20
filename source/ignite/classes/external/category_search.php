@@ -62,6 +62,8 @@ class category_search extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
+        require_capability('mediatimesrc/ignite:viewall', $context);
+
         $api = new api();
 
         $categories = $api->request("/categories?sortBy=title&limit=25&where[title][like]=" . $params['query'], [ ]);

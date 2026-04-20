@@ -188,9 +188,16 @@ class manage_mediatimesrc_plugins_page extends \admin_setting {
                 $uninstall = \html_writer::link($uninstallurl, new lang_string('uninstall', 'plugin'));
             }
 
-            $icon = $OUTPUT->pix_icon('icon', '', 'mediatimesrc_' . $type->name, [
-                'class' => 'smallicon pluginicon',
-            ]);
+            if (
+                file_exists("$type->rootdir/pix/icon.png")
+                || file_exists("$type->rootdir/pix/icon.svg")
+            ) {
+                $icon = $OUTPUT->pix_icon('icon', '', 'mediatimesrc_' . $type->name, [
+                    'class' => 'smallicon pluginicon',
+                ]);
+            } else {
+                $icon = '';
+            }
 
             $row = [$icon, $strtypename, $hideshow, $settings, $uninstall];
             $table->add_data($row, $class);
