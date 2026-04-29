@@ -120,7 +120,11 @@ class api {
      */
     public static function categories_menu($rawcategories) {
         $categories = [];
-        $api = new self();
+        try {
+            $api = new self();
+        } catch (moodle_exception $e) {
+            return $categories;
+        }
         foreach ($rawcategories as $category) {
             if (!empty($category) && $result = $api->request("/categories/$category")) {
                 $categories[$category] = $result->title;

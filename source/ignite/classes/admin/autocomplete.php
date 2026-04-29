@@ -17,6 +17,7 @@
 namespace mediatimesrc_ignite\admin;
 
 use mediatimesrc_ignite\api;
+use moodle_exception;
 
 /**
  * Auto complete setting class.
@@ -38,8 +39,12 @@ class autocomplete extends \core_admin\local\settings\autocomplete {
 
         unset($data['xxxxx']);
 
-        $api = new api();
-        $save = $api->create_categories($data);
+        try {
+            $api = new api();
+            $save = $api->create_categories($data);
+        } catch (moodle_exception $e) {
+            return '';
+        }
 
         return ($this->config_write($this->name, implode($this->delimiter, $save)) ? '' : get_string('errorsetting', 'admin'));
     }
