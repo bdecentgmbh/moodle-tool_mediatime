@@ -113,6 +113,24 @@ class api {
     }
 
     /**
+     * Return menu options for categories
+     *
+     * @param array[string] $rawcategories Categories for resource from form
+     * @return array[string]
+     */
+    public static function categories_menu($rawcategories) {
+        $categories = [];
+        $api = new self();
+        foreach ($rawcategories as $category) {
+            if (!empty($category) && $result = $api->request("/categories/$category")) {
+                $categories[$category] = $result->title;
+            }
+        }
+
+        return $categories;
+    }
+
+    /**
      * Create missing categories
      *
      * @param array[string] $rawcategories Categories for resource from form

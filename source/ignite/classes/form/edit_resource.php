@@ -62,7 +62,8 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         $mform->setType('newfile', PARAM_INT);
         $mform->addHelpButton('filesource', 'filesource', 'mediatimesrc_ignite');
 
-        $mform->addElement('textarea', 'description', get_string('description'));
+        $mform->addElement('textarea', 'description', get_string('description', 'mediatimesrc_ignite'));
+        $mform->addHelpButton('description', 'description', 'mediatimesrc_ignite');
         $mform->setType('description', PARAM_TEXT);
         $mform->disabledIf('description', 'newfile', 0);
         $mform->disabledIf('title', 'newfile', 0);
@@ -178,14 +179,25 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 );
                 $mform->removeElement('filesource');
             }
+
+            $categories = explode(',', get_config('mediatimesrc_ignite', 'categories'));
+            $mform->setDefault('categories', $categories);
+            $categories = api::categories_menu($categories);
         }
         $mform->setType('groupid', PARAM_INT);
 
-        $mform->addElement('autocomplete', 'categories', get_string('categories', 'mediatimesrc_ignite'), $categories ?? [], [
-            'ajax' => 'mediatimesrc_ignite/category_datasource',
-            'multiple' => true,
-            'tags' => has_capability('mediatimesrc/ignite:manage', \context_system::instance()),
-        ]);
+        if (
+            has_capability('mediatimesrc/ignite:manage', \context_system::instance())
+            || !empty(get_config('mediatimesrc_ignite', 'categories'))
+        ) {
+            $mform->addElement('autocomplete', 'categories', get_string('categories', 'mediatimesrc_ignite'), $categories ?? [], [
+                'ajax' => 'mediatimesrc_ignite/category_datasource',
+                'multiple' => true,
+                'tags' => has_capability('mediatimesrc/ignite:manage', \context_system::instance()),
+            ]);
+            $mform->addHelpButton('categories', 'categories', 'mediatimesrc_ignite');
+        }
+        $mform->setDefault('categories', array_keys($categories));
 
         $mform->addElement('autocomplete', 'ignitetags', get_string('ignitetags', 'mediatimesrc_ignite'), $ignitetags ?? [], [
             'ajax' => 'mediatimesrc_ignite/tag_datasource',
@@ -203,6 +215,12 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         ) {
             $mform->hardFreeze('categories');
             $mform->hardFreeze('ignitetags');
+        }
+        if (
+            !has_capability('mediatimesrc/ignite:manage', \context_system::instance())
+            && !empty(get_config('mediatimesrc_ignite', 'categories'))
+        ) {
+            $mform->hardFreeze('categories');
         }
 
         $mform->setDefault('ignitetags', array_keys($ignitetags ?? []));

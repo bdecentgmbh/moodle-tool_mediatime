@@ -25,6 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use mediatimesrc_ignite\admin\autocomplete;
+use mediatimesrc_ignite\api;
+
 if ($hassiteconfig) {
     if ($ADMIN->fulltree) {
         $settings->add(new admin_setting_configtext(
@@ -35,6 +38,24 @@ if ($hassiteconfig) {
             PARAM_ALPHANUMEXT
         ));
     }
+
+    $categories = explode(',', get_config('mediatimesrc_ignite', 'categories'));
+    $choices = api::categories_menu($categories);
+    $attributes = [
+        'manageurl' => '',
+        'ajax' => 'mediatimesrc_ignite/category_datasource',
+        'multiple' => true,
+        'delimiter' => ',',
+        'tags' => true,
+    ];
+    $settings->add(new autocomplete(
+        'mediatimesrc_ignite/categories',
+        new lang_string('defaultcategories', 'mediatimesrc_ignite'),
+        new lang_string('defaultcategories_desc', 'mediatimesrc_ignite'),
+        [],
+        $choices,
+        $attributes
+    ));
 
     $name = new lang_string('enabledraganddrop', 'mediatimesrc_ignite');
     $description = new lang_string('enabledraganddrop_help', 'mediatimesrc_ignite');

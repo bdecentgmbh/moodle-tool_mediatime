@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_mediatime';
-$plugin->release = '1.1.1';
-$plugin->version = 2026020501;
+$plugin->release = '1.1.2';
+$plugin->version = 2026020502;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->subported = [405, 502];

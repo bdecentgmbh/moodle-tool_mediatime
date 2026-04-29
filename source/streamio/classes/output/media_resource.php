@@ -186,6 +186,8 @@ class media_resource implements renderable, templatable {
                 $srclang = implode('_', $langparts);
             } else if (key_exists($langparts[0], $languages)) {
                 $srclang = $langparts[0];
+            } else {
+                $srclang = '';
             }
             $fileinfo = [
                 'contextid' => \context_user::instance($USER->id)->id,
