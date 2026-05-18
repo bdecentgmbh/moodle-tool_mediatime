@@ -121,6 +121,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 ]),
                 'description'
             );
+            $mform->addHelpButton('file', 'file', 'mediatimesrc_ignite');
             $mform->hideIf('file', 'newfile', 'eq', 1);
             $mform->setDefault('newfile', 0);
             $mform->setDefault('file', []);

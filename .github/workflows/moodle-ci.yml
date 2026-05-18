@@ -35,7 +35,7 @@ jobs:
             moodle-branch: 'main'
             database: 'mariadb'
           - php: '8.3'
-            moodle-branch: 'MOODLE_501_STABLE'
+            moodle-branch: 'MOODLE_502_STABLE'
             database: 'mariadb'
           - php: '8.2'
             moodle-branch: 'MOODLE_501_STABLE'
