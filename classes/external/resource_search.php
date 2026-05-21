@@ -61,7 +61,6 @@ class resource_search extends external_api {
 
         $context = \core\context\system::instance();
         self::validate_context($context);
-        require_capability('tool/mediatime:view', $context);
 
         $rs = media_manager::search(['query' => $query]);
         $options = [];
