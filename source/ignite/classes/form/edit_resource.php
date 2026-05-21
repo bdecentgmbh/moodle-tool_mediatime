@@ -216,12 +216,21 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
         ) {
             $mform->hardFreeze('categories');
             $mform->hardFreeze('ignitetags');
+            if (get_config('mediatimesrc_ignite', 'hidefrozencategories')) {
+                $mform->hideIf('categories', 'categories', 'neq', 0);
+            } else {
+                $mform->hardFreeze('categories');
+            }
         }
         if (
             !has_capability('mediatimesrc/ignite:manage', \context_system::instance())
             && !empty(get_config('mediatimesrc_ignite', 'categories'))
         ) {
-            $mform->hardFreeze('categories');
+            if (get_config('mediatimesrc_ignite', 'hidefrozencategories')) {
+                $mform->hideIf('categories', 'categories', 'neq', 0);
+            } else {
+                $mform->hardFreeze('categories');
+            }
         }
 
         $mform->setDefault('ignitetags', array_keys($ignitetags ?? []));
