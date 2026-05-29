@@ -39,6 +39,7 @@ $string['enabledraganddrop_help'] = 'Upload video file to Ignite when creating a
 $string['event_resource_created'] = 'Ignite resource created';
 $string['event_resource_deleted'] = 'Ignite resource deleted';
 $string['event_resource_updated'] = 'Ignite resource updated';
+$string['file'] = 'File';
 $string['file_help'] = 'Choose an existing video from Ignite. The dropdown list displays a limited number of the most recent titles. Use the search function to narrow down the results if necessary.';
 $string['filesource'] = 'File source';
 $string['filesource_help'] = 'Choose to upload a new video, or choose to use an existing one that you select';
