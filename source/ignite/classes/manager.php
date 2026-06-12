@@ -172,8 +172,8 @@ class manager implements renderable, templatable {
                         'categories' => $categories,
                         'tags' => $tags,
                     ], 'PATCH');
-                    $video = $this->api->request("/videos/" . $this->content->id);
                 }
+                $video = $this->api->request("/videos/" . $this->content->id);
                 $video->name = $data->name;
                 $data->content = json_encode($video);
                 $DB->update_record('tool_mediatime', $data);

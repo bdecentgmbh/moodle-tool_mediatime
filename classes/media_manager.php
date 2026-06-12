@@ -421,7 +421,7 @@ class media_manager implements renderable, templatable {
 
         $records = $DB->get_records('tool_mediatime', ['contextid' => $context->id]);
         foreach ($records as $record) {
-            $classname = "\\mediatimesrc_$source\\manager";
+            $classname = "\\mediatimesrc_$record->source\\manager";
             $resource = new $classname($record);
             $resource->delete_resource();
         }
