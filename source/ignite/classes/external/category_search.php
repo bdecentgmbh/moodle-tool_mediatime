@@ -24,6 +24,7 @@ use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
 use mediatimesrc_ignite\api;
+use moodle_exception;
 
 /**
  * External function for Ignite category search
@@ -64,7 +65,11 @@ class category_search extends external_api {
 
         require_capability('mediatimesrc/ignite:viewall', $context);
 
-        $api = new api();
+        try {
+            $api = new api();
+        } catch (moodle_exception $e) {
+            return [];
+        }
 
         $categories = $api->request("/categories?sortBy=title&limit=25&where[title][like]=" . $params['query'], [ ]);
 

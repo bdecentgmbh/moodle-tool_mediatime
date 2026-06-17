@@ -43,7 +43,7 @@ class autocomplete extends \core_admin\local\settings\autocomplete {
             $api = new api();
             $save = $api->create_categories($data);
         } catch (moodle_exception $e) {
-            return '';
+            return ($this->config_write($this->name, '') ? '' : get_string('errorsetting', 'admin'));
         }
 
         return ($this->config_write($this->name, implode($this->delimiter, $save)) ? '' : get_string('errorsetting', 'admin'));

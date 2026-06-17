@@ -52,7 +52,7 @@ if ($hassiteconfig) {
         'mediatimesrc_ignite/categories',
         new lang_string('defaultcategories', 'mediatimesrc_ignite'),
         new lang_string('defaultcategories_desc', 'mediatimesrc_ignite'),
-        [],
+        '',
         $choices,
         $attributes
     ));
