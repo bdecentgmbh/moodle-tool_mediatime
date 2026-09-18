@@ -63,5 +63,13 @@ function xmldb_mediatimesrc_ignite_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025111106, 'mediatimesrc', 'ignite');
     }
 
+    if ($oldversion < 2026060601) {
+        // Reset task so that older content will be synced.
+        set_config('lasttime', 0, 'mediatimesrc_ignite');
+
+        // Ignite savepoint reached.
+        upgrade_plugin_savepoint(true, 2026060601, 'mediatimesrc', 'ignite');
+    }
+
     return true;
 }

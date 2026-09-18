@@ -56,11 +56,11 @@ class update_videos extends \core\task\scheduled_task {
 
         $query = http_build_query([
             'where' => [
-                'updatedAt' => [
+                'contentUpdatedAt' => [
                     'greater_than' => $lasttime,
                 ],
             ],
-            'sort' => 'updatedAt',
+            'sort' => 'contentUpdatedAt',
             'limit' => 100,
         ]);
 
@@ -68,9 +68,9 @@ class update_videos extends \core\task\scheduled_task {
 
         $videos = [];
         foreach ($list->docs as $video) {
-            $datetime = new \DateTime($video->updatedAt);
+            $datetime = new \DateTime($video->contentUpdatedAt);
             $timestamp = $datetime->getTimestamp();
-            $lasttime = $video->updatedAt;
+            $lasttime = $video->contentUpdatedAt;
             mtrace("Ignite video $video->id updated at timestap $timestamp.");
             $videos[$video->id] = $video;
         }
@@ -93,8 +93,8 @@ class update_videos extends \core\task\scheduled_task {
                 $content = json_decode($record->content);
                 if (!empty($content->id) && key_exists($content->id, $videos)) {
                     $video = $videos[$content->id];
-                    $videoupdated = new DateTime($video->updatedAt);
-                    if ($video->updatedAt != $content->updatedAt ?? '') {
+                    $videoupdated = new DateTime($video->contentUpdatedAt);
+                    if ($video->contentUpdatedAt != $content->contentUpdatedAt ?? '') {
                         mtrace("Updating $record->name");
                         $video->name = $content->name;
                         $record->content = json_encode($video);
