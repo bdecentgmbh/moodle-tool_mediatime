@@ -218,7 +218,7 @@ class manager implements renderable, templatable {
 
             return [
                 'form' => $output->render_from_template('mediatimesrc_ignite/file_upload', [
-                    'categories' => htmlspecialchars(json_encode($data->categories), ENT_COMPAT),
+                    'categories' => htmlspecialchars(json_encode($data->categories ?? ''), ENT_COMPAT),
                     'name' => json_encode($data->name),
                     'contextid' => $this->context->id,
                     'description' => json_encode($data->description),
@@ -356,6 +356,10 @@ class manager implements renderable, templatable {
         $data->contextid = $hook->get_context()->get_course_context()->id;
         $data->name = $hook->get_displayname();
         $data->title = $data->name;
+        $data->subtitlelanguage = get_config('mediatimesrc_ignite', 'dndsubtitlelanguage');
+        if ($data->subtitlelanguage == 'userpreference') {
+            $data->subtitlelanguage = $USER->lang;
+        }
 
         $fs = get_file_storage();
         foreach ($fs->get_area_files(\context_user::instance($USER->id)->id, 'user', 'draft', $hook->get_draftitemid()) as $file) {

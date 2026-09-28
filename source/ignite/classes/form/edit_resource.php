@@ -44,7 +44,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
      * Definition
      */
     public function definition() {
-        global $CFG, $COURSE, $OUTPUT;
+        global $CFG, $COURSE, $OUTPUT, $USER;
 
         $mform = $this->_form;
 
@@ -162,6 +162,10 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                         $languages[$key] = $language;
                     }
                 }
+                $default = get_config('mediatimesrc_ignite', 'subtitlelanguage');
+                if ($default == 'userpreference') {
+                    $default = $USER->lang;
+                }
                 $mform->insertElementBefore(
                     $mform->createElement(
                         'select',
@@ -172,6 +176,7 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                     'description'
                 );
                 $mform->addHelpButton('subtitlelanguage', 'subtitlelanguage', 'mediatimesrc_ignite');
+                $mform->setDefault('subtitlelanguage', $default);
             } else {
                 $mform->addRule('file', get_string('required'), 'required', null, 'client');
                 $mform->insertElementBefore(
