@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 use mediatimesrc_ignite\admin\autocomplete;
 use mediatimesrc_ignite\api;
+use mediatimesrc_ignite\form\edit_resource;
 
 if ($hassiteconfig) {
     if ($ADMIN->fulltree) {
@@ -40,7 +41,11 @@ if ($hassiteconfig) {
     }
 
     $categories = explode(',', get_config('mediatimesrc_ignite', 'categories'));
-    $choices = api::categories_menu($categories);
+    try {
+        $choices = api::categories_menu($categories);
+    } catch (Exception $e) {
+        $choices = [];
+    }
     $attributes = [
         'manageurl' => '',
         'ajax' => 'mediatimesrc_ignite/category_datasource',
@@ -54,7 +59,25 @@ if ($hassiteconfig) {
         new lang_string('defaultcategories_desc', 'mediatimesrc_ignite'),
         '',
         $choices,
-        $attributes
+        $attributes,
+        ''
+    ));
+
+    $languages = [
+        '' => get_string('none'),
+        'userpreference' => get_string('userpreference', 'admin'),
+    ];
+    foreach (\get_string_manager()->get_list_of_translations() as $key => $language) {
+        if (!empty(edit_resource::supported_code($key))) {
+            $languages[$key] = $language;
+        }
+    }
+    $settings->add(new admin_setting_configselect(
+        'mediatimesrc_ignite/subtitlelanguage',
+        get_string('defaultsubtitlelanguage', 'mediatimesrc_ignite'),
+        get_string('defaultsubtitlelanguage_desc', 'mediatimesrc_ignite'),
+        '',
+        $languages
     ));
 
     $name = new lang_string('enabledraganddrop', 'mediatimesrc_ignite');
@@ -66,4 +89,12 @@ if ($hassiteconfig) {
         0
     );
     $settings->add($setting);
+
+    $settings->add(new admin_setting_configselect(
+        'mediatimesrc_ignite/dndsubtitlelanguage',
+        get_string('dndsubtitlelanguage', 'mediatimesrc_ignite'),
+        get_string('dndsubtitlelanguage_desc', 'mediatimesrc_ignite'),
+        '',
+        $languages
+    ));
 }

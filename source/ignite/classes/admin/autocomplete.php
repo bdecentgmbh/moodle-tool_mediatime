@@ -111,4 +111,9 @@ class autocomplete extends \core_admin\local\settings\autocomplete {
 
         return format_admin_setting($this, $this->visiblename, $element, $this->description, true, '', $defaultinfo, $query);
     }
+
+    #[\Override]
+    public function get_defaultsetting(): array {
+        return [];
+    }
 }
