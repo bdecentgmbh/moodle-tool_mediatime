@@ -26,19 +26,19 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['apikey'] = 'API key';
-$string['apikey_help'] = 'Ignite API key for administrative access that is created in the Ignite control panel';
+$string['apikey_help'] = 'Ignite API key for administrative access that is created in the Ignite control panel.';
 $string['categories'] = 'Categories';
 $string['categories_help'] = 'The videos should be associated with these categories on Ignite';
 $string['confirmdeleteresource'] = 'Confirm that the Ignite resource below should be deleted.';
 $string['defaultcategories'] = 'Default categories';
 $string['defaultcategories_desc'] = 'Set categories to add by default when a video is uploaded.';
 $string['defaultsubtitlelanguage'] = 'Default subtitle language';
-$string['defaultsubtitlelanguage_desc'] = 'Select default language of audio to autogenerate subtitles. Selecting "User preference" will use the current langauge.';
+$string['defaultsubtitlelanguage_desc'] = 'Select default language of audio to autogenerate subtitles. Selecting "User preference" will use the current language.';
 $string['description'] = 'Description';
 $string['description_help'] = 'This description is associated with the  video on Ignite';
 $string['dndsubtitlelanguage'] = 'Drag and drop subtitle language';
 $string['dndsubtitlelanguage_desc'] = 'Select language of audio to autogenerate subtitles when creating resource with drag and drop. Selecting "User preference" will use the current langauge.';
-$string['enabledraganddrop'] = 'Enabledrag and drop';
+$string['enabledraganddrop'] = 'Enable drag and drop';
 $string['enabledraganddrop_help'] = 'Upload video file to Ignite when creating a Video Time activity by drag and drop, instead of storing file in Moodle. An Ignite resource is also created in Media Time with the link.';
 $string['event_resource_created'] = 'Ignite resource created';
 $string['event_resource_deleted'] = 'Ignite resource deleted';
