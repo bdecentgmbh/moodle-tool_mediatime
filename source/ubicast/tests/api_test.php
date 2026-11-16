@@ -159,6 +159,25 @@ final class api_test extends \advanced_testcase {
     }
 
     /**
+     * The MP4 counts as available only when the download call returns its url
+     */
+    public function test_has_video(): void {
+        $this->resetAfterTest();
+        $this->mock_responses([
+            self::json(['success' => true, 'url' => 'https://cdn.example.com/media.mp4']),
+            self::json(['error' => 'Page not found (404)'], 404),
+        ]);
+        $api = new api();
+
+        $this->assertTrue($api->has_video('v1'));
+        $this->assertFalse($api->has_video('v2'));
+        $query = $this->history[0]['request']->getUri()->getQuery();
+        $this->assertStringContainsString('oid=v1', $query);
+        $this->assertStringContainsString('redirect=no', $query);
+        $this->assertStringContainsString('playable=yes', $query);
+    }
+
+    /**
      * Players get the download url UbiCast recommends for integrations
      */
     public function test_video_url(): void {

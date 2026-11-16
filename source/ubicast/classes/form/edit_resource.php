@@ -152,6 +152,16 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                 $errors['filesource'] = get_string('nopermissions', 'error', get_string('ubicast:upload', 'mediatimesrc_ubicast'));
             } else if (empty($this->get_draft_files('videofile'))) {
                 $errors['videofile'] = get_string('required');
+            } else if (!$channel = get_config('mediatimesrc_ubicast', 'channel')) {
+                $errors['videofile'] = get_string('nochannel', 'mediatimesrc_ubicast');
+            } else {
+                try {
+                    if (!(new api())->is_public($channel)) {
+                        $errors['videofile'] = get_string('channelnotpublic', 'mediatimesrc_ubicast');
+                    }
+                } catch (moodle_exception $e) {
+                    $errors['videofile'] = $e->getMessage();
+                }
             }
         } else if (empty($data['file'])) {
             $errors['file'] = get_string('required');

@@ -116,22 +116,19 @@ class manager implements renderable, templatable {
             if (empty($data->edit)) {
                 $api = new api();
                 if (empty($data->newfile)) {
-                    $media = $api->get_media($data->file);
+                    $oid = $data->file;
                 } else {
                     require_capability('mediatimesrc/ubicast:upload', $this->context);
                     $filename = $this->form->get_new_filename('videofile');
                     $fullpath = make_request_directory() . '/' . api::upload_filename($filename);
                     $this->form->save_file('videofile', $fullpath);
-                    $media = $api->add_media($fullpath, $filename, [
+                    $oid = $api->add_media($fullpath, $filename, [
                         'title' => $data->title ?: $data->name,
                         'description' => text_to_html($data->description ?? '', false, false, true),
                         'validated' => 'yes',
-                    ]);
-                    if (!$api->is_public($media->oid)) {
-                        \core\notification::warning(get_string('uploadnotpublic', 'mediatimesrc_ubicast'));
-                    }
+                    ])->oid;
                 }
-                $data->content = json_encode(media_resource::content_from_media($media, $data->name));
+                $data->content = json_encode(media_resource::fetch_content($api, $oid, $data->name));
                 $data->timecreated = $data->timemodified;
                 if (
                     $this->context instanceof \context_course
@@ -151,8 +148,7 @@ class manager implements renderable, templatable {
                 $data->id = $data->edit;
                 $data->contextid = $this->record->contextid;
                 try {
-                    $media = (new api())->get_media($this->content->oid);
-                    $data->content = json_encode(media_resource::content_from_media($media, $data->name));
+                    $data->content = json_encode(media_resource::fetch_content(new api(), $this->content->oid, $data->name));
                 } catch (moodle_exception $e) {
                     $this->content->name = $data->name;
                     $data->content = json_encode($this->content);

@@ -59,21 +59,25 @@ class media_resource implements renderable, templatable {
     }
 
     /**
-     * Update the stored media information while Nudgis processes the video
+     * Update the stored media information, at most once a minute, until the video can be played
      */
     protected function refresh() {
         global $DB;
 
-        if (empty($this->content->oid) || !empty($this->content->ready)) {
+        $clock = \core\di::get(\core\clock::class);
+        if (
+            empty($this->content->oid)
+            || !empty($this->content->playable)
+            || ($this->content->checked ?? 0) > $clock->time() - MINSECS
+        ) {
             return;
         }
 
         try {
-            $media = (new api())->get_media($this->content->oid);
+            $this->content = self::fetch_content(new api(), $this->content->oid, $this->content->name ?? $this->record->name);
         } catch (moodle_exception $e) {
             return;
         }
-        $this->content = self::content_from_media($media, $this->content->name ?? $this->record->name);
         $this->record->content = json_encode($this->content);
         if (!empty($this->record->id)) {
             $DB->set_field('tool_mediatime', 'content', $this->record->content, ['id' => $this->record->id]);
@@ -81,15 +85,19 @@ class media_resource implements renderable, templatable {
     }
 
     /**
-     * Build the content stored in Media Time from a Nudgis media object
+     * Get the content stored in Media Time for a Nudgis media
      *
-     * @param stdClass $media Media information from Nudgis
+     * @param api $api Nudgis API client
+     * @param string $oid Media object id
      * @param string $name Media Time resource name
-     * @return stdClass
+     * @return stdClass Nudgis media information with name and whether it can be played
      */
-    public static function content_from_media(stdClass $media, string $name): stdClass {
+    public static function fetch_content(api $api, string $oid, string $name): stdClass {
+        $media = $api->get_media($oid);
         $media->name = $name;
         $media->description = trim(html_to_text($media->description ?? '', 0, false));
+        $media->playable = !empty($media->ready) && $api->has_video($oid);
+        $media->checked = \core\di::get(\core\clock::class)->time();
 
         return $media;
     }
@@ -206,7 +214,7 @@ class media_resource implements renderable, templatable {
      * @return string url
      */
     public function video_url($output) {
-        if (empty($this->content->oid) || empty($this->content->ready)) {
+        if (empty($this->content->oid) || empty($this->content->playable)) {
             return '';
         }
 

@@ -57,7 +57,7 @@ final class media_resource_test extends \advanced_testcase {
     }
 
     /**
-     * Ready videos play from the Nudgis download url
+     * Playable videos play from the Nudgis download url
      */
     public function test_video_url(): void {
         global $PAGE;
@@ -65,7 +65,7 @@ final class media_resource_test extends \advanced_testcase {
         $this->resetAfterTest();
         $output = $PAGE->get_renderer('core');
         set_config('url', 'https://nudgis.example.com/', 'mediatimesrc_ubicast');
-        $record = $this->create_resource(['oid' => 'v1', 'title' => 'Ducks', 'ready' => true, 'thumb' => 'https://x/t.jpg']);
+        $record = $this->create_resource(['oid' => 'v1', 'title' => 'Ducks', 'ready' => true, 'playable' => true]);
 
         $resource = new media_resource($record);
         $url = $resource->video_url($output);
@@ -77,32 +77,46 @@ final class media_resource_test extends \advanced_testcase {
     }
 
     /**
-     * Videos still processing have no url and are refreshed from Nudgis
+     * Videos get a url only once the MP4 exists, checked at most once a minute
      */
     public function test_refresh_processing(): void {
         global $DB, $PAGE;
 
         $this->resetAfterTest();
         $output = $PAGE->get_renderer('core');
+        $clock = $this->mock_clock_with_frozen(1800000000);
+        $media = fn($ready) => new Response(200, [], json_encode(['success' => true, 'info' => [
+            'oid' => 'v1',
+            'title' => 'Ducks',
+            'ready' => $ready,
+            'description' => '<p>Big &amp; blue</p>',
+        ]]));
         $this->mock_responses([
-            new Response(200, [], json_encode(['success' => true, 'info' => [
-                'oid' => 'v1',
-                'title' => 'Ducks',
-                'ready' => false,
-                'description' => '<p>Big &amp; blue</p>',
-            ]])),
-            new Response(200, [], json_encode(['success' => true, 'info' => ['oid' => 'v1', 'title' => 'Ducks', 'ready' => true]])),
+            $media(false),
+            $media(true),
+            new Response(404, [], json_encode(['error' => 'Page not found (404)'])),
+            $media(true),
+            new Response(200, [], json_encode(['success' => true, 'url' => 'https://cdn.example.com/media.mp4'])),
         ]);
         $record = $this->create_resource(['oid' => 'v1', 'title' => 'Ducks', 'ready' => false]);
+        $load = fn() => new media_resource($DB->get_record('tool_mediatime', ['id' => $record->id]));
 
-        $resource = new media_resource($record);
-        $this->assertEquals('', $resource->video_url($output));
+        // Still processing.
+        $this->assertEquals('', $load()->video_url($output));
         $content = json_decode($DB->get_field('tool_mediatime', 'content', ['id' => $record->id]));
         $this->assertEquals('Big & blue', $content->description);
         $this->assertEquals('Ducks resource', $content->name);
 
-        $resource = new media_resource($DB->get_record('tool_mediatime', ['id' => $record->id]));
-        $this->assertNotEmpty($resource->video_url($output));
+        // No new request within a minute; the mock would run out of responses otherwise.
+        $clock->bump(30);
+        $this->assertEquals('', $load()->video_url($output));
+
+        // Ready for display, but transcoding has not produced the MP4 yet.
+        $clock->bump(31);
+        $this->assertEquals('', $load()->video_url($output));
+
+        $clock->bump(61);
+        $this->assertNotEmpty($load()->video_url($output));
     }
 
     /**
@@ -130,7 +144,7 @@ final class media_resource_test extends \advanced_testcase {
             ]])),
             new Response(200, ['Content-Type' => 'image/jpeg'], 'jpeg data'),
         ]);
-        $record = $this->create_resource(['oid' => 'v1', 'ready' => true]);
+        $record = $this->create_resource(['oid' => 'v1', 'ready' => true, 'playable' => true]);
         $file = (new media_resource($record))->thumbnail_file();
         $this->assertEquals('jpeg data', $file->get_content());
 

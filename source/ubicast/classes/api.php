@@ -158,9 +158,9 @@ class api {
     }
 
     /**
-     * Check whether anonymous users may watch a media
+     * Check whether anonymous users may watch a media, or the media in a channel
      *
-     * @param string $oid Media object id
+     * @param string $oid Media or channel object id
      * @return bool
      */
     public function is_public(string $oid): bool {
@@ -173,6 +173,32 @@ class api {
         }
 
         return false;
+    }
+
+    /**
+     * Check whether the MP4 file behind the video url exists
+     *
+     * Nudgis marks a video ready as soon as one resource can be displayed, but
+     * the download url only works after transcoding has produced the MP4.
+     *
+     * @param string $oid Media object id
+     * @return bool
+     */
+    public function has_video(string $oid): bool {
+        try {
+            $result = $this->request('download', [
+                'oid' => $oid,
+                'formats' => 'mp4',
+                'playable' => 'yes',
+                'quality' => 'high',
+                'redirect' => 'no',
+                'usage' => 'external',
+            ]);
+        } catch (moodle_exception $e) {
+            return false;
+        }
+
+        return !empty($result->url);
     }
 
     /**
