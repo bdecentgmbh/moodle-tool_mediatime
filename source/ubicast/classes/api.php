@@ -131,6 +131,58 @@ class api {
     }
 
     /**
+     * Change the title or description of a media
+     *
+     * @param string $oid Media object id
+     * @param array $fields Fields to change, for example title and description
+     */
+    public function edit_media(string $oid, array $fields): void {
+        $this->request('medias/edit', ['oid' => $oid] + $fields, 'POST');
+    }
+
+    /**
+     * Delete a media; Nudgis keeps it in its recycle bin when that is enabled
+     *
+     * @param string $oid Media object id
+     */
+    public function delete_media(string $oid): void {
+        $this->request('medias/delete', ['oid' => $oid], 'POST');
+    }
+
+    /**
+     * Get the validated subtitles of a media
+     *
+     * @param string $oid Media object id
+     * @return array Subtitle objects with id, language, revision and file url
+     */
+    public function subtitles(string $oid): array {
+        $subtitles = $this->request('subtitles', ['oid' => $oid])->subtitles ?? [];
+
+        return array_values(array_filter($subtitles, fn($subtitle) => !empty($subtitle->validated) && !empty($subtitle->file)));
+    }
+
+    /**
+     * Get the validated chapters of a media
+     *
+     * @param string $oid Media object id
+     * @return array Chapter objects with title and time in seconds
+     */
+    public function chapters(string $oid): array {
+        $chapters = [];
+        foreach ($this->request('annotations/chapters/list', ['oid' => $oid])->chapters ?? [] as $chapter) {
+            if (!empty($chapter->validated)) {
+                $chapters[] = (object)[
+                    'title' => $chapter->title ?? '',
+                    'time' => (float)($chapter->time_in_sec ?? 0),
+                ];
+            }
+        }
+        usort($chapters, fn($a, $b) => $a->time <=> $b->time);
+
+        return $chapters;
+    }
+
+    /**
      * Search videos visible to the API account
      *
      * A pasted object id or Nudgis link finds that video.

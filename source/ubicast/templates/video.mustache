@@ -26,6 +26,7 @@
     Variables optional for this template:
     * classes - CSS classes for the container
     * poster - Thumbnail url
+    * texttracks - Subtitle and chapter tracks with type, url, language and label
     * title - Media title
     * videourl - Video url, empty while Nudgis processes the video
 
@@ -35,6 +36,7 @@
         "poster": "https://example.com/thumbnails/videos/v1234/thumb_medium.jpg",
         "title": "Ducks",
         "instance": "{}",
+        "texttracks": [{"type": "captions", "url": "https://example.com/subtitle_8_1.vtt", "language": "de", "label": "Deutsch"}],
         "videourl": "https://example.com/api/v2/download/v1234.mp4?playable=yes&quality=high&usage=external"
     }
 
@@ -47,6 +49,14 @@
         poster="{{ poster }}"
         class="video-js col col-12"
     >
+        {{# texttracks }}
+            <track
+                kind="{{ type }}"
+                {{# label }}label="{{ label }}"{{/ label }}
+                src="{{ url }}"
+                {{# language }}srclang="{{ language }}"{{/ language }}
+            >
+        {{/ texttracks }}
     </video>
     {{/ videourl }}
     {{^ videourl }}

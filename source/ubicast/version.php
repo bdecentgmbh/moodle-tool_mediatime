@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mediatimesrc_ubicast';
-$plugin->release = '0.1.0';
-$plugin->version = 2026111600;
+$plugin->release = '0.2.0';
+$plugin->version = 2026111601;
 $plugin->requires = 2024100700;
 $plugin->maturity = MATURITY_ALPHA;

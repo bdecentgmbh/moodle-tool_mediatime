@@ -57,6 +57,20 @@ final class media_resource_test extends \advanced_testcase {
     }
 
     /**
+     * Responses for the subtitles and chapters requests of a refresh
+     *
+     * @param array $subtitles Subtitles to return
+     * @param array $chapters Chapters to return
+     * @return Response[]
+     */
+    protected static function tracks(array $subtitles = [], array $chapters = []): array {
+        return [
+            new Response(200, [], json_encode(['success' => true, 'subtitles' => $subtitles])),
+            new Response(200, [], json_encode(['success' => true, 'chapters' => $chapters])),
+        ];
+    }
+
+    /**
      * Playable videos play from the Nudgis download url
      */
     public function test_video_url(): void {
@@ -91,14 +105,15 @@ final class media_resource_test extends \advanced_testcase {
             'ready' => $ready,
             'description' => '<p>Big &amp; blue</p>',
         ]]));
-        $this->mock_responses([
-            $media(false),
-            $media(true),
-            new Response(404, [], json_encode(['error' => 'Page not found (404)'])),
-            $media(true),
-            new Response(200, [], json_encode(['success' => true, 'url' => 'https://cdn.example.com/media.mp4'])),
-        ]);
-        $record = $this->create_resource(['oid' => 'v1', 'title' => 'Ducks', 'ready' => false]);
+        $this->mock_responses(array_merge(
+            [$media(false)],
+            self::tracks(),
+            [$media(true), new Response(404, [], json_encode(['error' => 'Page not found (404)']))],
+            self::tracks(),
+            [$media(true), new Response(200, [], json_encode(['success' => true, 'url' => 'https://cdn.example.com/media.mp4']))],
+            self::tracks()
+        ));
+        $record = $this->create_resource(['oid' => 'v1', 'title' => 'Ducks', 'ready' => false, 'uploaded' => true]);
         $load = fn() => new media_resource($DB->get_record('tool_mediatime', ['id' => $record->id]));
 
         // Still processing.
@@ -106,6 +121,7 @@ final class media_resource_test extends \advanced_testcase {
         $content = json_decode($DB->get_field('tool_mediatime', 'content', ['id' => $record->id]));
         $this->assertEquals('Big & blue', $content->description);
         $this->assertEquals('Ducks resource', $content->name);
+        $this->assertTrue($content->uploaded);
 
         // No new request within a minute; the mock would run out of responses otherwise.
         $clock->bump(30);
@@ -129,9 +145,10 @@ final class media_resource_test extends \advanced_testcase {
         $output = $PAGE->get_renderer('core');
 
         $processing = $this->create_resource(['oid' => 'v2', 'ready' => false]);
-        $this->mock_responses([
-            new Response(200, [], json_encode(['success' => true, 'info' => ['oid' => 'v2', 'ready' => false]])),
-        ]);
+        $this->mock_responses(array_merge(
+            [new Response(200, [], json_encode(['success' => true, 'info' => ['oid' => 'v2', 'ready' => false]]))],
+            self::tracks()
+        ));
         $resource = new media_resource($processing);
         $this->assertStringContainsString('f/video', $resource->image_url($output));
         $this->assertNull($resource->thumbnail_file());
@@ -150,5 +167,68 @@ final class media_resource_test extends \advanced_testcase {
 
         // The second request uses the stored file; the mock has no responses left.
         $this->assertEquals($file->get_id(), (new media_resource($record))->thumbnail_file()->get_id());
+    }
+
+    /**
+     * Subtitles become captions or subtitles tracks, chapters a WebVTT chapters track
+     */
+    public function test_texttracks(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $this->mock_responses([
+            new Response(200, [], "WEBVTT\n\n00:00:01.000 --> 00:00:02.000\nHallo\n"),
+            new Response(403, [], 'Forbidden'),
+        ]);
+        $record = $this->create_resource([
+            'oid' => 'v1',
+            'ready' => true,
+            'playable' => true,
+            'language' => 'ger',
+            'duration_s' => 90.5,
+            'subtitles' => [
+                ['id' => 8, 'language' => 'ger', 'label' => 'Deutsch', 'revision' => 1, 'translated' => false,
+                    'file' => 'https://nudgis.example.com/protected/videos/v1/subtitles/subtitle_8.vtt'],
+                ['id' => 9, 'language' => 'eng', 'label' => 'English', 'revision' => 2, 'translated' => true,
+                    'file' => 'https://nudgis.example.com/protected/videos/v1/subtitles/subtitle_9.vtt'],
+            ],
+            'chapters' => [['title' => 'Intro', 'time' => 0], ['title' => 'Main part', 'time' => 65.25]],
+        ]);
+        $resource = new media_resource($record);
+
+        $tracks = $resource->texttracks();
+        $this->assertCount(3, $tracks);
+        $this->assertEquals(['captions', 'subtitles', 'chapters'], array_column($tracks, 'type'));
+        $this->assertEquals(['de', 'en', ''], array_column($tracks, 'language'));
+        $this->assertStringEndsWith("/mediatimesrc_ubicast/texttrack/$record->id/subtitle_8_1.vtt", $tracks[0]->url);
+        $this->assertStringEndsWith("/mediatimesrc_ubicast/chapters/$record->id/chapters.vtt", $tracks[2]->url);
+        $this->assertEquals(3, $resource->texttrack_count());
+
+        $this->assertEquals(
+            "WEBVTT\n\n00:00:00.000 --> 00:01:05.250\nIntro\n\n00:01:05.250 --> 00:01:30.500\nMain part\n",
+            $resource->chapters()
+        );
+
+        // A subtitle is downloaded once and kept; unknown names are not served.
+        $file = $resource->subtitle_file('subtitle_8_1.vtt');
+        $this->assertStringContainsString('Hallo', $file->get_content());
+        $this->assertEquals($file->get_id(), $resource->subtitle_file('subtitle_8_1.vtt')->get_id());
+        $this->assertNull($resource->subtitle_file('subtitle_8_0.vtt'));
+
+        // The second subtitle fails to download and is left out.
+        $files = $resource->texttrack_files();
+        $this->assertEquals(['captions', 'chapters'], array_column($files, 'type'));
+        $this->assertEquals(['', ''], array_column($files, 'srclang'));
+        $draft = file_get_drafarea_files($files[1]['texttrack'])->list[0];
+        $this->assertEquals('chapters.vtt', $draft->filename);
+    }
+
+    /**
+     * Nudgis language codes map to two letter codes
+     */
+    public function test_language_code(): void {
+        $this->assertEquals('de', media_resource::language_code('ger'));
+        $this->assertEquals('fr', media_resource::language_code('fre'));
+        $this->assertEquals('en', media_resource::language_code('eng'));
+        $this->assertEquals('', media_resource::language_code('xyz'));
     }
 }

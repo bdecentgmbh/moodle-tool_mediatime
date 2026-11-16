@@ -25,8 +25,9 @@
 /**
  * File serving callback
  *
- * Serves the thumbnail of a Nudgis video. Nudgis thumbnail links work only
- * once, so the image is fetched with the API key and kept as a file.
+ * Serves the thumbnail, subtitles and chapters of a Nudgis video. They are
+ * fetched with the API key and kept as files, so they are only served to
+ * logged in users.
  *
  * @param stdClass $course course object
  * @param stdClass $cm course module object
@@ -41,7 +42,7 @@ function mediatimesrc_ubicast_pluginfile($course, $cm, $context, $filearea, $arg
     global $DB;
 
     if (
-        $filearea !== 'thumbnail'
+        !in_array($filearea, ['chapters', 'texttrack', 'thumbnail'])
         || !in_array($context->contextlevel, [
             CONTEXT_SYSTEM,
             CONTEXT_COURSECAT,
@@ -65,7 +66,20 @@ function mediatimesrc_ubicast_pluginfile($course, $cm, $context, $filearea, $arg
     }
 
     $resource = new \mediatimesrc_ubicast\output\media_resource($record);
-    if (!$file = $resource->thumbnail_file()) {
+    $filename = array_pop($args);
+    if ($filearea === 'chapters') {
+        if (!$chapters = $resource->chapters()) {
+            return false;
+        }
+        send_file($chapters, 'chapters.vtt', HOURSECS, 0, true, false, 'text/vtt');
+    }
+
+    if ($filearea === 'texttrack') {
+        $file = $resource->subtitle_file($filename);
+    } else {
+        $file = $resource->thumbnail_file();
+    }
+    if (!$file) {
         return false;
     }
     send_stored_file($file, DAYSECS, 0, $forcedownload, $options);

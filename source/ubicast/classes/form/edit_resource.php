@@ -75,13 +75,25 @@ class edit_resource extends \tool_mediatime\form\edit_resource {
                             'muted' => true,
                             'type' => resourcelib_guess_url_mimetype($videourl),
                         ]),
+                        'texttracks' => $resource->texttracks(),
                         'videourl' => $videourl,
                     ])
                 ),
                 'name'
             );
             $mform->addElement('static', 'mediaid', get_string('mediaid', 'mediatimesrc_ubicast'), $content->oid);
-            $mform->addElement('static', 'mediatitle', get_string('title', 'tool_mediatime'), s($resource->get_title()));
+            if (media_resource::can_change_remote($content, $this->context, 'can_edit')) {
+                $mform->addElement('text', 'title', get_string('title', 'tool_mediatime'));
+                $mform->setType('title', PARAM_TEXT);
+                $mform->addHelpButton('title', 'title', 'tool_mediatime');
+                $mform->addRule('title', get_string('required'), 'required', null, 'client');
+
+                $mform->addElement('textarea', 'description', get_string('description', 'mediatimesrc_ubicast'));
+                $mform->setType('description', PARAM_TEXT);
+                $mform->addHelpButton('description', 'description', 'mediatimesrc_ubicast');
+            } else {
+                $mform->addElement('static', 'mediatitle', get_string('title', 'tool_mediatime'), s($resource->get_title()));
+            }
         } else {
             $canupload = has_capability('mediatimesrc/ubicast:upload', $this->context);
             if ($canupload) {

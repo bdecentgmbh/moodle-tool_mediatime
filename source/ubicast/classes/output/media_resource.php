@@ -25,6 +25,7 @@ use moodle_exception;
 use moodle_url;
 use stdClass;
 use renderable;
+use context;
 use renderer_base;
 use stored_file;
 use templatable;
@@ -74,7 +75,8 @@ class media_resource implements renderable, templatable {
         }
 
         try {
-            $this->content = self::fetch_content(new api(), $this->content->oid, $this->content->name ?? $this->record->name);
+            $name = $this->content->name ?? $this->record->name;
+            $this->content = self::fetch_content(new api(), $this->content->oid, $name, $this->content);
         } catch (moodle_exception $e) {
             return;
         }
@@ -90,16 +92,44 @@ class media_resource implements renderable, templatable {
      * @param api $api Nudgis API client
      * @param string $oid Media object id
      * @param string $name Media Time resource name
-     * @return stdClass Nudgis media information with name and whether it can be played
+     * @param ?stdClass $previous Content stored before, to keep whether Moodle uploaded the video
+     * @return stdClass Nudgis media information with name, subtitles, chapters and whether it can be played
      */
-    public static function fetch_content(api $api, string $oid, string $name): stdClass {
+    public static function fetch_content(api $api, string $oid, string $name, ?stdClass $previous = null): stdClass {
         $media = $api->get_media($oid);
         $media->name = $name;
         $media->description = trim(html_to_text($media->description ?? '', 0, false));
         $media->playable = !empty($media->ready) && $api->has_video($oid);
         $media->checked = \core\di::get(\core\clock::class)->time();
+        $media->uploaded = !empty($previous->uploaded);
+        $media->subtitles = array_map(fn($subtitle) => (object)[
+            'id' => $subtitle->id,
+            'language' => $subtitle->language ?? '',
+            'label' => ($subtitle->title ?? '') ?: ($subtitle->language_display ?? $subtitle->language ?? ''),
+            'revision' => $subtitle->revision ?? 0,
+            'translated' => !empty($subtitle->auto_translated),
+            'file' => $subtitle->file,
+        ], $api->subtitles($oid));
+        $media->chapters = $api->chapters($oid);
 
         return $media;
+    }
+
+    /**
+     * Whether this Moodle may change the video on Nudgis
+     *
+     * Only videos uploaded from Moodle are changed, by users who may upload,
+     * and only when the Nudgis account has the permission.
+     *
+     * @param stdClass $content Stored content of the resource
+     * @param context $context Context of the resource
+     * @param string $permission Nudgis permission field, can_edit or can_delete
+     * @return bool
+     */
+    public static function can_change_remote(stdClass $content, context $context, string $permission): bool {
+        return !empty($content->uploaded)
+            && !empty($content->$permission)
+            && has_capability('mediatimesrc/ubicast:upload', $context);
     }
 
     /**
@@ -130,6 +160,7 @@ class media_resource implements renderable, templatable {
                 'type' => resourcelib_guess_url_mimetype($videourl),
             ]),
             'poster' => $this->image_url($output),
+            'texttracks' => $this->texttracks(),
             'videourl' => $videourl,
         ] + (array) $this->content;
 
@@ -242,5 +273,220 @@ class media_resource implements renderable, templatable {
      */
     public function get_title() {
         return $this->content->title ?? $this->record->name;
+    }
+
+    /**
+     * Get chapters as WebVTT file content
+     *
+     * @return string
+     */
+    public function chapters() {
+        $chapters = array_values((array)($this->content->chapters ?? []));
+        if (empty($chapters)) {
+            return '';
+        }
+
+        $duration = (float)($this->content->duration_s ?? 0);
+        $lines = ['WEBVTT'];
+        foreach ($chapters as $key => $chapter) {
+            $end = $chapters[$key + 1]->time ?? max($duration, $chapter->time + 1);
+            $lines[] = '';
+            $lines[] = self::vtt_time($chapter->time) . ' --> ' . self::vtt_time($end);
+            $lines[] = $chapter->title;
+        }
+
+        return implode("\n", $lines) . "\n";
+    }
+
+    /**
+     * Format a time for WebVTT
+     *
+     * @param float $seconds Time in seconds
+     * @return string
+     */
+    protected static function vtt_time(float $seconds): string {
+        return sprintf('%02d:%02d:%06.3f', floor($seconds / HOURSECS), floor($seconds / MINSECS) % 60, fmod($seconds, MINSECS));
+    }
+
+    /**
+     * Get text tracks for resource
+     *
+     * @return array Track objects with type, url, language and label
+     */
+    public function texttracks(): array {
+        $texttracks = [];
+        foreach ($this->content->subtitles ?? [] as $subtitle) {
+            $texttracks[] = (object)[
+                'type' => $this->track_type($subtitle),
+                'url' => $this->file_url('texttrack', self::subtitle_filename($subtitle)),
+                'language' => self::language_code($subtitle->language),
+                'label' => $subtitle->label,
+            ];
+        }
+        if (!empty($this->content->chapters)) {
+            $texttracks[] = (object)[
+                'type' => 'chapters',
+                'url' => $this->file_url('chapters', 'chapters.vtt'),
+                'language' => '',
+                'label' => '',
+            ];
+        }
+
+        return $texttracks;
+    }
+
+    /**
+     * Get number of text tracks for resource
+     *
+     * @return int
+     */
+    public function texttrack_count(): int {
+        return count($this->texttracks());
+    }
+
+    /**
+     * Copy text tracks into draft areas for Video Time
+     *
+     * @return array[array] Draft item id, type and language of each track
+     */
+    public function texttrack_files(): array {
+        global $USER;
+
+        $fs = get_file_storage();
+        $languages = get_string_manager()->get_list_of_translations();
+        $draft = fn($filename) => [
+            'contextid' => \context_user::instance($USER->id)->id,
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => file_get_unused_draft_itemid(),
+            'filepath' => '/',
+            'filename' => $filename,
+        ];
+
+        $texttracks = [];
+        foreach ($this->content->subtitles ?? [] as $subtitle) {
+            if (!$file = $this->subtitle_file(self::subtitle_filename($subtitle))) {
+                continue;
+            }
+            $fileinfo = $draft($file->get_filename());
+            $fs->create_file_from_storedfile($fileinfo, $file);
+            $language = self::language_code($subtitle->language);
+            $texttracks[] = [
+                'texttrack' => $fileinfo['itemid'],
+                'type' => $this->track_type($subtitle),
+                'srclang' => key_exists($language, $languages) ? $language : '',
+            ];
+        }
+        if ($chapters = $this->chapters()) {
+            $fileinfo = $draft('chapters.vtt');
+            $fs->create_file_from_string($fileinfo, $chapters);
+            $texttracks[] = [
+                'texttrack' => $fileinfo['itemid'],
+                'type' => 'chapters',
+                'srclang' => '',
+            ];
+        }
+
+        return $texttracks;
+    }
+
+    /**
+     * Return the cached subtitle file, downloading it from Nudgis when missing
+     *
+     * @param string $filename File name from subtitle_filename()
+     * @return ?stored_file
+     */
+    public function subtitle_file(string $filename): ?stored_file {
+        foreach ($this->content->subtitles ?? [] as $subtitle) {
+            if (self::subtitle_filename($subtitle) !== $filename) {
+                continue;
+            }
+            $fileinfo = [
+                'contextid' => $this->record->contextid,
+                'component' => 'mediatimesrc_ubicast',
+                'filearea' => 'texttrack',
+                'itemid' => $this->record->id,
+                'filepath' => '/',
+                'filename' => $filename,
+            ];
+            $fs = get_file_storage();
+            if ($file = $fs->get_file(...array_values($fileinfo))) {
+                return $file;
+            }
+            try {
+                return $fs->create_file_from_string($fileinfo, (new api())->download($subtitle->file));
+            } catch (moodle_exception $e) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * File name for a subtitle; it changes with each Nudgis revision
+     *
+     * @param stdClass $subtitle Stored subtitle information
+     * @return string
+     */
+    public static function subtitle_filename(stdClass $subtitle): string {
+        return "subtitle_{$subtitle->id}_{$subtitle->revision}.vtt";
+    }
+
+    /**
+     * Track kind: captions in the language of the video, subtitles for translations
+     *
+     * @param stdClass $subtitle Stored subtitle information
+     * @return string
+     */
+    protected function track_type(stdClass $subtitle): string {
+        $language = $this->content->language ?? '';
+        if ($language ? $subtitle->language !== $language : !empty($subtitle->translated)) {
+            return 'subtitles';
+        }
+
+        return 'captions';
+    }
+
+    /**
+     * Url of a file served by this plugin for the resource
+     *
+     * @param string $filearea File area
+     * @param string $filename File name
+     * @return string
+     */
+    protected function file_url(string $filearea, string $filename): string {
+        return moodle_url::make_pluginfile_url(
+            $this->record->contextid,
+            'mediatimesrc_ubicast',
+            $filearea,
+            $this->record->id,
+            '/',
+            $filename
+        )->out(false);
+    }
+
+    /**
+     * Two letter language code for a Nudgis language code
+     *
+     * Nudgis uses ISO 639-2/B codes, Moodle's language list ISO 639-2/T.
+     *
+     * @param string $code Nudgis language code, for example ger
+     * @return string Two letter code, or empty when unknown
+     */
+    public static function language_code(string $code): string {
+        $code = [
+            'alb' => 'sqi', 'arm' => 'hye', 'baq' => 'eus', 'bur' => 'mya', 'chi' => 'zho',
+            'cze' => 'ces', 'dut' => 'nld', 'fre' => 'fra', 'geo' => 'kat', 'ger' => 'deu',
+            'gre' => 'ell', 'ice' => 'isl', 'mac' => 'mkd', 'mao' => 'mri', 'may' => 'msa',
+            'per' => 'fas', 'rum' => 'ron', 'slo' => 'slk', 'tib' => 'bod', 'wel' => 'cym',
+        ][$code] ?? $code;
+        $stringmanager = get_string_manager();
+        $names = $stringmanager->get_list_of_languages('en', 'iso6392');
+        if (empty($names[$code])) {
+            return '';
+        }
+
+        return (string)array_search($names[$code], $stringmanager->get_list_of_languages('en', 'iso6391'));
     }
 }

@@ -29,4 +29,14 @@ $callbacks = [
         'hook' => \tool_mediatime\hook\after_resource_moved::class,
         'callback' => '\mediatimesrc_ubicast\manager::after_resource_moved',
     ],
+    [
+        'hook' => mod_videotime\hook\dndupload_register::class,
+        'callback' => 'mediatimesrc_ubicast\manager::dndupload_register',
+        'priority' => 300,
+    ],
+    [
+        'hook' => mod_videotime\hook\dndupload_handle::class,
+        'callback' => 'mediatimesrc_ubicast\manager::dndupload_handle',
+        'priority' => 300,
+    ],
 ];

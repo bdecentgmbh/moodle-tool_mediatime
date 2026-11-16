@@ -26,6 +26,8 @@ use renderer_base;
 use stdClass;
 use templatable;
 use mediatimesrc_ubicast\output\media_resource;
+use mod_videotime\hook\dndupload_handle;
+use mod_videotime\hook\dndupload_register;
 use tool_mediatime\hook\after_resource_moved;
 
 /**
@@ -90,6 +92,8 @@ class manager implements renderable, templatable {
                 'name' => $this->record->name,
                 'groupid' => $this->record->groupid,
                 'tags' => core_tag_tag::get_item_tags_array('tool_mediatime', 'tool_mediatime', $edit),
+                'title' => $this->content->title ?? '',
+                'description' => $this->content->description ?? '',
             ]);
         }
 
@@ -100,10 +104,10 @@ class manager implements renderable, templatable {
             redirect($redirect);
         } else if (
             optional_param('delete', null, PARAM_INT)
-            && $this->form->get_data()
+            && ($data = $this->form->get_data())
         ) {
             require_sesskey();
-            $this->delete_resource();
+            $this->delete_resource(($data->action ?? 1) == 2);
 
             $redirect = new moodle_url('/admin/tool/mediatime/index.php', ['contextid' => $this->context->id]);
             redirect($redirect);
@@ -128,7 +132,9 @@ class manager implements renderable, templatable {
                         'validated' => 'yes',
                     ])->oid;
                 }
-                $data->content = json_encode(media_resource::fetch_content($api, $oid, $data->name));
+                $data->content = json_encode(media_resource::fetch_content($api, $oid, $data->name, (object)[
+                    'uploaded' => !empty($data->newfile),
+                ]));
                 $data->timecreated = $data->timemodified;
                 if (
                     $this->context instanceof \context_course
@@ -148,8 +154,24 @@ class manager implements renderable, templatable {
                 $data->id = $data->edit;
                 $data->contextid = $this->record->contextid;
                 try {
-                    $data->content = json_encode(media_resource::fetch_content(new api(), $this->content->oid, $data->name));
+                    $api = new api();
+                    if (media_resource::can_change_remote($this->content, $this->context, 'can_edit')) {
+                        // Only send changed fields, so Nudgis formatting is kept unless the description was edited.
+                        $fields = [];
+                        if ($data->title !== ($this->content->title ?? '')) {
+                            $fields['title'] = $data->title;
+                        }
+                        if (trim($data->description) !== ($this->content->description ?? '')) {
+                            $fields['description'] = text_to_html($data->description, false, false, true);
+                        }
+                        if ($fields) {
+                            $api->edit_media($this->content->oid, $fields);
+                        }
+                    }
+                    $media = media_resource::fetch_content($api, $this->content->oid, $data->name, $this->content);
+                    $data->content = json_encode($media);
                 } catch (moodle_exception $e) {
+                    \core\notification::error($e->getMessage());
                     $this->content->name = $data->name;
                     $data->content = json_encode($this->content);
                 }
@@ -194,12 +216,16 @@ class manager implements renderable, templatable {
     /**
      * Delete resource
      *
-     * The media is kept on Nudgis.
+     * @param bool $removeremote Whether to delete the video on Nudgis too, if this Moodle uploaded it
      */
-    public function delete_resource() {
+    public function delete_resource(bool $removeremote = false) {
         global $DB;
 
-        get_file_storage()->delete_area_files($this->record->contextid, 'mediatimesrc_ubicast', 'thumbnail', $this->record->id);
+        if ($removeremote && media_resource::can_change_remote($this->content, $this->context, 'can_delete')) {
+            (new api())->delete_media($this->content->oid);
+        }
+
+        self::delete_cached_files($this->record->contextid, $this->record->id);
 
         $DB->delete_records('tool_mediatime', [
             'id' => $this->record->id,
@@ -220,6 +246,106 @@ class manager implements renderable, templatable {
             return;
         }
 
-        get_file_storage()->delete_area_files($hook->get_context()->id, 'mediatimesrc_ubicast', 'thumbnail', $record->id);
+        self::delete_cached_files($hook->get_context()->id, $record->id);
+    }
+
+    /**
+     * Delete the thumbnail and subtitles kept for a resource
+     *
+     * @param int $contextid Context id the files are stored in
+     * @param int $id Resource id
+     */
+    public static function delete_cached_files(int $contextid, int $id): void {
+        $fs = get_file_storage();
+        foreach (['texttrack', 'thumbnail'] as $filearea) {
+            $fs->delete_area_files($contextid, 'mediatimesrc_ubicast', $filearea, $id);
+        }
+    }
+
+    /**
+     * Register drag and drop file upload handler
+     *
+     * @param dndupload_register $hook Hook
+     */
+    public static function dndupload_register(dndupload_register $hook): void {
+        if (
+            !get_config('mediatimesrc_ubicast', 'enabled')
+            || !get_config('mediatimesrc_ubicast', 'enabledraganddrop')
+            || !get_config('mediatimesrc_ubicast', 'channel')
+        ) {
+            return;
+        }
+
+        foreach (['avi', 'mkv', 'mov', 'mp4', 'ogv', 'webm'] as $extension) {
+            $hook->register_handler($extension);
+        }
+    }
+
+    /**
+     * Upload a dropped video to Nudgis and create a Video Time activity for it
+     *
+     * @param dndupload_handle $hook Hook
+     */
+    public static function dndupload_handle(dndupload_handle $hook): void {
+        global $CFG, $DB, $USER;
+
+        $context = $hook->get_context()->get_course_context();
+        if (
+            $hook->get_instanceid()
+            || !get_config('mediatimesrc_ubicast', 'enabled')
+            || !get_config('mediatimesrc_ubicast', 'enabledraganddrop')
+            || !has_capability('mediatimesrc/ubicast:upload', $context)
+        ) {
+            return;
+        }
+
+        $api = new api();
+        $channel = get_config('mediatimesrc_ubicast', 'channel');
+        if (!$channel || !$api->is_public($channel)) {
+            throw new moodle_exception('channelnotpublic', 'mediatimesrc_ubicast');
+        }
+
+        $fs = get_file_storage();
+        $usercontext = \context_user::instance($USER->id);
+        $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $hook->get_draftitemid(), 'id', false);
+        if (!$file = reset($files)) {
+            return;
+        }
+        $fullpath = make_request_directory() . '/' . api::upload_filename($file->get_filename());
+        $file->copy_content_to($fullpath);
+        $oid = $api->add_media($fullpath, $file->get_filename(), [
+            'title' => $hook->get_displayname(),
+            'validated' => 'yes',
+        ])->oid;
+
+        $clock = \core\di::get(\core\clock::class);
+        $data = (object)[
+            'source' => 'ubicast',
+            'name' => $hook->get_displayname(),
+            'contextid' => $context->id,
+            'groupid' => 0,
+            'usermodified' => $USER->id,
+            'timecreated' => $clock->time(),
+            'timemodified' => $clock->time(),
+        ];
+        $data->content = json_encode(media_resource::fetch_content($api, $oid, $data->name, (object)['uploaded' => true]));
+        $data->id = $DB->insert_record('tool_mediatime', $data);
+        event\resource_created::create_from_record($data)->trigger();
+
+        // Create a default videotime object to pass to videotime_add_instance()!
+        $videotime = get_config('videotime');
+        $videotime->intro = '';
+        $videotime->introformat = FORMAT_HTML;
+        $videotime->course = $hook->get_course()->id;
+        $videotime->coursemodule = $hook->get_coursemodule();
+        $videotime->grade = $CFG->gradepointdefault;
+        $videotime->video_description = '';
+        $videotime->video_description_format = FORMAT_HTML;
+        $videotime->cmidnumber = '';
+        $videotime->name = $hook->get_displayname();
+        $videotime->reference = $hook->get_displayname();
+        $videotime->mediatimeid = $data->id;
+
+        $hook->set_instanceid(videotime_add_instance($videotime, null));
     }
 }

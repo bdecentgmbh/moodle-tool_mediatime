@@ -49,5 +49,12 @@ if ($hassiteconfig) {
             '',
             PARAM_ALPHANUMEXT
         ));
+
+        $settings->add(new admin_setting_configcheckbox(
+            'mediatimesrc_ubicast/enabledraganddrop',
+            new lang_string('enabledraganddrop', 'mediatimesrc_ubicast'),
+            new lang_string('enabledraganddrop_help', 'mediatimesrc_ubicast'),
+            0
+        ));
     }
 }

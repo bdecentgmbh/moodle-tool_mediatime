@@ -178,6 +178,53 @@ final class api_test extends \advanced_testcase {
     }
 
     /**
+     * Edits and deletes are posted for the media
+     */
+    public function test_edit_and_delete(): void {
+        $this->resetAfterTest();
+        $this->mock_responses([
+            self::json(['success' => true, 'message' => 'Media updated']),
+            self::json(['success' => true, 'message' => 'Media deleted']),
+        ]);
+        $api = new api();
+
+        $api->edit_media('v1', ['title' => 'New title']);
+        $api->delete_media('v1');
+
+        $this->assertEquals('POST', $this->history[0]['request']->getMethod());
+        $this->assertStringEndsWith('/api/v2/medias/edit/', (string)$this->history[0]['request']->getUri());
+        parse_str((string)$this->history[0]['request']->getBody(), $fields);
+        $this->assertEquals(['oid' => 'v1', 'title' => 'New title'], $fields);
+        $this->assertStringEndsWith('/api/v2/medias/delete/', (string)$this->history[1]['request']->getUri());
+        parse_str((string)$this->history[1]['request']->getBody(), $fields);
+        $this->assertEquals(['oid' => 'v1'], $fields);
+    }
+
+    /**
+     * Only validated subtitles and chapters are used, chapters in time order
+     */
+    public function test_subtitles_and_chapters(): void {
+        $this->resetAfterTest();
+        $this->mock_responses([
+            self::json(['success' => true, 'subtitles' => [
+                ['id' => 8, 'language' => 'ger', 'validated' => true, 'file' => 'https://nudgis.example.com/s8.vtt'],
+                ['id' => 9, 'language' => 'eng', 'validated' => false, 'file' => 'https://nudgis.example.com/s9.vtt'],
+            ]]),
+            self::json(['success' => true, 'chapters' => [
+                ['title' => 'Second', 'time_in_sec' => 60, 'validated' => true],
+                ['title' => 'Hidden', 'time_in_sec' => 30, 'validated' => false],
+                ['title' => 'First', 'time_in_sec' => 0, 'validated' => true],
+            ]]),
+        ]);
+        $api = new api();
+
+        $this->assertEquals([8], array_column($api->subtitles('v1'), 'id'));
+        $chapters = $api->chapters('v1');
+        $this->assertEquals(['First', 'Second'], array_column($chapters, 'title'));
+        $this->assertEquals([0, 60], array_column($chapters, 'time'));
+    }
+
+    /**
      * Players get the download url UbiCast recommends for integrations
      */
     public function test_video_url(): void {

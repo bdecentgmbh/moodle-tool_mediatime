@@ -25,11 +25,12 @@
 namespace mediatimesrc_ubicast\form;
 
 use html_writer;
+use mediatimesrc_ubicast\output\media_resource;
 
 /**
  * Media Time media delete form
  *
- * The media stays on Nudgis; only the Media Time resource is deleted.
+ * Videos uploaded from Moodle can also be deleted on Nudgis.
  *
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -55,6 +56,21 @@ class delete_resource extends \tool_mediatime\form\delete_resource {
 
         $mform->addElement('hidden', 'delete');
         $mform->setType('delete', PARAM_INT);
+
+        $content = json_decode($this->_customdata['content'] ?? '{}') ?? new \stdClass();
+        $context = \context::instance_by_id($this->_customdata['contextid']);
+        if (media_resource::can_change_remote($content, $context, 'can_delete')) {
+            $action = [
+                $mform->createElement('radio', 'action', '', get_string('keepubicastfiles', 'mediatimesrc_ubicast'), 1),
+                $mform->createElement('radio', 'action', '', get_string('removeubicastfiles', 'mediatimesrc_ubicast'), 2),
+            ];
+            $mform->addGroup($action, 'ubicastfileaction', get_string('ubicastfileaction', 'mediatimesrc_ubicast'), [' '], false);
+            $mform->addHelpButton('ubicastfileaction', 'ubicastfileaction', 'mediatimesrc_ubicast');
+            $mform->setDefault('action', 1);
+        } else {
+            $mform->addElement('hidden', 'action', 1);
+        }
+        $mform->setType('action', PARAM_INT);
 
         $this->add_action_buttons(true, get_string('delete'));
     }
