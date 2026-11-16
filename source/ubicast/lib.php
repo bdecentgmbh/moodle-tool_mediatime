@@ -25,8 +25,8 @@
 /**
  * File serving callback
  *
- * Serves the HLS master playlist and the thumbnail of a Nudgis video. Both
- * are fetched with the API key, so they are only served to logged in users.
+ * Serves the thumbnail of a Nudgis video. Nudgis thumbnail links work only
+ * once, so the image is fetched with the API key and kept as a file.
  *
  * @param stdClass $course course object
  * @param stdClass $cm course module object
@@ -41,7 +41,7 @@ function mediatimesrc_ubicast_pluginfile($course, $cm, $context, $filearea, $arg
     global $DB;
 
     if (
-        !in_array($filearea, ['playlist', 'thumbnail'])
+        $filearea !== 'thumbnail'
         || !in_array($context->contextlevel, [
             CONTEXT_SYSTEM,
             CONTEXT_COURSECAT,
@@ -64,23 +64,9 @@ function mediatimesrc_ubicast_pluginfile($course, $cm, $context, $filearea, $arg
         return false;
     }
 
-    $content = json_decode($record->content);
-    if (empty($content->oid)) {
+    $resource = new \mediatimesrc_ubicast\output\media_resource($record);
+    if (!$file = $resource->thumbnail_file()) {
         return false;
     }
-
-    if ($filearea === 'thumbnail') {
-        $resource = new \mediatimesrc_ubicast\output\media_resource($record);
-        if (!$file = $resource->thumbnail_file()) {
-            return false;
-        }
-        send_stored_file($file, DAYSECS, 0, $forcedownload, $options);
-    }
-
-    if (array_pop($args) !== "$content->oid.m3u8") {
-        return false;
-    }
-
-    $playlist = (new \mediatimesrc_ubicast\api())->playlist($content->oid);
-    send_file($playlist, "$content->oid.m3u8", 5 * MINSECS, 0, true, false, 'application/x-mpegURL');
+    send_stored_file($file, DAYSECS, 0, $forcedownload, $options);
 }

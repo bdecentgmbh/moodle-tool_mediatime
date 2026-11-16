@@ -143,6 +143,7 @@ final class api_test extends \advanced_testcase {
         $this->mock_responses([
             self::json(['success' => true, 'items' => [['oid' => 'v1', 'title' => 'Latest']], 'more' => false]),
             self::json(['success' => true, 'videos' => [['oid' => 'v2', 'title' => 'Found']]]),
+            self::json(['success' => true, 'videos' => [['oid' => 'v126d6380db22pq9cmp0', 'title' => 'Linked']]]),
         ]);
         $api = new api();
 
@@ -151,6 +152,23 @@ final class api_test extends \advanced_testcase {
         $this->assertStringContainsString('/api/v2/latest/', (string)$this->history[0]['request']->getUri());
         $this->assertStringContainsString('search=ducks', $this->history[1]['request']->getUri()->getQuery());
         $this->assertStringContainsString('content=v', $this->history[1]['request']->getUri()->getQuery());
+
+        // A pasted link searches for the object id it contains.
+        $api->search_videos('https://nudgis.example.com/permalink/v126d6380db22pq9cmp0/iframe/');
+        $this->assertStringContainsString('search=v126d6380db22pq9cmp0&', $this->history[2]['request']->getUri()->getQuery());
+    }
+
+    /**
+     * Players get the download url UbiCast recommends for integrations
+     */
+    public function test_video_url(): void {
+        $this->resetAfterTest();
+        set_config('url', 'https://nudgis.example.com/', 'mediatimesrc_ubicast');
+
+        $this->assertEquals(
+            'https://nudgis.example.com/api/v2/download/v126d6380db22pq9cmp0.mp4?playable=yes&quality=high&usage=external',
+            api::video_url('v126d6380db22pq9cmp0')
+        );
     }
 
     /**

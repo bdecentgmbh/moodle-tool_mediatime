@@ -57,20 +57,21 @@ final class media_resource_test extends \advanced_testcase {
     }
 
     /**
-     * Ready videos play through the Moodle playlist url
+     * Ready videos play from the Nudgis download url
      */
     public function test_video_url(): void {
         global $PAGE;
 
         $this->resetAfterTest();
         $output = $PAGE->get_renderer('core');
+        set_config('url', 'https://nudgis.example.com/', 'mediatimesrc_ubicast');
         $record = $this->create_resource(['oid' => 'v1', 'title' => 'Ducks', 'ready' => true, 'thumb' => 'https://x/t.jpg']);
 
         $resource = new media_resource($record);
         $url = $resource->video_url($output);
 
-        $this->assertStringEndsWith("/mediatimesrc_ubicast/playlist/$record->id/v1.m3u8", $url);
-        $this->assertEquals('application/x-mpegURL', resourcelib_guess_url_mimetype($url));
+        $this->assertEquals('https://nudgis.example.com/api/v2/download/v1.mp4?playable=yes&quality=high&usage=external', $url);
+        $this->assertEquals('video/mp4', resourcelib_guess_url_mimetype($url));
         $this->assertStringEndsWith("/mediatimesrc_ubicast/thumbnail/$record->id/thumb.jpg", $resource->image_url($output));
         $this->assertEquals('Ducks', $resource->get_title());
     }

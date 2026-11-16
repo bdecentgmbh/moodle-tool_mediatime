@@ -133,6 +133,8 @@ class api {
     /**
      * Search videos visible to the API account
      *
+     * A pasted object id or Nudgis link finds that video.
+     *
      * @param string $query Search words, empty for the latest videos
      * @param int $limit Maximum number of videos
      * @return array List of media objects
@@ -140,6 +142,11 @@ class api {
     public function search_videos(string $query, int $limit = 25): array {
         if (trim($query) === '') {
             return $this->request('latest', ['content' => 'v', 'count' => $limit])->items ?? [];
+        }
+
+        // Nudgis returns the exact match when the search words are an object id.
+        if (preg_match('/(?<![0-9a-z])(v[0-9a-z]{19})(?![0-9a-z])/', $query, $matches)) {
+            $query = $matches[1];
         }
 
         return $this->request('search', [
@@ -169,34 +176,37 @@ class api {
     }
 
     /**
-     * Get the HLS master playlist of a video
+     * Return the url players should use for a video
+     *
+     * This is the url pattern UbiCast recommends for integrations. Nudgis
+     * redirects it to the MP4 file, so it only plays in the browser for
+     * media that anonymous users may watch.
      *
      * @param string $oid Media object id
-     * @return string Playlist content
+     * @return string
      */
-    public function playlist(string $oid): string {
-        $response = $this->send('medias/playlist', ['oid' => $oid]);
-        if ($response->getStatusCode() >= 400) {
-            $result = json_decode((string)$response->getBody());
-            throw new moodle_exception('apierror', 'mediatimesrc_ubicast', '', $result->error ?? $response->getReasonPhrase());
-        }
-
-        return (string)$response->getBody();
+    public static function video_url(string $oid): string {
+        return rtrim((string)get_config('mediatimesrc_ubicast', 'url'), '/') . "/api/v2/download/$oid.mp4?" . http_build_query([
+            'playable' => 'yes',
+            'quality' => 'high',
+            'usage' => 'external',
+        ], '', '&');
     }
 
     /**
      * Download a file that Nudgis links to, such as a signed thumbnail link
      *
      * @param string $url Absolute url on the portal
+     * @param int $timeout Request timeout in seconds
      * @return string File content
      */
-    public function download(string $url): string {
+    public function download(string $url, int $timeout = 30): string {
         if (!str_starts_with($url, $this->url . '/')) {
             throw new moodle_exception('apierror', 'mediatimesrc_ubicast', '', $url);
         }
 
         try {
-            $response = $this->client->request('GET', $url, ['http_errors' => false, 'timeout' => 30]);
+            $response = $this->client->request('GET', $url, ['http_errors' => false, 'timeout' => $timeout]);
         } catch (GuzzleException $e) {
             throw new moodle_exception('apierror', 'mediatimesrc_ubicast', '', $e->getMessage());
         }

@@ -202,9 +202,6 @@ class media_resource implements renderable, templatable {
     /**
      * Return url for video content
      *
-     * The HLS playlist is served through Moodle, because Video Time detects the
-     * stream type from the file extension and Nudgis needs the API key for it.
-     *
      * @param \renderer_base $output
      * @return string url
      */
@@ -213,28 +210,21 @@ class media_resource implements renderable, templatable {
             return '';
         }
 
-        return moodle_url::make_pluginfile_url(
-            $this->record->contextid,
-            'mediatimesrc_ubicast',
-            'playlist',
-            $this->record->id,
-            '/',
-            $this->content->oid . '.m3u8'
-        )->out(false);
+        return api::video_url($this->content->oid);
     }
 
     /**
      * Return video file content
      *
      * @param \renderer_base $output
-     * @return string HLS playlist
+     * @return string MP4 file content
      */
     public function video_file_content($output) {
         if (empty($this->content->oid)) {
             return '';
         }
 
-        return (new api())->playlist($this->content->oid);
+        return (new api())->download(api::video_url($this->content->oid), 600);
     }
 
     /**
